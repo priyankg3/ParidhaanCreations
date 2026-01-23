@@ -830,6 +830,99 @@ async def delete_review(review_id: str, authorization: Optional[str] = Header(No
     
     return {"message": "Review deleted"}
 
+@api_router.get("/admin/products/export")
+async def export_products(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Export all products to CSV"""
+    await require_admin(authorization, session_token)
+    
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    
+    output = io.StringIO()
+    if products:
+        fieldnames = ["product_id", "name", "description", "price", "category", "stock", "featured", "badge"]
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for product in products:
+            row = {
+                "product_id": product.get("product_id", ""),
+                "name": product.get("name", ""),
+                "description": product.get("description", ""),
+                "price": product.get("price", 0),
+                "category": product.get("category", ""),
+                "stock": product.get("stock", 0),
+                "featured": product.get("featured", False),
+                "badge": product.get("badge", "")
+            }
+            writer.writerow(row)
+    
+    return JSONResponse(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=products_export.csv"}
+    )
+
+@api_router.post("/admin/products/bulk-update")
+async def bulk_update_products(updates: List[Dict[str, Any]], authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Bulk update product stock and prices"""
+    await require_admin(authorization, session_token)
+    
+    updated_count = 0
+    for update in updates:
+        product_id = update.get("product_id")
+        if not product_id:
+            continue
+        
+        update_data = {}
+        if "stock" in update:
+            update_data["stock"] = int(update["stock"])
+        if "price" in update:
+            update_data["price"] = float(update["price"])
+        if "badge" in update:
+            update_data["badge"] = update["badge"]
+        
+        if update_data:
+            result = await db.products.update_one(
+                {"product_id": product_id},
+                {"$set": update_data}
+            )
+            if result.matched_count > 0:
+                updated_count += 1
+    
+    return {"message": f"Updated {updated_count} products"}
+
+@api_router.get("/admin/orders/export")
+async def export_orders(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Export all orders to CSV"""
+    await require_admin(authorization, session_token)
+    
+    orders = await db.orders.find({}, {"_id": 0}).to_list(10000)
+    
+    output = io.StringIO()
+    if orders:
+        fieldnames = ["order_id", "created_at", "total_amount", "status", "payment_status", "payment_method", "customer_name", "customer_phone"]
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for order in orders:
+            row = {
+                "order_id": order.get("order_id", ""),
+                "created_at": order.get("created_at", ""),
+                "total_amount": order.get("total_amount", 0),
+                "status": order.get("status", ""),
+                "payment_status": order.get("payment_status", ""),
+                "payment_method": order.get("payment_method", ""),
+                "customer_name": order.get("shipping_address", {}).get("full_name", ""),
+                "customer_phone": order.get("shipping_address", {}).get("phone", "")
+            }
+            writer.writerow(row)
+    
+    return JSONResponse(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=orders_export.csv"}
+    )
+
 app.include_router(api_router)
 
 app.add_middleware(
