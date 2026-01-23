@@ -1161,12 +1161,54 @@ export default function AdminDashboard() {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Banner Type *</label>
+                      <select
+                        value={bannerForm.banner_type}
+                        onChange={(e) => setBannerForm({...bannerForm, banner_type: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      >
+                        <option value="promotional">Promotional (Homepage)</option>
+                        <option value="header">Header Banner</option>
+                        <option value="footer">Footer Banner</option>
+                        <option value="side">Side Banner</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Category (Optional)</label>
+                      <select
+                        value={bannerForm.category}
+                        onChange={(e) => setBannerForm({...bannerForm, category: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      >
+                        <option value="">All Categories</option>
+                        <option value="handicrafts">Handicrafts</option>
+                        <option value="pooja">Pooja Articles</option>
+                        <option value="perfumes">Perfumes</option>
+                        <option value="jewellery">Jewellery</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Link (Optional)</label>
                     <input
                       type="url"
                       value={bannerForm.link}
                       onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
+                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Position</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={bannerForm.position}
+                      onChange={(e) => setBannerForm({...bannerForm, position: parseInt(e.target.value) || 1})}
                       className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                     />
                   </div>
