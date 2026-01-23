@@ -63,6 +63,51 @@ export default function AdminDashboard() {
       if (activeTab === "analytics") {
         const response = await axios.get(`${API}/admin/analytics`, { withCredentials: true });
         setAnalytics(response.data);
+        
+        const productsRes = await axios.get(`${API}/products`);
+        const allProducts = productsRes.data;
+        
+        const lowStock = allProducts.filter(p => p.stock <= 5 && p.stock > 0);
+        setLowStockProducts(lowStock);
+        
+        const ordersRes = await axios.get(`${API}/admin/orders`, { withCredentials: true });
+        const allOrders = ordersRes.data;
+        
+        const last7Days = Array.from({length: 7}, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (6 - i));
+          return date.toISOString().split('T')[0];
+        });
+        
+        const salesByDay = last7Days.map(date => {
+          const dayOrders = allOrders.filter(o => o.created_at.startsWith(date) && o.payment_status === 'paid');
+          const total = dayOrders.reduce((sum, o) => sum + o.total_amount, 0);
+          return {
+            date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            revenue: total,
+            orders: dayOrders.length
+          };
+        });
+        setSalesData(salesByDay);
+        
+        const categoryStats = {};
+        allProducts.forEach(p => {
+          if (!categoryStats[p.category]) {
+            categoryStats[p.category] = { category: p.category, count: 0, revenue: 0 };
+          }
+          categoryStats[p.category].count++;
+        });
+        
+        allOrders.filter(o => o.payment_status === 'paid').forEach(order => {
+          order.items.forEach(item => {
+            const product = allProducts.find(p => p.product_id === item.product_id);
+            if (product && categoryStats[product.category]) {
+              categoryStats[product.category].revenue += item.price * item.quantity;
+            }
+          });
+        });
+        
+        setCategoryData(Object.values(categoryStats));
       } else if (activeTab === "products") {
         const response = await axios.get(`${API}/products`);
         setProducts(response.data);
