@@ -59,25 +59,32 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-base font-medium hover:text-primary transition-colors duration-300" data-testid="nav-home">Home</Link>
+            <Link to="/" className="text-base font-medium hover:text-primary transition-colors duration-300" data-testid="nav-home">{t("nav.home")}</Link>
             
             <div className="relative group">
               <Link to="/products" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-products">
-                Products
+                {t("nav.products")}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </Link>
               <div className="absolute left-0 mt-2 w-48 bg-white border border-border shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                <Link to="/products?category=handicrafts" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-handicrafts">Handicrafts</Link>
-                <Link to="/products?category=pooja" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-pooja">Pooja Items</Link>
-                <Link to="/products?category=perfumes" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-perfumes">Perfumes</Link>
-                <Link to="/products?category=jewellery" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-jewellery">Jewellery</Link>
+                <Link to="/products?category=handicrafts" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-handicrafts">{t("category.handicrafts")}</Link>
+                <Link to="/products?category=pooja" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-pooja">{t("category.pooja")}</Link>
+                <Link to="/products?category=perfumes" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-perfumes">{t("category.perfumes")}</Link>
+                <Link to="/products?category=jewellery" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-jewellery">{t("category.jewellery")}</Link>
               </div>
             </div>
+
+            <Link to="/support" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-support">
+              <Headphones className="w-4 h-4 mr-1" />
+              {t("nav.support")}
+            </Link>
           </div>
 
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
+            
             <Link to="/cart" className="relative hidden md:block" data-testid="nav-cart">
               <ShoppingCart className="w-6 h-6 hover:text-primary transition-colors duration-300" />
               {cartCount > 0 && (
