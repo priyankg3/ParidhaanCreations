@@ -15,10 +15,13 @@ import MyOrdersPage from "@/pages/MyOrdersPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import LoginPage from "@/pages/LoginPage";
 import TermsPage from "@/pages/TermsPage";
+import SupportPage from "@/pages/SupportPage";
 import AuthCallback from "@/components/AuthCallback";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
@@ -29,6 +32,9 @@ function AppRouter() {
   if (location.hash?.includes('session_id=')) {
     return <AuthCallback />;
   }
+
+  // Hide WhatsApp button on admin pages
+  const showWhatsApp = !location.pathname.startsWith('/admin');
   
   return (
     <div className="App">
@@ -42,11 +48,13 @@ function AppRouter() {
         <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/terms" element={<TermsPage />} />
+        <Route path="/support" element={<SupportPage />} />
         <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
         <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
       </Routes>
       <Footer />
+      {showWhatsApp && <WhatsAppButton />}
       <Toaster position="top-right" />
     </div>
   );
@@ -54,9 +62,11 @@ function AppRouter() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppRouter />
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 
