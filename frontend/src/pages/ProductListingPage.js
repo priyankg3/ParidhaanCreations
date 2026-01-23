@@ -40,6 +40,7 @@ export default function ProductListingPage() {
   const [maxPrice, setMaxPrice] = useState(10000);
   const [sortBy, setSortBy] = useState("name");
   const [showFilters, setShowFilters] = useState(false);
+  const [categoryBannersData, setCategoryBannersData] = useState({ header: null, side: null, footer: null });
   const [filters, setFilters] = useState({
     inStock: false,
     featured: false,
@@ -57,6 +58,9 @@ export default function ProductListingPage() {
     const categoryParam = searchParams.get("category");
     if (categoryParam) {
       setSelectedCategory(categoryParam);
+      fetchCategoryBanners(categoryParam);
+    } else {
+      setCategoryBannersData({ header: null, side: null, footer: null });
     }
   }, [searchParams]);
 
