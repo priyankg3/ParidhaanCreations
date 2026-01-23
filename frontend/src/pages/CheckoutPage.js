@@ -413,12 +413,28 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                           <Smartphone className="w-5 h-5 text-primary" />
-                          <span className="text-lg font-medium">Razorpay</span>
+                          <span className="text-lg font-medium">UPI Payment</span>
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1">Recommended</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">UPI, Cards, Wallets, Net Banking</p>
-                        <div className="flex items-center space-x-2 mt-2">
+                        <p className="text-sm text-muted-foreground mb-3">Pay instantly using your favorite UPI app</p>
+                        <div className="flex items-center space-x-3 flex-wrap gap-2">
+                          <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1.5 rounded-full">
+                            <span className="text-sm font-medium text-gray-700">Google Pay</span>
+                          </div>
+                          <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1.5 rounded-full">
+                            <span className="text-sm font-medium text-gray-700">PhonePe</span>
+                          </div>
+                          <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1.5 rounded-full">
+                            <span className="text-sm font-medium text-gray-700">Paytm</span>
+                          </div>
+                          <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1.5 rounded-full">
+                            <span className="text-sm font-medium text-gray-700">BHIM</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-3">
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-1">Instant</span>
                           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1">Secure</span>
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1">No OTP</span>
                         </div>
                       </div>
                     </label>
@@ -427,21 +443,43 @@ export default function CheckoutPage() {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="stripe"
-                        checked={paymentMethod === "stripe"}
+                        value="card"
+                        checked={paymentMethod === "card"}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="w-5 h-5 mt-1"
-                        data-testid="stripe-radio"
+                        data-testid="card-radio"
                       />
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                           <CreditCard className="w-5 h-5 text-primary" />
-                          <span className="text-lg font-medium">Stripe</span>
+                          <span className="text-lg font-medium">Credit/Debit Card</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">Credit/Debit Cards (International)</p>
+                        <p className="text-sm text-muted-foreground">Visa, Mastercard, Rupay & more</p>
                         <div className="flex items-center space-x-2 mt-2">
-                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1">Global</span>
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1">Secure</span>
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1">All Cards</span>
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1">EMI Available</span>
+                        </div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start space-x-4 p-4 border-2 border-border hover:border-primary cursor-pointer transition-all group">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="netbanking"
+                        checked={paymentMethod === "netbanking"}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-5 h-5 mt-1"
+                        data-testid="netbanking-radio"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <CreditCard className="w-5 h-5 text-primary" />
+                          <span className="text-lg font-medium">Net Banking</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">All major banks supported</p>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1">50+ Banks</span>
                         </div>
                       </div>
                     </label>
