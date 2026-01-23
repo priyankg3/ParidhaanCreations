@@ -181,8 +181,8 @@ class Banner(BaseModel):
     link: Optional[str] = None
     position: int
     active: bool = True
-    banner_type: str = "promotional"  # "promotional", "header", "footer", "side"
-    category: Optional[str] = None  # "handicrafts", "pooja", "perfumes", "jewellery" or None for all
+    banner_type: str = "hero"  # "hero" (homepage), "header" (category top), "footer", "side"
+    category: Optional[str] = None  # "handicrafts", "pooja", "perfumes", "jewellery" or None for homepage
     start_date: Optional[datetime] = None  # Schedule start date
     end_date: Optional[datetime] = None  # Schedule end date
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -193,7 +193,7 @@ class BannerCreate(BaseModel):
     link: Optional[str] = None
     position: int = 1
     active: bool = True
-    banner_type: str = "promotional"
+    banner_type: str = "hero"  # Default to hero banner
     category: Optional[str] = None
     start_date: Optional[str] = None  # ISO format string
     end_date: Optional[str] = None  # ISO format string
