@@ -278,9 +278,11 @@ export default function AdminDashboard() {
         withCredentials: true,
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      setBannerForm({ ...bannerForm, image: response.data.url });
+      // Use functional update to ensure we get the latest state
+      setBannerForm(prev => ({ ...prev, image: response.data.url }));
       toast.success("Image uploaded successfully");
     } catch (error) {
+      console.error("Upload error:", error);
       toast.error("Failed to upload image");
     } finally {
       setBannerUploading(false);
