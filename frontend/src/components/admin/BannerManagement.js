@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, GripVertical, X, Check, Pause, Play
 } from "lucide-react";
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Banner placement zones
 const PLACEMENTS = [
