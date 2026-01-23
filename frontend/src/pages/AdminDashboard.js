@@ -110,6 +110,9 @@ export default function AdminDashboard() {
         });
         
         setCategoryData(Object.values(categoryStats));
+      } else if (activeTab === "insights") {
+        const response = await axios.get(`${API}/admin/customer-insights`, { withCredentials: true });
+        setCustomerInsights(response.data);
       } else if (activeTab === "products") {
         const response = await axios.get(`${API}/products`);
         setProducts(response.data);
