@@ -4,6 +4,7 @@ import axios from "axios";
 import { API } from "@/App";
 import { Search, SlidersHorizontal, Heart, X } from "lucide-react";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
 
 const categoryBanners = {
   handicrafts: {
