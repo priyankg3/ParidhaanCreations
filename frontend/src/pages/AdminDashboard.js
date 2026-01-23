@@ -360,17 +360,67 @@ export default function AdminDashboard() {
     }
   };
 
+  const [supportTickets, setSupportTickets] = useState([]);
+  const [supportStats, setSupportStats] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [ticketReply, setTicketReply] = useState("");
+
+  const fetchSupportData = async () => {
+    try {
+      const [ticketsRes, statsRes] = await Promise.all([
+        axios.get(`${API}/admin/support/tickets`, { withCredentials: true }),
+        axios.get(`${API}/admin/support/stats`, { withCredentials: true })
+      ]);
+      setSupportTickets(ticketsRes.data);
+      setSupportStats(statsRes.data);
+    } catch (error) {
+      console.error("Error fetching support data:", error);
+    }
+  };
+
+  const handleTicketReply = async (ticketId) => {
+    if (!ticketReply.trim()) return;
+    try {
+      await axios.post(`${API}/support/tickets/${ticketId}/reply`, { message: ticketReply }, { withCredentials: true });
+      toast.success("Reply sent!");
+      setTicketReply("");
+      fetchSupportData();
+      if (selectedTicket) {
+        const ticketRes = await axios.get(`${API}/support/tickets/${ticketId}`, { withCredentials: true });
+        setSelectedTicket(ticketRes.data);
+      }
+    } catch (error) {
+      toast.error("Failed to send reply");
+    }
+  };
+
+  const handleUpdateTicketStatus = async (ticketId, status) => {
+    try {
+      await axios.put(`${API}/support/tickets/${ticketId}/status?status=${status}`, {}, { withCredentials: true });
+      toast.success(`Ticket marked as ${status}`);
+      fetchSupportData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "support") {
+      fetchSupportData();
+    }
+  }, [activeTab]);
+
   return (
     <div className="min-h-screen py-12 bg-background-paper">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="admin-title">Admin Dashboard</h1>
 
         <div className="flex space-x-4 mb-8 overflow-x-auto">
-          {["analytics", "insights", "products", "categories", "orders", "banners", "coupons", "settings"].map((tab) => (
+          {["analytics", "insights", "products", "categories", "orders", "support", "banners", "coupons", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium tracking-wide transition-all ${
+              className={`px-6 py-3 font-medium tracking-wide transition-all whitespace-nowrap ${
                 activeTab === tab
                   ? "bg-primary text-primary-foreground"
                   : "bg-white text-foreground hover:bg-primary/10"
