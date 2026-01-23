@@ -53,6 +53,15 @@ export default function ProductDetailPage() {
     }
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      const response = await axios.get(`${API}/products/${id}/recommendations`);
+      setRecommendations(response.data);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  };
+
   const addToCart = async () => {
     try {
       await axios.post(`${API}/cart/add`, { product_id: id, quantity }, { withCredentials: true });
