@@ -146,6 +146,21 @@ class Coupon(BaseModel):
     active: bool = True
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class Review(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    review_id: str = Field(default_factory=lambda: f"review_{uuid.uuid4().hex[:12]}")
+    product_id: str
+    user_id: str
+    user_name: str
+    rating: int
+    comment: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReviewCreate(BaseModel):
+    product_id: str
+    rating: int
+    comment: str
+
 class CouponCreate(BaseModel):
     code: str
     discount_percentage: Optional[float] = None
