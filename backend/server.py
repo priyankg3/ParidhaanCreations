@@ -1493,7 +1493,7 @@ async def generate_sitemap():
     products = await db.products.find({"stock": {"$gt": 0}}, {"_id": 0, "product_id": 1, "created_at": 1}).to_list(1000)
     categories = await db.categories.find({}, {"_id": 0, "slug": 1}).to_list(100)
     
-    base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://yourapp.com').replace('/api', '')
+    base_url = os.environ['REACT_APP_BACKEND_URL'].replace('/api', '')
     
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
