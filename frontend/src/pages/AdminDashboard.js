@@ -303,7 +303,7 @@ export default function AdminDashboard() {
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="admin-title">Admin Dashboard</h1>
 
         <div className="flex space-x-4 mb-8 overflow-x-auto">
-          {["analytics", "products", "categories", "orders", "banners", "coupons"].map((tab) => (
+          {["analytics", "products", "categories", "orders", "banners", "coupons", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
