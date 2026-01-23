@@ -1478,6 +1478,128 @@ async def generate_sitemap():
     
     return JSONResponse(content=sitemap_xml, media_type="application/xml")
 
+# ============ FILE UPLOAD ENDPOINTS ============
+
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+@api_router.post("/upload/image")
+async def upload_image(file: UploadFile = File(...), authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Upload an image file (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    # Validate file type
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}")
+    
+    # Read file content
+    content = await file.read()
+    
+    # Validate file size
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Generate unique filename
+    ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    unique_filename = f"{uuid.uuid4().hex}.{ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Return the URL that can be used to access the image
+    image_url = f"/api/uploads/{unique_filename}"
+    
+    return {
+        "success": True,
+        "filename": unique_filename,
+        "url": image_url,
+        "size": len(content),
+        "content_type": file.content_type
+    }
+
+@api_router.post("/upload/images")
+async def upload_multiple_images(files: List[UploadFile] = File(...), authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Upload multiple image files (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    if len(files) > 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 files allowed per upload")
+    
+    uploaded = []
+    errors = []
+    
+    for file in files:
+        try:
+            if file.content_type not in ALLOWED_IMAGE_TYPES:
+                errors.append({"filename": file.filename, "error": "Invalid file type"})
+                continue
+            
+            content = await file.read()
+            
+            if len(content) > MAX_FILE_SIZE:
+                errors.append({"filename": file.filename, "error": "File too large"})
+                continue
+            
+            ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            file_path = UPLOAD_DIR / unique_filename
+            
+            with open(file_path, "wb") as f:
+                f.write(content)
+            
+            uploaded.append({
+                "original_name": file.filename,
+                "filename": unique_filename,
+                "url": f"/api/uploads/{unique_filename}",
+                "size": len(content)
+            })
+        except Exception as e:
+            errors.append({"filename": file.filename, "error": str(e)})
+    
+    return {
+        "success": len(uploaded) > 0,
+        "uploaded": uploaded,
+        "errors": errors,
+        "total_uploaded": len(uploaded)
+    }
+
+@api_router.get("/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    """Serve uploaded files"""
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Determine content type
+    ext = filename.split('.')[-1].lower()
+    content_types = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'webp': 'image/webp',
+        'gif': 'image/gif'
+    }
+    content_type = content_types.get(ext, 'application/octet-stream')
+    
+    return FileResponse(file_path, media_type=content_type)
+
+@api_router.delete("/upload/{filename}")
+async def delete_uploaded_file(filename: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Delete an uploaded file (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    file_path = UPLOAD_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    os.remove(file_path)
+    
+    return {"success": True, "message": "File deleted successfully"}
+
 app.include_router(api_router)
 
 app.add_middleware(
