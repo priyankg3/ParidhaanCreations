@@ -80,6 +80,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Paridhaan Creations - Traditional Indian Handicrafts & Jewellery"
+        description="Discover authentic Indian handicrafts, pooja articles, premium perfumes, and traditional artificial jewellery. Handcrafted treasures by skilled artisans."
+        keywords="Indian handicrafts, pooja items, traditional jewellery, perfumes, artificial jewellery, brass handicrafts, pooja thali"
+      />
+      
       <section className="relative h-[600px] overflow-hidden" data-testid="hero-section">
         {heroImages.map((img, index) => (
           <div
