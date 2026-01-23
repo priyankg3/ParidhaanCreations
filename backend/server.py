@@ -177,26 +177,87 @@ class Banner(BaseModel):
     model_config = ConfigDict(extra="ignore")
     banner_id: str = Field(default_factory=lambda: f"banner_{uuid.uuid4().hex[:12]}")
     title: str
-    image: str = ""  # Will be set from uploaded file
+    
+    # Images - Desktop & Mobile
+    image_desktop: str = ""  # Desktop image (required)
+    image_mobile: str = ""   # Mobile image (optional, falls back to desktop)
+    
+    # Banner Placement/Zone
+    placement: str = "hero"  # hero, below_hero, popup, category_header, category_sidebar, category_footer, product_page, cart_page, checkout_page
+    
+    # Link & CTA
     link: Optional[str] = None
-    position: int
-    active: bool = True
-    banner_type: str = "hero"  # "hero" (homepage), "header" (category top), "footer", "side"
-    category: Optional[str] = None  # "handicrafts", "pooja", "perfumes", "jewellery" or None for homepage
-    start_date: Optional[datetime] = None  # Schedule start date
-    end_date: Optional[datetime] = None  # Schedule end date
+    link_type: str = "internal"  # internal, external, category, product
+    cta_text: Optional[str] = None  # "Shop Now", "Learn More", etc.
+    
+    # Targeting
+    category: Optional[str] = None  # For category-specific banners
+    target_audience: str = "all"  # all, new_users, returning_users
+    target_device: str = "all"  # all, desktop, mobile
+    
+    # Status & Scheduling
+    status: str = "active"  # draft, active, paused, scheduled, expired
+    position: int = 1
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    
+    # Analytics
+    impressions: int = 0
+    clicks: int = 0
+    
+    # Content Type
+    content_type: str = "image"  # image, video, html
+    video_url: Optional[str] = None  # For video banners
+    html_content: Optional[str] = None  # For HTML/rich banners
+    
+    # Popup specific settings
+    popup_delay: int = 0  # Seconds to wait before showing popup
+    popup_frequency: str = "once_per_session"  # once_per_session, once_per_day, always
+    
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BannerCreate(BaseModel):
     title: str
-    image: str = ""  # Image path from upload
+    image_desktop: str = ""
+    image_mobile: str = ""
+    placement: str = "hero"
     link: Optional[str] = None
-    position: int = 1
-    active: bool = True
-    banner_type: str = "hero"  # Default to hero banner
+    link_type: str = "internal"
+    cta_text: Optional[str] = None
     category: Optional[str] = None
-    start_date: Optional[str] = None  # ISO format string
-    end_date: Optional[str] = None  # ISO format string
+    target_audience: str = "all"
+    target_device: str = "all"
+    status: str = "active"
+    position: int = 1
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    content_type: str = "image"
+    video_url: Optional[str] = None
+    html_content: Optional[str] = None
+    popup_delay: int = 0
+    popup_frequency: str = "once_per_session"
+
+class BannerUpdate(BaseModel):
+    title: Optional[str] = None
+    image_desktop: Optional[str] = None
+    image_mobile: Optional[str] = None
+    placement: Optional[str] = None
+    link: Optional[str] = None
+    link_type: Optional[str] = None
+    cta_text: Optional[str] = None
+    category: Optional[str] = None
+    target_audience: Optional[str] = None
+    target_device: Optional[str] = None
+    status: Optional[str] = None
+    position: Optional[int] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    content_type: Optional[str] = None
+    video_url: Optional[str] = None
+    html_content: Optional[str] = None
+    popup_delay: Optional[int] = None
+    popup_frequency: Optional[str] = None
 
 class Coupon(BaseModel):
     model_config = ConfigDict(extra="ignore")
