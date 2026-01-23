@@ -8,11 +8,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div>
-            <img 
-              src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
-              alt="Paridhaan Creations" 
-              className="h-24 w-auto mb-4 brightness-0 invert opacity-90"
-            />
+            <div className="bg-white p-4 rounded mb-4 inline-block">
+              <img 
+                src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
+                alt="Paridhaan Creations" 
+                className="h-28 w-auto"
+              />
+            </div>
             <p className="text-sm text-primary-foreground/80 leading-relaxed">
               Traditional Indian handicrafts, pooja items, perfumes, and artificial jewellery.
             </p>
