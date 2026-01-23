@@ -593,6 +593,44 @@ async def create_coupon(coupon: CouponCreate, authorization: Optional[str] = Hea
     await db.coupons.insert_one(doc)
     return coupon_obj
 
+@api_router.get("/coupons")
+async def get_coupons(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    await require_admin(authorization, session_token)
+    coupons = await db.coupons.find({}, {"_id": 0}).to_list(100)
+    return coupons
+
+@api_router.get("/coupons/{coupon_id}")
+async def get_coupon(coupon_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    await require_admin(authorization, session_token)
+    coupon = await db.coupons.find_one({"coupon_id": coupon_id}, {"_id": 0})
+    if not coupon:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    return coupon
+
+@api_router.put("/coupons/{coupon_id}")
+async def update_coupon(coupon_id: str, coupon_update: CouponCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    await require_admin(authorization, session_token)
+    existing = await db.coupons.find_one({"coupon_id": coupon_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    
+    update_data = coupon_update.model_dump()
+    update_data["code"] = update_data["code"].upper()
+    update_data["valid_from"] = update_data["valid_from"].isoformat()
+    update_data["valid_to"] = update_data["valid_to"].isoformat()
+    
+    await db.coupons.update_one({"coupon_id": coupon_id}, {"$set": update_data})
+    updated = await db.coupons.find_one({"coupon_id": coupon_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/coupons/{coupon_id}")
+async def delete_coupon(coupon_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    await require_admin(authorization, session_token)
+    result = await db.coupons.delete_one({"coupon_id": coupon_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Coupon not found")
+    return {"message": "Coupon deleted successfully"}
+
 @api_router.post("/payments/stripe/session")
 async def create_stripe_session(request: Request, order_id: str, origin_url: str):
     order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
