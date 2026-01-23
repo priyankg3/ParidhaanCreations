@@ -156,6 +156,8 @@ class Order(BaseModel):
     payment_method: str
     payment_status: str = "pending"
     shipping_address: ShippingAddress
+    coupon_code: Optional[str] = None
+    discount_amount: float = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class OrderCreate(BaseModel):
@@ -164,6 +166,8 @@ class OrderCreate(BaseModel):
     payment_method: str
     shipping_address: ShippingAddress
     guest_email: Optional[str] = None
+    coupon_code: Optional[str] = None
+    discount_amount: float = 0
 
 class Banner(BaseModel):
     model_config = ConfigDict(extra="ignore")
