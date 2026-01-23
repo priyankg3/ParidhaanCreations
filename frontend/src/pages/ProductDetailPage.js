@@ -11,10 +11,25 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [user, setUser] = useState(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
 
   useEffect(() => {
     fetchProduct();
+    fetchReviews();
+    checkAuth();
   }, [id]);
+
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
+      setUser(response.data);
+    } catch (error) {
+      setUser(null);
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -24,6 +39,15 @@ export default function ProductDetailPage() {
       console.error("Error fetching product:", error);
       toast.error("Product not found");
       navigate("/products");
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const response = await axios.get(`${API}/reviews/${id}`);
+      setReviews(response.data);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
     }
   };
 
