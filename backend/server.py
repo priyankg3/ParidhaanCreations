@@ -314,7 +314,7 @@ async def create_session(request: Request, response: Response):
         raise HTTPException(status_code=401, detail=f"Invalid session: {str(e)}")
     
     # Admin email configuration - ONLY this email gets admin access
-    ADMIN_EMAIL = "priyankg3@gmail.com"
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'priyankg3@gmail.com')
     is_admin = auth_data["email"].lower() == ADMIN_EMAIL.lower()
     
     user_id = f"user_{uuid.uuid4().hex[:12]}"
