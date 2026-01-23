@@ -66,18 +66,19 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center space-x-6">
+            <Link to="/cart" className="relative hidden md:block" data-testid="nav-cart">
+              <ShoppingCart className="w-6 h-6 hover:text-primary transition-colors duration-300" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-testid="cart-count">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            
             {user ? (
               <div className="hidden md:flex items-center space-x-4">
                 <Link to="/wishlist" data-testid="nav-wishlist">
                   <Heart className="w-6 h-6 hover:text-accent transition-colors duration-300" />
-                </Link>
-                <Link to="/cart" className="relative" data-testid="nav-cart">
-                  <ShoppingCart className="w-6 h-6 hover:text-primary transition-colors duration-300" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-testid="cart-count">
-                      {cartCount}
-                    </span>
-                  )}
                 </Link>
                 <div className="relative group">
                   <button className="flex items-center space-x-2" data-testid="user-menu-button">
