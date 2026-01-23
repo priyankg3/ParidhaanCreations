@@ -221,7 +221,7 @@ def create_sample_data():
     test_session = {
         "user_id": test_user_id,
         "session_token": test_session_token,
-        "expires_at": datetime.now(timezone.utc) + datetime.timedelta(days=7),
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
         "created_at": datetime.now(timezone.utc)
     }
     
