@@ -152,7 +152,7 @@ export default function AdminDashboard() {
         const response = await axios.get(`${API}/admin/orders`, { withCredentials: true });
         setOrders(response.data);
       } else if (activeTab === "banners") {
-        const response = await axios.get(`${API}/banners`);
+        const response = await axios.get(`${API}/banners/all`, { withCredentials: true });
         setBanners(response.data);
       } else if (activeTab === "coupons") {
         const response = await axios.get(`${API}/coupons`, { withCredentials: true });
