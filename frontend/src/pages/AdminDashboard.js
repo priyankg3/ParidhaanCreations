@@ -1288,6 +1288,32 @@ export default function AdminDashboard() {
 
             {showBannerForm && (
               <div className="bg-white border border-border/40 p-6 mb-6">
+                {/* Banner Size Recommendations */}
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                    <Image className="w-4 h-4" />
+                    Recommended Banner Sizes
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {Object.entries(bannerSizeRecommendations).map(([type, info]) => (
+                      <div 
+                        key={type} 
+                        className={`p-3 rounded border ${bannerForm.banner_type === type ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-200'}`}
+                      >
+                        <p className="font-medium text-sm capitalize">{info.placement}</p>
+                        <p className="text-xs text-blue-600 font-mono">{info.size} px</p>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          info.priority === 'High' ? 'bg-red-100 text-red-700' :
+                          info.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {info.priority}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <form onSubmit={handleCreateBanner} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Banner Title *</label>
@@ -1297,20 +1323,11 @@ export default function AdminDashboard() {
                       value={bannerForm.title}
                       onChange={(e) => setBannerForm({...bannerForm, title: e.target.value})}
                       className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      data-testid="banner-title-input"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Image URL *</label>
-                    <input
-                      type="url"
-                      required
-                      value={bannerForm.image}
-                      onChange={(e) => setBannerForm({...bannerForm, image: e.target.value})}
-                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                    />
-                  </div>
-
+                  {/* Banner Type Selection - moved up */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Banner Type *</label>
@@ -1318,11 +1335,12 @@ export default function AdminDashboard() {
                         value={bannerForm.banner_type}
                         onChange={(e) => setBannerForm({...bannerForm, banner_type: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="banner-type-select"
                       >
-                        <option value="promotional">Promotional (Homepage)</option>
-                        <option value="header">Header Banner</option>
-                        <option value="footer">Footer Banner</option>
-                        <option value="side">Side Banner</option>
+                        <option value="promotional">Promotional (Home Header - 1920x600)</option>
+                        <option value="header">Category Header (1200x250)</option>
+                        <option value="footer">Footer Strip (1200x100)</option>
+                        <option value="side">Sidebar (300x600)</option>
                       </select>
                     </div>
 
@@ -1332,6 +1350,7 @@ export default function AdminDashboard() {
                         value={bannerForm.category}
                         onChange={(e) => setBannerForm({...bannerForm, category: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="banner-category-select"
                       >
                         <option value="">All Categories</option>
                         <option value="handicrafts">Handicrafts</option>
@@ -1342,31 +1361,114 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Image Upload Section */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Link (Optional)</label>
-                    <input
-                      type="url"
-                      value={bannerForm.link}
-                      onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
-                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                    />
+                    <label className="block text-sm font-medium mb-2">Banner Image *</label>
+                    <div className="space-y-3">
+                      {/* File Upload */}
+                      <div 
+                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${
+                          bannerUploading ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-primary hover:bg-gray-50'
+                        }`}
+                        onClick={() => bannerFileInputRef.current?.click()}
+                      >
+                        <input
+                          ref={bannerFileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={handleBannerImageUpload}
+                          className="hidden"
+                          data-testid="banner-file-input"
+                        />
+                        {bannerUploading ? (
+                          <div className="flex items-center justify-center gap-2 text-blue-600">
+                            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            <span>Uploading...</span>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                            <p className="text-sm text-gray-600">
+                              <span className="text-primary font-medium">Click to upload</span> or drag and drop
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              JPG, PNG, WebP or GIF (Max 5MB) • Recommended: {bannerSizeRecommendations[bannerForm.banner_type]?.size || '1920x600'} px
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* OR Divider */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                        <span className="text-xs text-gray-400 uppercase">or enter URL</span>
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                      </div>
+
+                      {/* URL Input */}
+                      <input
+                        type="url"
+                        placeholder="https://example.com/banner-image.jpg"
+                        value={bannerForm.image}
+                        onChange={(e) => setBannerForm({...bannerForm, image: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="banner-image-url-input"
+                      />
+
+                      {/* Image Preview */}
+                      {bannerForm.image && (
+                        <div className="relative mt-3">
+                          <img 
+                            src={bannerForm.image.startsWith('/api') ? `${API.replace('/api', '')}${bannerForm.image}` : bannerForm.image} 
+                            alt="Banner preview" 
+                            className="w-full max-h-48 object-contain rounded border border-gray-200"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setBannerForm({...bannerForm, image: ''})}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                            data-testid="remove-banner-image-btn"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Position</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={bannerForm.position}
-                      onChange={(e) => setBannerForm({...bannerForm, position: parseInt(e.target.value) || 1})}
-                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Link (Optional)</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/target-page"
+                        value={bannerForm.link}
+                        onChange={(e) => setBannerForm({...bannerForm, link: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="banner-link-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Position</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={bannerForm.position}
+                        onChange={(e) => setBannerForm({...bannerForm, position: parseInt(e.target.value) || 1})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="banner-position-input"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex space-x-4">
                     <button
                       type="submit"
-                      className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90 transition-all"
+                      disabled={bannerUploading}
+                      className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90 transition-all disabled:opacity-50"
+                      data-testid="create-banner-submit-btn"
                     >
                       Create Banner
                     </button>
@@ -1377,6 +1479,7 @@ export default function AdminDashboard() {
                         resetBannerForm();
                       }}
                       className="bg-muted text-muted-foreground px-6 py-2 hover:bg-muted/80 transition-all"
+                      data-testid="cancel-banner-btn"
                     >
                       Cancel
                     </button>
