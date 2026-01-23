@@ -127,6 +127,9 @@ export default function AdminDashboard() {
       } else if (activeTab === "banners") {
         const response = await axios.get(`${API}/banners`);
         setBanners(response.data);
+      } else if (activeTab === "coupons") {
+        const response = await axios.get(`${API}/coupons`, { withCredentials: true });
+        setCoupons(response.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
