@@ -58,12 +58,14 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - [x] Stock Alerts
 
 ### Banner System (Fully Implemented)
-- **Promotional** - Homepage slider/grid
-- **Header** - Top of category pages
-- **Footer** - Bottom of category pages
-- **Side** - Sidebar on category pages
+- **Promotional** - Homepage slider/grid (Recommended: 1920x600 px)
+- **Header** - Top of category pages (Recommended: 1200x250 px)
+- **Footer** - Bottom of category pages (Recommended: 1200x100 px)
+- **Side** - Sidebar on category pages (Recommended: 300x600 px)
 - Category-specific targeting (handicrafts, pooja, perfumes, jewellery)
 - **12 sample banners created** for all categories
+- **Image Upload** - Direct file upload option (in addition to URL input)
+- **Size Recommendations** - Visual guide showing ideal sizes for each banner type
 
 ### Customer Features
 - [x] Google Social Login
@@ -97,6 +99,11 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 2. **Product Image Upload:** Direct file upload in Admin Dashboard
 3. **Footer Social Links:** Instagram, Facebook, WhatsApp (no phone number)
 4. **All 4 categories displaying** on homepage
+5. **Banner Image Upload (NEW):** Added file upload option for banners with size recommendations
+   - Upload area with drag-drop styling
+   - URL input as alternative option
+   - Image preview with remove button
+   - Size recommendations panel (1920x600 Home, 1200x250 Category Top, 300x600 Sidebar, 1200x100 Footer)
 
 ## Deployment Instructions
 1. Click "Preview" to test your application
