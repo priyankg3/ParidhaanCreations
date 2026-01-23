@@ -746,12 +746,20 @@ async def get_all_orders(authorization: Optional[str] = Header(None), session_to
 @api_router.put("/admin/orders/{order_id}/status")
 async def update_order_status(order_id: str, status: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
+    
+    order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
     result = await db.orders.update_one(
         {"order_id": order_id},
         {"$set": {"status": status}}
     )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Send notification
+    if order.get("shipping_address", {}).get("phone"):
+        await send_order_notification(order_id, order["shipping_address"]["phone"], status)
+    
     return {"message": "Order status updated"}
 
 @api_router.post("/reviews")
