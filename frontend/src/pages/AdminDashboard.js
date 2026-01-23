@@ -1589,8 +1589,10 @@ export default function AdminDashboard() {
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-2">
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        {banner.banner_type || "promotional"}
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        banner.banner_type === 'hero' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {banner.banner_type === 'hero' ? '🏠 Hero' : banner.banner_type || "hero"}
                       </span>
                       {banner.category && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
