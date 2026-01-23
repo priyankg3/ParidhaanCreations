@@ -132,6 +132,11 @@ export default function AdminDashboard() {
     }
   };
 
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
