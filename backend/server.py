@@ -1721,15 +1721,13 @@ async def upload_image(
     session_token: Optional[str] = Cookie(None)
 ):
     """Upload an image file (admin only)"""
-    # Debug logging
-    import logging
-    logger = logging.getLogger(__name__)
-    
     # Try to get session_token from cookies if not provided as parameter
     if not session_token:
         session_token = request.cookies.get("session_token")
     
-    logger.info(f"Upload attempt - Auth: {authorization is not None}, Cookie param: {session_token is not None}, Request cookies: {list(request.cookies.keys())}")
+    print(f"[UPLOAD DEBUG] Auth header present: {authorization is not None}")
+    print(f"[UPLOAD DEBUG] Cookie param: {session_token}")
+    print(f"[UPLOAD DEBUG] Request cookies: {dict(request.cookies)}")
     
     await require_admin(authorization, session_token)
     
