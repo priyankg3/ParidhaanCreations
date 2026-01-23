@@ -40,10 +40,12 @@ export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [banners, setBanners] = useState([]);
+  const [categoriesData, setCategoriesData] = useState(categories);
 
   useEffect(() => {
     fetchFeaturedProducts();
     fetchBanners();
+    fetchCategories();
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
