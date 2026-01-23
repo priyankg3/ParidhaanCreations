@@ -974,6 +974,131 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6">Notification Settings</h2>
+              
+              <div className="space-y-6">
+                <div className="border-b border-border pb-6">
+                  <h3 className="text-lg font-semibold mb-4">SMS Notifications (Twilio)</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Send SMS updates to customers for order status changes. Configure Twilio credentials in your .env file.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 bg-background-paper">
+                      <div>
+                        <p className="font-medium">Order Confirmed</p>
+                        <p className="text-sm text-muted-foreground">Send SMS when order is confirmed</p>
+                      </div>
+                      <span className="text-sm bg-green-100 text-green-700 px-3 py-1">Enabled</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 bg-background-paper">
+                      <div>
+                        <p className="font-medium">Order Shipped</p>
+                        <p className="text-sm text-muted-foreground">Send SMS when order is shipped</p>
+                      </div>
+                      <span className="text-sm bg-green-100 text-green-700 px-3 py-1">Enabled</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 bg-background-paper">
+                      <div>
+                        <p className="font-medium">Order Delivered</p>
+                        <p className="text-sm text-muted-foreground">Send SMS when order is delivered</p>
+                      </div>
+                      <span className="text-sm bg-green-100 text-green-700 px-3 py-1">Enabled</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200">
+                    <p className="text-sm text-blue-900">
+                      <strong>Setup Instructions:</strong> Add the following to <code>/app/backend/.env</code>:
+                    </p>
+                    <pre className="text-xs bg-white p-2 mt-2 overflow-x-auto">
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=+1234567890</pre>
+                  </div>
+                </div>
+
+                <div className="border-b border-border pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Email Notifications</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Send email updates to customers. Ready to integrate with SendGrid or AWS SES.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 bg-background-paper">
+                      <div>
+                        <p className="font-medium">Order Confirmation</p>
+                        <p className="text-sm text-muted-foreground">Send email receipt after order</p>
+                      </div>
+                      <span className="text-sm bg-amber-100 text-amber-700 px-3 py-1">Ready to Configure</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 bg-background-paper">
+                      <div>
+                        <p className="font-medium">Shipping Updates</p>
+                        <p className="text-sm text-muted-foreground">Email tracking information</p>
+                      </div>
+                      <span className="text-sm bg-amber-100 text-amber-700 px-3 py-1">Ready to Configure</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Low Stock Alerts</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Get notified when products are running low on stock.
+                  </p>
+                  
+                  <div className="flex items-center justify-between p-4 bg-background-paper">
+                    <div>
+                      <p className="font-medium">Alert Threshold</p>
+                      <p className="text-sm text-muted-foreground">Currently set to 5 units</p>
+                    </div>
+                    <span className="text-sm bg-green-100 text-green-700 px-3 py-1">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6">Export & Reports</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="border border-border p-6">
+                  <h3 className="text-lg font-semibold mb-3">Product Export</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Export all products to CSV for inventory management
+                  </p>
+                  <button
+                    onClick={handleExportProducts}
+                    className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90"
+                  >
+                    Export Products
+                  </button>
+                </div>
+
+                <div className="border border-border p-6">
+                  <h3 className="text-lg font-semibold mb-3">Order Export</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Export all orders to CSV for accounting and analysis
+                  </p>
+                  <button
+                    onClick={handleExportOrders}
+                    className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90"
+                  >
+                    Export Orders
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
