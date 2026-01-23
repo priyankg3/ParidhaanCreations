@@ -443,7 +443,7 @@ export default function AdminDashboard() {
       link: "",
       position: 1,
       active: true,
-      banner_type: "promotional",
+      banner_type: "hero",
       category: "",
       start_date: "",
       end_date: ""
