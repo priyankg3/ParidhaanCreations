@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, User, Menu, X, Search } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, X, Search, Headphones } from "lucide-react";
 import { API } from "@/App";
 import axios from "axios";
+import { LanguageSwitcher, useLanguage } from "@/contexts/LanguageContext";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     checkAuth();
