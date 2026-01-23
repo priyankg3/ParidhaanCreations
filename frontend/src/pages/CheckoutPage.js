@@ -133,11 +133,8 @@ export default function CheckoutPage() {
       const orderResponse = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
       const orderId = orderResponse.data.order_id;
 
-      if (paymentMethod === "razorpay") {
-        await handleRazorpayPayment(orderId);
-      } else {
-        await handleStripePayment(orderId);
-      }
+      // All payment methods go through Razorpay with preferred method hint
+      await handleRazorpayPayment(orderId, paymentMethod);
     } catch (error) {
       console.error("Checkout error:", error);
       toast.error("Checkout failed");
