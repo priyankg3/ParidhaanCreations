@@ -1573,7 +1573,33 @@ export default function AdminDashboard() {
                           {banner.category}
                         </span>
                       )}
+                      {/* Schedule Status Badge */}
+                      {(() => {
+                        const scheduleStatus = getBannerScheduleStatus(banner);
+                        return (
+                          <span className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                            scheduleStatus.color === 'green' ? 'bg-green-100 text-green-700' :
+                            scheduleStatus.color === 'blue' ? 'bg-blue-100 text-blue-700' :
+                            scheduleStatus.color === 'red' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            <Calendar className="w-3 h-3" />
+                            {scheduleStatus.label}
+                          </span>
+                        );
+                      })()}
                     </div>
+                    {/* Schedule Details */}
+                    {(banner.start_date || banner.end_date) && (
+                      <div className="text-xs text-muted-foreground mb-2 space-y-1">
+                        {banner.start_date && (
+                          <p>Starts: {new Date(banner.start_date).toLocaleString()}</p>
+                        )}
+                        {banner.end_date && (
+                          <p>Ends: {new Date(banner.end_date).toLocaleString()}</p>
+                        )}
+                      </div>
+                    )}
                     {banner.link && <p className="text-xs text-muted-foreground truncate">{banner.link}</p>}
                   </div>
                 </div>
