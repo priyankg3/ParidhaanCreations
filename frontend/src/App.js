@@ -41,6 +41,7 @@ function AppRouter() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order-success" element={<OrderSuccessPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
         <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
