@@ -203,12 +203,64 @@ export default function AdminDashboard() {
         active: couponForm.active
       };
       
-      await axios.post(`${API}/coupons`, couponData, { withCredentials: true });
-      toast.success("Coupon created successfully");
+      if (editingCoupon) {
+        await axios.put(`${API}/coupons/${editingCoupon.coupon_id}`, couponData, { withCredentials: true });
+        toast.success("Coupon updated successfully");
+        setEditingCoupon(null);
+      } else {
+        await axios.post(`${API}/coupons`, couponData, { withCredentials: true });
+        toast.success("Coupon created successfully");
+      }
       setShowCouponForm(false);
       resetCouponForm();
+      fetchData();
     } catch (error) {
-      toast.error("Failed to create coupon");
+      toast.error(editingCoupon ? "Failed to update coupon" : "Failed to create coupon");
+    }
+  };
+
+  const handleEditCoupon = (coupon) => {
+    setEditingCoupon(coupon);
+    const validFrom = new Date(coupon.valid_from);
+    const validTo = new Date(coupon.valid_to);
+    setCouponForm({
+      code: coupon.code,
+      discount_percentage: coupon.discount_percentage || "",
+      discount_amount: coupon.discount_amount || "",
+      valid_from: validFrom.toISOString().slice(0, 16),
+      valid_to: validTo.toISOString().slice(0, 16),
+      active: coupon.active
+    });
+    setShowCouponForm(true);
+  };
+
+  const handleDeleteCoupon = async (couponId) => {
+    if (!window.confirm("Are you sure you want to delete this coupon?")) return;
+    
+    try {
+      await axios.delete(`${API}/coupons/${couponId}`, { withCredentials: true });
+      toast.success("Coupon deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete coupon");
+    }
+  };
+
+  const handleToggleCouponStatus = async (coupon) => {
+    try {
+      const couponData = {
+        code: coupon.code,
+        discount_percentage: coupon.discount_percentage,
+        discount_amount: coupon.discount_amount,
+        valid_from: coupon.valid_from,
+        valid_to: coupon.valid_to,
+        active: !coupon.active
+      };
+      await axios.put(`${API}/coupons/${coupon.coupon_id}`, couponData, { withCredentials: true });
+      toast.success(`Coupon ${!coupon.active ? 'activated' : 'deactivated'}`);
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update coupon status");
     }
   };
 
