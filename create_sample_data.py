@@ -236,7 +236,7 @@ def create_sample_data():
             "discount_percentage": 10.0,
             "discount_amount": None,
             "valid_from": datetime.now(timezone.utc),
-            "valid_to": datetime.now(timezone.utc) + datetime.timedelta(days=30),
+            "valid_to": datetime.now(timezone.utc) + timedelta(days=30),
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat()
         },
