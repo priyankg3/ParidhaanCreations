@@ -50,7 +50,7 @@ export default function ProductListingPage() {
 
   const categories = ["handicrafts", "pooja", "perfumes", "jewellery"];
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/products`);
       setProducts(response.data);
@@ -64,9 +64,9 @@ export default function ProductListingPage() {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");
     }
-  };
+  }, []);
 
-  const fetchCategoryBanners = async (category) => {
+  const fetchCategoryBanners = useCallback(async (category) => {
     try {
       const [headerRes, sideRes, footerRes] = await Promise.all([
         axios.get(`${API}/banners?banner_type=header&category=${category}`),
@@ -82,11 +82,11 @@ export default function ProductListingPage() {
     } catch (error) {
       console.error("Error fetching category banners:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const categoryParam = searchParams.get("category");
@@ -96,9 +96,9 @@ export default function ProductListingPage() {
     } else {
       setCategoryBannersData({ header: null, side: null, footer: null });
     }
-  }, [searchParams]);
+  }, [searchParams, fetchCategoryBanners]);
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
     if (searchTerm) {
@@ -139,7 +139,7 @@ export default function ProductListingPage() {
         filtered.sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    setFilteredProducts(filtered);
+    return filtered;
   }, [products, searchTerm, selectedCategory, priceRange, sortBy, filters]);
 
   const addToCart = async (productId) => {
