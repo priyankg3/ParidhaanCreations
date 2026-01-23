@@ -1,5 +1,6 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Cookie, Response, Request, Header
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, APIRouter, HTTPException, Cookie, Response, Request, Header, UploadFile, File
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -16,6 +17,7 @@ from emergentintegrations.payments.stripe.checkout import StripeCheckout, Checko
 from twilio.rest import Client as TwilioClient
 import csv
 import io
+import shutil
 from openpyxl import Workbook
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
@@ -26,6 +28,9 @@ from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from collections import Counter
 
 ROOT_DIR = Path(__file__).parent
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
