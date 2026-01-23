@@ -346,6 +346,35 @@ export default function ProductDetailPage() {
             </div>
           )}
         </div>
+
+        {recommendations.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-3xl font-heading font-bold mb-8">You May Also Like</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {recommendations.map((rec) => (
+                <Link
+                  key={rec.product_id}
+                  to={`/products/${rec.product_id}`}
+                  className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden"
+                >
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={rec.images[0]}
+                      alt={rec.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-heading font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                      {rec.name}
+                    </h3>
+                    <p className="text-xl font-bold text-accent">₹{rec.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
