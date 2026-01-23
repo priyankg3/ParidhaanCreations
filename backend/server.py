@@ -605,11 +605,6 @@ async def delete_banner(banner_id: str, authorization: Optional[str] = Header(No
         raise HTTPException(status_code=404, detail="Banner not found")
     return {"message": "Banner deleted successfully"}
 
-@api_router.get("/categories")
-async def get_categories():
-    categories = await db.categories.find({}, {"_id": 0}).to_list(100)
-    return categories
-
 @api_router.post("/coupons/validate")
 async def validate_coupon(coupon_data: CouponValidate):
     coupon = await db.coupons.find_one({"code": coupon_data.code.upper(), "active": True}, {"_id": 0})
