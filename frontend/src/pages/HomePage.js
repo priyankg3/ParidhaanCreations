@@ -65,10 +65,22 @@ export default function HomePage() {
 
   const fetchBanners = async () => {
     try {
-      const response = await axios.get(`${API}/banners`);
+      const response = await axios.get(`${API}/banners?banner_type=promotional`);
       setBanners(response.data);
     } catch (error) {
       console.error("Error fetching banners:", error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/categories`);
+      if (response.data && response.data.length > 0) {
+        setCategoriesData(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      // Keep using hardcoded categories as fallback
     }
   };
 
