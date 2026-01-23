@@ -255,6 +255,48 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleExportProducts = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/products/export`, {
+        withCredentials: true,
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `products_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.success("Products exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export products");
+    }
+  };
+
+  const handleExportOrders = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/orders/export`, {
+        withCredentials: true,
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast.success("Orders exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export orders");
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 bg-background-paper">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
