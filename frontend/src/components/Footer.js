@@ -11,7 +11,7 @@ export default function Footer() {
             <img 
               src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
               alt="Paridhaan Creations" 
-              className="h-20 w-auto mb-4 brightness-0 invert opacity-90"
+              className="h-24 w-auto mb-4 brightness-0 invert opacity-90"
             />
             <p className="text-sm text-primary-foreground/80 leading-relaxed">
               Traditional Indian handicrafts, pooja items, perfumes, and artificial jewellery.
