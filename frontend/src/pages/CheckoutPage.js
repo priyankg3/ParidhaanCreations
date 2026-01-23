@@ -273,7 +273,7 @@ export default function CheckoutPage() {
 
         {/* Welcome Offer Banner for First-time Buyers */}
         {welcomeOffer && !appliedCoupon && (
-          <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-lg animate-pulse-slow" data-testid="welcome-offer-banner">
+          <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-lg" data-testid="welcome-offer-banner">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center space-x-3">
                 <div className="bg-green-500 text-white p-2 rounded-full">
@@ -286,10 +286,7 @@ export default function CheckoutPage() {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setCouponCode(welcomeOffer.welcome_coupon);
-                  handleApplyCoupon();
-                }}
+                onClick={() => handleApplyCoupon(welcomeOffer.welcome_coupon)}
                 className="bg-green-600 text-white px-6 py-2 font-medium hover:bg-green-700 transition-all rounded-full flex items-center space-x-2"
                 data-testid="apply-welcome-coupon-btn"
               >
