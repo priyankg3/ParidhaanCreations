@@ -1721,15 +1721,38 @@ async def upload_image(
     session_token: Optional[str] = Cookie(None)
 ):
     """Upload an image file (admin only)"""
-    # Try to get session_token from cookies if not provided as parameter
+    # Try to get session_token from cookies in multiple ways
     if not session_token:
         session_token = request.cookies.get("session_token")
     
-    print(f"[UPLOAD DEBUG] Auth header present: {authorization is not None}")
+    # Debug output
+    print(f"[UPLOAD DEBUG] Auth header: {authorization}")
     print(f"[UPLOAD DEBUG] Cookie param: {session_token}")
-    print(f"[UPLOAD DEBUG] Request cookies: {dict(request.cookies)}")
+    print(f"[UPLOAD DEBUG] All cookies: {dict(request.cookies)}")
     
-    await require_admin(authorization, session_token)
+    # Manually check admin status if cookie is present
+    if session_token:
+        try:
+            session_doc = await db.sessions.find_one({"session_token": session_token}, {"_id": 0})
+            if session_doc:
+                user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
+                print(f"[UPLOAD DEBUG] User found: {user.get('email') if user else 'None'}, is_admin: {user.get('is_admin') if user else 'None'}")
+                if user and user.get("is_admin"):
+                    print("[UPLOAD DEBUG] Admin verified via manual check")
+                else:
+                    print("[UPLOAD DEBUG] User not admin or not found")
+                    raise HTTPException(status_code=403, detail="Admin access required")
+            else:
+                print("[UPLOAD DEBUG] Session not found")
+                raise HTTPException(status_code=403, detail="Invalid session")
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"[UPLOAD DEBUG] Error: {e}")
+            raise HTTPException(status_code=403, detail="Admin access required")
+    else:
+        # Fallback to original method
+        await require_admin(authorization, session_token)
     
     # Validate file type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
