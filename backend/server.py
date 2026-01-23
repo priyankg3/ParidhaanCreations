@@ -27,6 +27,41 @@ api_router = APIRouter(prefix="/api")
 
 razorpay_client = razorpay.Client(auth=(os.environ['RAZORPAY_KEY_ID'], os.environ['RAZORPAY_KEY_SECRET']))
 
+# Initialize Twilio client if credentials are available
+twilio_client = None
+if os.environ.get('TWILIO_ACCOUNT_SID') and os.environ.get('TWILIO_AUTH_TOKEN'):
+    twilio_client = TwilioClient(os.environ['TWILIO_ACCOUNT_SID'], os.environ['TWILIO_AUTH_TOKEN'])
+
+async def send_order_notification(order_id: str, phone: str, status: str):
+    """Send SMS notification for order updates"""
+    if not twilio_client or not os.environ.get('TWILIO_PHONE_NUMBER'):
+        logging.info(f"Twilio not configured. Skipping SMS for order {order_id}")
+        return
+    
+    try:
+        messages = {
+            "confirmed": f"Your order #{order_id} has been confirmed! We'll notify you when it ships.",
+            "shipped": f"Great news! Your order #{order_id} has been shipped and is on its way.",
+            "delivered": f"Your order #{order_id} has been delivered. Thank you for shopping with Paridhaan Creations!",
+            "cancelled": f"Your order #{order_id} has been cancelled. Contact us if you have questions."
+        }
+        
+        message = twilio_client.messages.create(
+            body=messages.get(status, f"Order {order_id} status: {status}"),
+            from_=os.environ['TWILIO_PHONE_NUMBER'],
+            to=phone
+        )
+        logging.info(f"SMS sent for order {order_id}: {message.sid}")
+    except Exception as e:
+        logging.error(f"Failed to send SMS for order {order_id}: {str(e)}")
+
+async def send_email_notification(email: str, subject: str, body: str):
+    """Send email notification (placeholder for actual email service)"""
+    # This is a placeholder. In production, integrate with SendGrid, AWS SES, or similar
+    logging.info(f"Email notification: To={email}, Subject={subject}")
+    # TODO: Implement actual email sending
+    pass
+
 class User(BaseModel):
     user_id: str
     email: str
