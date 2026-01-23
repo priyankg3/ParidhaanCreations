@@ -12,7 +12,13 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - **Frontend:** React, React Router, Tailwind CSS, Recharts, Axios
 - **Backend:** FastAPI, Pydantic, Motor (async MongoDB driver)
 - **Database:** MongoDB
-- **Integrations:** Stripe, Razorpay, Google Auth, Twilio (code ready, not configured)
+- **Payments:** Razorpay (UPI, Cards, Net Banking)
+- **Auth:** Google OAuth (via Emergent)
+
+## Admin Access
+- **Admin Email:** priyankg3@gmail.com (ONLY this email has admin access)
+- Admin link appears in navbar dropdown when logged in
+- Admin dashboard accessible at `/admin`
 
 ## Core Requirements
 
@@ -37,10 +43,18 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 
 ### Checkout & Payments
 - [x] Full cart and checkout system
-- [x] Stripe integration (test mode)
-- [x] Razorpay integration (live keys configured)
+- [x] Razorpay integration with UPI (GPay, PhonePe, Paytm, BHIM)
+- [x] Credit/Debit Card payments
+- [x] Net Banking payments
 - [x] Guest checkout option
 - [x] Coupon code application at checkout
+- [x] First-time buyer welcome discount (WELCOME10)
+
+### SEO
+- [x] Dynamic meta tags (Open Graph, Twitter Cards)
+- [x] robots.txt
+- [x] JSON-LD structured data (Organization, Website, Product, Breadcrumb)
+- [x] Sitemap generation
 
 ## What's Implemented
 
@@ -48,7 +62,7 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - Full-stack application (FastAPI + React + MongoDB)
 - User Authentication: Google Social Login
 - Product & Category Management
-- Cart & Checkout Flow with Stripe/Razorpay
+- Cart & Checkout Flow with Razorpay
 - Product reviews and ratings system
 - Product badges (e.g., 'New Arrival')
 - PDF Invoice Generation
@@ -61,21 +75,33 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - Categories management
 - Orders management with status updates
 - Banners management
-- **Coupons management (NEW)** - Full CRUD with listing table
+- Coupons management - Full CRUD with listing table
 - Notification Settings UI
 - Bulk Product Import/Export
 
-### Technical Improvements
-- SEO Component for dynamic meta tags
-- Sitemap Generation (/api/sitemap.xml)
-- Global Error Boundary for browser extension errors
-- Backend testing suite with pytest
+### Payment Options (via Razorpay)
+- UPI Payment (Google Pay, PhonePe, Paytm, BHIM) - Recommended
+- Credit/Debit Card (Visa, Mastercard, Rupay)
+- Net Banking (50+ banks)
+
+### SEO & Technical
+- robots.txt for search engines
+- JSON-LD structured data
+- Dynamic meta tags
+- Sitemap generation
+
+### First-Time Buyer Feature
+- WELCOME10 coupon (10% off)
+- Auto-detection of first-time buyers
+- Welcome banner on checkout page
+- One-click apply welcome coupon
 
 ## API Endpoints
 
 ### Authentication
-- POST /api/auth/google - Google OAuth login
+- POST /api/auth/session - Create session from Google OAuth
 - GET /api/auth/me - Get current user
+- POST /api/auth/logout - Logout
 
 ### Products
 - GET /api/products - List all products
@@ -94,57 +120,29 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - DELETE /api/coupons/{id} - Delete coupon (admin)
 - POST /api/coupons/validate - Validate coupon code (public)
 
-### Admin
-- GET /api/admin/analytics - Dashboard analytics
-- GET /api/admin/customer-insights - Customer data
-- GET /api/admin/products/export - Export products CSV
-- GET /api/admin/orders/export - Export orders CSV
+### User
+- GET /api/user/first-time-buyer - Check first-time buyer status
 
-## Database Schema
+### Payments
+- POST /api/payments/razorpay/order - Create Razorpay order
+- POST /api/payments/razorpay/verify - Verify payment
 
-### Products
-```
-{name, description, price, category, stock, images: [], badge: str, featured: bool}
-```
-
-### Orders
-```
-{user_id, items: [], total_amount, status, payment_details, shipping_address, coupon_code, discount_amount}
-```
-
-### Coupons
-```
-{coupon_id, code, discount_percentage, discount_amount, valid_from, valid_to, active}
-```
+## Available Coupons
+| Code | Discount | Status |
+|------|----------|--------|
+| SAVE10 | 10% OFF | Active |
+| FLAT100 | ₹100 OFF | Active |
+| SAVE20 | 20% OFF | Active |
+| WELCOME10 | 10% OFF (first-time buyers) | Active |
 
 ## Completed in Latest Session (Jan 2026)
-1. **Admin Dashboard Preview** - Resolved authentication issue, captured screenshots
-2. **Coupon Management System** - Full implementation:
-   - Backend APIs: List, Create, Update, Delete, Validate coupons
-   - Admin Dashboard: Coupons tab with table listing, edit/delete actions, status toggle
-   - Checkout Integration: Apply coupon, see discount, remove coupon
-   - Testing: 16/16 backend tests passed, frontend UI verified
-
-## Remaining/Future Tasks
-
-### P2 - Enable Live Payments
-- Guide user to provide live API keys for Stripe
-- Razorpay already has live keys configured
-
-### P3 - Advanced SEO
-- Generate robots.txt
-- Implement more structured data
-
-### Future Enhancements
-- Customer Support/Ticketing System
-- Stock Replenishment Alerts
-- Multi-language Support
-- Loyalty Program & Subscription Products
-- Multi-vendor Marketplace
-- International Shipping and Currency Support
-- Mobile App (React Native)
+1. **Coupon Management** - Full CRUD with admin UI and checkout integration
+2. **Payment UI Update** - Replaced Stripe with UPI options (GPay, PhonePe, Paytm, BHIM)
+3. **Advanced SEO** - robots.txt, JSON-LD structured data
+4. **First-Time Buyer Feature** - WELCOME10 auto-discount for new customers
+5. **Admin Access Control** - Only priyankg3@gmail.com has admin access
 
 ## Notes
-- Email/SMS notifications code exists but requires SMTP/Twilio credentials
-- Payment gateways: Razorpay (live), Stripe (test mode)
-- Admin credentials created for testing (session_token: admin_session_1769177330151)
+- All payments go through Razorpay
+- Admin access is email-locked to priyankg3@gmail.com
+- WELCOME10 coupon auto-shows for first-time buyers at checkout
