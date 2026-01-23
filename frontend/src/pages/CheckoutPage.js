@@ -30,19 +30,27 @@ export default function CheckoutPage() {
     email: ""
   });
 
+  const [welcomeOffer, setWelcomeOffer] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [cartRes, userRes] = await Promise.all([
+      const [cartRes, userRes, welcomeRes] = await Promise.all([
         axios.get(`${API}/cart`, { withCredentials: true }),
-        axios.get(`${API}/auth/me`, { withCredentials: true }).catch(() => null)
+        axios.get(`${API}/auth/me`, { withCredentials: true }).catch(() => null),
+        axios.get(`${API}/user/first-time-buyer`, { withCredentials: true }).catch(() => null)
       ]);
 
       setCart(cartRes.data);
       setUser(userRes?.data);
+      
+      // Check for first-time buyer welcome offer
+      if (welcomeRes?.data?.is_first_time) {
+        setWelcomeOffer(welcomeRes.data);
+      }
 
       if (cartRes.data.items && cartRes.data.items.length > 0) {
         const productPromises = cartRes.data.items.map(item =>
