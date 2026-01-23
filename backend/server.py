@@ -268,14 +268,19 @@ async def create_session(request: Request, response: Response):
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid session: {str(e)}")
     
+    # Admin email configuration - ONLY this email gets admin access
+    ADMIN_EMAIL = "priyankg3@gmail.com"
+    is_admin = auth_data["email"].lower() == ADMIN_EMAIL.lower()
+    
     user_id = f"user_{uuid.uuid4().hex[:12]}"
     user_doc = await db.users.find_one({"email": auth_data["email"]}, {"_id": 0})
     
     if user_doc:
         user_id = user_doc["user_id"]
+        # Update user and set admin status based on email
         await db.users.update_one(
             {"user_id": user_id},
-            {"$set": {"name": auth_data["name"], "picture": auth_data["picture"]}}
+            {"$set": {"name": auth_data["name"], "picture": auth_data["picture"], "is_admin": is_admin}}
         )
     else:
         user_data = {
@@ -283,7 +288,7 @@ async def create_session(request: Request, response: Response):
             "email": auth_data["email"],
             "name": auth_data["name"],
             "picture": auth_data["picture"],
-            "is_admin": False,
+            "is_admin": is_admin,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(user_data)
