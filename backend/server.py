@@ -931,6 +931,182 @@ async def export_orders(authorization: Optional[str] = Header(None), session_tok
         headers={"Content-Disposition": "attachment; filename=orders_export.csv"}
     )
 
+@api_router.get("/orders/{order_id}/invoice")
+async def generate_invoice(order_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Generate PDF invoice for an order"""
+    user = await get_current_user(authorization, session_token)
+    
+    order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if user and order.get("user_id") != user.user_id and not user.is_admin:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#0F4C75'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    
+    elements.append(Paragraph("Paridhaan Creations", title_style))
+    elements.append(Paragraph("INVOICE", styles['Heading2']))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    invoice_data = [
+        ["Invoice Number:", order_id],
+        ["Order Date:", order.get("created_at", "")[:10]],
+        ["Payment Status:", order.get("payment_status", "").upper()],
+        ["Order Status:", order.get("status", "").upper()]
+    ]
+    
+    invoice_table = Table(invoice_data, colWidths=[2*inch, 3*inch])
+    invoice_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(invoice_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    elements.append(Paragraph("Bill To:", styles['Heading3']))
+    addr = order.get("shipping_address", {})
+    address_text = f"""
+        {addr.get('full_name', '')}<br/>
+        {addr.get('address_line1', '')}<br/>
+        {addr.get('address_line2', '') + '<br/>' if addr.get('address_line2') else ''}
+        {addr.get('city', '')}, {addr.get('state', '')} {addr.get('pincode', '')}<br/>
+        Phone: {addr.get('phone', '')}
+    """
+    elements.append(Paragraph(address_text, styles['Normal']))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    items_data = [["Product", "Quantity", "Price", "Total"]]
+    for item in order.get("items", []):
+        items_data.append([
+            item.get("product_name", ""),
+            str(item.get("quantity", 0)),
+            f"₹{item.get('price', 0):.2f}",
+            f"₹{(item.get('price', 0) * item.get('quantity', 0)):.2f}"
+        ])
+    
+    items_data.append(["", "", "Total:", f"₹{order.get('total_amount', 0):.2f}"])
+    
+    items_table = Table(items_data, colWidths=[3*inch, 1*inch, 1.5*inch, 1.5*inch])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0F4C75')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -2), 1, colors.grey),
+        ('LINEABOVE', (2, -1), (-1, -1), 2, colors.HexColor('#0F4C75')),
+        ('FONTNAME', (2, -1), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 0.5*inch))
+    
+    footer_text = "Thank you for your business!<br/>Paridhaan Creations"
+    elements.append(Paragraph(footer_text, ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER)))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return JSONResponse(
+        content=buffer.getvalue().decode('latin-1'),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=invoice_{order_id}.pdf"}
+    )
+
+@api_router.get("/products/{product_id}/recommendations")
+async def get_product_recommendations(product_id: str):
+    """Get product recommendations based on category and popularity"""
+    product = await db.products.find_one({"product_id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    recommendations = []
+    
+    same_category = await db.products.find(
+        {
+            "category": product["category"],
+            "product_id": {"$ne": product_id},
+            "stock": {"$gt": 0}
+        },
+        {"_id": 0}
+    ).limit(3).to_list(3)
+    recommendations.extend(same_category)
+    
+    if len(recommendations) < 4:
+        featured = await db.products.find(
+            {
+                "featured": True,
+                "product_id": {"$ne": product_id},
+                "stock": {"$gt": 0}
+            },
+            {"_id": 0}
+        ).limit(4 - len(recommendations)).to_list(4 - len(recommendations))
+        recommendations.extend(featured)
+    
+    return recommendations[:4]
+
+@api_router.get("/admin/customer-insights")
+async def get_customer_insights(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get customer segmentation and insights"""
+    await require_admin(authorization, session_token)
+    
+    orders = await db.orders.find({"payment_status": "paid"}, {"_id": 0}).to_list(10000)
+    
+    total_customers = len(set(o.get("user_id") or o.get("guest_email") for o in orders))
+    
+    customer_orders = {}
+    for order in orders:
+        customer_id = order.get("user_id") or order.get("guest_email", "guest")
+        if customer_id not in customer_orders:
+            customer_orders[customer_id] = {"orders": 0, "total_spent": 0}
+        customer_orders[customer_id]["orders"] += 1
+        customer_orders[customer_id]["total_spent"] += order.get("total_amount", 0)
+    
+    repeat_customers = sum(1 for c in customer_orders.values() if c["orders"] > 1)
+    
+    avg_order_value = sum(o.get("total_amount", 0) for o in orders) / len(orders) if orders else 0
+    
+    category_popularity = Counter()
+    for order in orders:
+        for item in order.get("items", []):
+            product = await db.products.find_one({"product_id": item["product_id"]}, {"_id": 0})
+            if product:
+                category_popularity[product.get("category", "unknown")] += item.get("quantity", 0)
+    
+    top_categories = dict(category_popularity.most_common(5))
+    
+    recent_orders_30days = len([o for o in orders if datetime.fromisoformat(o["created_at"].replace('Z', '+00:00')) > datetime.now(timezone.utc) - timedelta(days=30)])
+    
+    vip_customers = sorted(
+        [{"customer_id": k, **v} for k, v in customer_orders.items()],
+        key=lambda x: x["total_spent"],
+        reverse=True
+    )[:10]
+    
+    return {
+        "total_customers": total_customers,
+        "repeat_customers": repeat_customers,
+        "repeat_rate": (repeat_customers / total_customers * 100) if total_customers > 0 else 0,
+        "avg_order_value": avg_order_value,
+        "top_categories": top_categories,
+        "recent_orders_30days": recent_orders_30days,
+        "vip_customers": vip_customers
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
