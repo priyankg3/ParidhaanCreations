@@ -49,7 +49,7 @@ export default function AdminDashboard() {
     link: "",
     position: 1,
     active: true,
-    banner_type: "promotional",
+    banner_type: "hero",
     category: "",
     start_date: "",
     end_date: ""
@@ -59,10 +59,10 @@ export default function AdminDashboard() {
 
   // Banner size recommendations
   const bannerSizeRecommendations = {
-    promotional: { size: "1920 x 600", priority: "High", placement: "Home Header" },
-    header: { size: "1200 x 250", priority: "Medium", placement: "Category Top" },
-    side: { size: "300 x 600", priority: "Low", placement: "Sidebar" },
-    footer: { size: "1200 x 100", priority: "Low", placement: "Footer Strip" }
+    hero: { size: "1920 x 600", priority: "High", placement: "Homepage Hero", needsCategory: false },
+    header: { size: "1200 x 250", priority: "Medium", placement: "Category Top", needsCategory: true },
+    side: { size: "300 x 600", priority: "Low", placement: "Sidebar", needsCategory: true },
+    footer: { size: "1200 x 100", priority: "Low", placement: "Footer Strip", needsCategory: true }
   };
 
   // Helper to check banner schedule status
