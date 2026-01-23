@@ -277,37 +277,146 @@ export default function AdminDashboard() {
         </div>
 
         {activeTab === "analytics" && analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white border border-border/40 p-6" data-testid="total-orders-card">
-              <div className="flex items-center justify-between mb-4">
-                <ShoppingCart className="w-10 h-10 text-primary" />
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white border border-border/40 p-6" data-testid="total-orders-card">
+                <div className="flex items-center justify-between mb-4">
+                  <ShoppingCart className="w-10 h-10 text-primary" />
+                </div>
+                <p className="text-3xl font-bold mb-2">{analytics.total_orders}</p>
+                <p className="text-muted-foreground">Total Orders</p>
               </div>
-              <p className="text-3xl font-bold mb-2">{analytics.total_orders}</p>
-              <p className="text-muted-foreground">Total Orders</p>
+
+              <div className="bg-white border border-border/40 p-6" data-testid="total-revenue-card">
+                <div className="flex items-center justify-between mb-4">
+                  <DollarSign className="w-10 h-10 text-accent" />
+                </div>
+                <p className="text-3xl font-bold mb-2">₹{analytics.total_revenue.toFixed(2)}</p>
+                <p className="text-muted-foreground">Total Revenue</p>
+              </div>
+
+              <div className="bg-white border border-border/40 p-6" data-testid="total-products-card">
+                <div className="flex items-center justify-between mb-4">
+                  <Package className="w-10 h-10 text-secondary" />
+                </div>
+                <p className="text-3xl font-bold mb-2">{analytics.total_products}</p>
+                <p className="text-muted-foreground">Total Products</p>
+              </div>
+
+              <div className="bg-white border border-border/40 p-6" data-testid="total-users-card">
+                <div className="flex items-center justify-between mb-4">
+                  <Users className="w-10 h-10 text-primary" />
+                </div>
+                <p className="text-3xl font-bold mb-2">{analytics.total_users}</p>
+                <p className="text-muted-foreground">Total Users</p>
+              </div>
             </div>
 
-            <div className="bg-white border border-border/40 p-6" data-testid="total-revenue-card">
-              <div className="flex items-center justify-between mb-4">
-                <DollarSign className="w-10 h-10 text-accent" />
+            {lowStockProducts.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 p-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <AlertTriangle className="w-6 h-6 text-amber-600" />
+                  <h3 className="text-xl font-heading font-bold text-amber-900">Low Stock Alert</h3>
+                </div>
+                <div className="space-y-2">
+                  {lowStockProducts.map(product => (
+                    <div key={product.product_id} className="flex items-center justify-between py-2 border-b border-amber-200 last:border-0">
+                      <div className="flex items-center space-x-3">
+                        <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover" />
+                        <div>
+                          <p className="font-medium text-amber-900">{product.name}</p>
+                          <p className="text-sm text-amber-700">Category: {product.category}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-amber-600">{product.stock}</p>
+                        <p className="text-xs text-amber-700">units left</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="text-3xl font-bold mb-2">₹{analytics.total_revenue.toFixed(2)}</p>
-              <p className="text-muted-foreground">Total Revenue</p>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white border border-border/40 p-6">
+                <h3 className="text-xl font-heading font-bold mb-6 flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <span>Sales Trend (Last 7 Days)</span>
+                </h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={salesData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="revenue" stroke="#0F4C75" strokeWidth={2} name="Revenue (₹)" />
+                    <Line type="monotone" dataKey="orders" stroke="#D4AF37" strokeWidth={2} name="Orders" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white border border-border/40 p-6">
+                <h3 className="text-xl font-heading font-bold mb-6">Revenue by Category</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categoryData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="category" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="revenue" fill="#0F4C75" name="Revenue (₹)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div className="bg-white border border-border/40 p-6" data-testid="total-products-card">
-              <div className="flex items-center justify-between mb-4">
-                <Package className="w-10 h-10 text-secondary" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white border border-border/40 p-6">
+                <h3 className="text-xl font-heading font-bold mb-6">Products by Category</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ category, count }) => `${category}: ${count}`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="count"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#0F4C75', '#D4AF37', '#800000', '#4A90E2'][index % 4]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              <p className="text-3xl font-bold mb-2">{analytics.total_products}</p>
-              <p className="text-muted-foreground">Total Products</p>
-            </div>
 
-            <div className="bg-white border border-border/40 p-6" data-testid="total-users-card">
-              <div className="flex items-center justify-between mb-4">
-                <Users className="w-10 h-10 text-primary" />
+              <div className="bg-white border border-border/40 p-6">
+                <h3 className="text-xl font-heading font-bold mb-6">Quick Stats</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-border">
+                    <span className="text-muted-foreground">Average Order Value</span>
+                    <span className="text-xl font-bold">₹{analytics.total_orders > 0 ? (analytics.total_revenue / analytics.total_orders).toFixed(2) : 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-border">
+                    <span className="text-muted-foreground">Low Stock Items</span>
+                    <span className="text-xl font-bold text-amber-600">{lowStockProducts.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-border">
+                    <span className="text-muted-foreground">Products per Category</span>
+                    <span className="text-xl font-bold">{analytics.total_products / categoryData.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center py-3">
+                    <span className="text-muted-foreground">Total Categories</span>
+                    <span className="text-xl font-bold">{categoryData.length}</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-3xl font-bold mb-2">{analytics.total_users}</p>
-              <p className="text-muted-foreground">Total Users</p>
             </div>
           </div>
         )}
