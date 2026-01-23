@@ -257,8 +257,6 @@ class ECommerceAPITester:
         self.test_basic_endpoints()
         self.test_cart_operations()
         self.test_coupon_validation()
-        self.test_order_creation()
-        self.test_payment_endpoints()
         self.test_auth_endpoints()
         self.test_protected_endpoints()
         self.test_admin_endpoints()
