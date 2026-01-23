@@ -1728,22 +1728,22 @@ async def upload_image(
     # Debug output
     print(f"[UPLOAD DEBUG] Auth header: {authorization}")
     print(f"[UPLOAD DEBUG] Cookie param: {session_token}")
-    print(f"[UPLOAD DEBUG] All cookies: {dict(request.cookies)}")
     
     # Manually check admin status if cookie is present
     if session_token:
         try:
-            session_doc = await db.sessions.find_one({"session_token": session_token}, {"_id": 0})
+            # Use user_sessions collection (not sessions!)
+            session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
             if session_doc:
                 user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
                 print(f"[UPLOAD DEBUG] User found: {user.get('email') if user else 'None'}, is_admin: {user.get('is_admin') if user else 'None'}")
                 if user and user.get("is_admin"):
-                    print("[UPLOAD DEBUG] Admin verified via manual check")
+                    print("[UPLOAD DEBUG] Admin verified!")
                 else:
-                    print("[UPLOAD DEBUG] User not admin or not found")
+                    print("[UPLOAD DEBUG] User not admin")
                     raise HTTPException(status_code=403, detail="Admin access required")
             else:
-                print("[UPLOAD DEBUG] Session not found")
+                print("[UPLOAD DEBUG] Session not found in user_sessions")
                 raise HTTPException(status_code=403, detail="Invalid session")
         except HTTPException:
             raise
