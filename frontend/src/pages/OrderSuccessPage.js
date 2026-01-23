@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
-import { CheckCircle, Package } from "lucide-react";
+import { CheckCircle, Package, MessageCircle } from "lucide-react";
+import { getOrderWhatsAppLink } from "@/components/WhatsAppButton";
 
 export default function OrderSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -94,6 +95,28 @@ export default function OrderSuccessPage() {
                 <p className="text-lg">
                   <span className="font-medium">Payment Status:</span> <span className="text-green-600" data-testid="payment-status">{order.payment_status}</span>
                 </p>
+              </div>
+            </div>
+
+            {/* WhatsApp Support Card */}
+            <div className="mb-8 bg-green-50 border border-green-200 p-4 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-500 p-2 rounded-full">
+                  <MessageCircle className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-green-800">Need help with your order?</p>
+                  <p className="text-sm text-green-600">Chat with us on WhatsApp for quick assistance</p>
+                </div>
+                <a
+                  href={getOrderWhatsAppLink(order.order_id, order.total_amount)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-all text-sm font-medium"
+                  data-testid="whatsapp-order-help"
+                >
+                  Chat Now
+                </a>
               </div>
             </div>
 
