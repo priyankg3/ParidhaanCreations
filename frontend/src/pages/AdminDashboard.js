@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [categoryData, setCategoryData] = useState([]);
   const [showProductForm, setShowProductForm] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
+  const [customerInsights, setCustomerInsights] = useState(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showBannerForm, setShowBannerForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
