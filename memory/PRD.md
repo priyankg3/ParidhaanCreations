@@ -20,6 +20,12 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - Admin link appears in navbar dropdown when logged in
 - Admin dashboard accessible at `/admin`
 
+## Social Links & Contact
+- **Email:** info@paridhaancreations.xyz
+- **Instagram:** https://www.instagram.com/paridhaancreations
+- **Facebook:** https://www.facebook.com/share/1HP4DzfcFi/
+- **WhatsApp:** https://wa.me/message/4TZ5RAVABY4HG1 (+91 9871819508)
+
 ## Features Implemented
 
 ### Core E-commerce
@@ -42,24 +48,24 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - [x] Categories management
 - [x] Orders management
 - [x] Support Tickets management
-- [x] Banners management
+- [x] **Banners management** - with types (promotional, header, footer, side) + category targeting
 - [x] Coupons management
 - [x] Stock Alerts
+
+### Banner System
+- **Promotional** - Homepage slider/grid
+- **Header** - Top of category pages
+- **Footer** - Bottom of category pages
+- **Side** - Sidebar on category pages
+- Category-specific targeting (handicrafts, pooja, perfumes, jewellery)
 
 ### Customer Features
 - [x] Google Social Login
 - [x] Wishlist
 - [x] Order tracking
-- [x] **Support Ticket System** - Create and track tickets
-- [x] **WhatsApp Support** - Floating chat button (+91 9871819508)
-- [x] **Multi-language** - English & Hindi
-
-### Coupons & Discounts
-- [x] SAVE10 (10% off)
-- [x] FLAT100 (₹100 off)
-- [x] SAVE20 (20% off)
-- [x] WELCOME10 (10% off first order)
-- [x] First-time buyer auto-detection
+- [x] Support Ticket System
+- [x] WhatsApp Support (+91 9871819508)
+- [x] Multi-language (English & Hindi)
 
 ### SEO
 - [x] robots.txt
@@ -67,47 +73,31 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - [x] Dynamic meta tags
 - [x] Sitemap generation
 
-## API Endpoints
-
-### Support Tickets
-- POST /api/support/tickets - Create ticket
-- GET /api/support/tickets - Get user's tickets
-- GET /api/support/tickets/{id} - Get ticket details
-- POST /api/support/tickets/{id}/reply - Reply to ticket
-- PUT /api/support/tickets/{id}/status - Update status (admin)
-- GET /api/admin/support/tickets - All tickets (admin)
-- GET /api/admin/support/stats - Ticket statistics (admin)
-
-### Stock Management
-- GET /api/admin/stock-alerts - Low stock products (admin)
-- PUT /api/admin/products/{id}/restock - Add stock (admin)
-
-### WhatsApp
-- GET /api/config/whatsapp - WhatsApp configuration
-
-## WhatsApp Integration
-- **Business Number:** +91 9871819508
-- Floating chat button on all pages (except admin)
-- Order help link on order success page
-- Support page WhatsApp option
-
-## Multi-language Support
-- **Languages:** English (en), Hindi (hi)
-- Language switcher in navbar
-- Persisted in localStorage
-- Translations for navigation, products, cart, checkout, support
-
 ## Completed in Latest Session (Jan 2026)
-1. Payment UI - UPI options (GPay, PhonePe, Paytm, BHIM)
-2. Advanced SEO - robots.txt, JSON-LD
-3. First-time buyer WELCOME10 discount
-4. Admin access locked to priyankg3@gmail.com
-5. **Customer Support Ticketing System**
-6. **WhatsApp Chat Integration** (+91 9871819508)
-7. **Multi-language Support** (English/Hindi)
-8. **Stock Replenishment Alerts** in admin
+1. **Footer Updated:**
+   - Instagram link: https://www.instagram.com/paridhaancreations
+   - Facebook link: https://www.facebook.com/share/1HP4DzfcFi/
+   - Email: info@paridhaancreations.xyz
+   - WhatsApp icon (replaced Twitter): https://wa.me/message/4TZ5RAVABY4HG1
+   - Removed phone number
+
+2. **Categories Fixed:**
+   - All 4 categories now showing in Shop by Category section
+
+3. **Banner System Enhanced:**
+   - Added banner types: promotional, header, footer, side
+   - Added category targeting for banners
+   - Product listing pages support header/side/footer banners
+   - Admin can create category-specific banners
+
+4. **Previous Features:**
+   - Customer Support/Ticketing System
+   - WhatsApp Chat Integration
+   - Multi-language Support (English/Hindi)
+   - Stock Replenishment Alerts
 
 ## Notes
 - All payments via Razorpay
 - Admin access email-locked to priyankg3@gmail.com
-- WhatsApp opens in new tab with pre-filled message
+- WhatsApp floating button on all pages
+- Banners can be managed via Admin Dashboard → Banners tab
