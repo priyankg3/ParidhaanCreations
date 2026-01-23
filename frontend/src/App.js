@@ -18,6 +18,9 @@ import TermsPage from "@/pages/TermsPage";
 import SupportPage from "@/pages/SupportPage";
 import AuthCallback from "@/components/AuthCallback";
 import ProtectedRoute from "@/components/ProtectedRoute";
+
+// Configure axios to always send credentials (cookies)
+axios.defaults.withCredentials = true;
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
