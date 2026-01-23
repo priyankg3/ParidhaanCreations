@@ -1313,31 +1313,12 @@ export default function AdminDashboard() {
 
         {activeTab === "banners" && (
           <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-heading font-bold">Banners Management</h2>
-              <button
-                onClick={() => setShowBannerForm(!showBannerForm)}
-                className="bg-primary text-primary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-primary/90 transition-all"
-                data-testid="add-banner-button"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Banner</span>
-              </button>
-            </div>
+            <h2 className="text-2xl font-heading font-bold mb-6">Advanced Banner Management</h2>
+            <BannerManagement />
+          </div>
+        )}
 
-            {showBannerForm && (
-              <div className="bg-white border border-border/40 p-6 mb-6">
-                {/* Banner Size Recommendations */}
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                    <Image className="w-4 h-4" />
-                    Recommended Banner Sizes
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {Object.entries(bannerSizeRecommendations).map(([type, info]) => (
-                      <div 
-                        key={type} 
-                        className={`p-3 rounded border ${bannerForm.banner_type === type ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-200'}`}
+        {activeTab === "coupons" && (
                       >
                         <p className="font-medium text-sm capitalize">{info.placement}</p>
                         <p className="text-xs text-blue-600 font-mono">{info.size} px</p>
