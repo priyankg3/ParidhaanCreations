@@ -58,10 +58,6 @@ export default function AdminDashboard() {
     active: true
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
-
   const fetchData = async () => {
     try {
       if (activeTab === "analytics") {
