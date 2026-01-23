@@ -795,14 +795,71 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Image URL *</label>
-                    <input
-                      type="url"
-                      required
-                      value={productForm.images[0]}
-                      onChange={(e) => setProductForm({...productForm, images: [e.target.value]})}
-                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                    />
+                    <label className="block text-sm font-medium mb-2">Product Images</label>
+                    
+                    {/* Image Upload Area */}
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 mb-4">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="product-images"
+                      />
+                      <label 
+                        htmlFor="product-images" 
+                        className="cursor-pointer flex flex-col items-center justify-center"
+                      >
+                        <Upload className={`w-10 h-10 mb-2 ${uploading ? 'animate-pulse text-primary' : 'text-muted-foreground'}`} />
+                        <span className="text-sm text-muted-foreground">
+                          {uploading ? 'Uploading...' : 'Click to upload or drag & drop'}
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP up to 5MB</span>
+                      </label>
+                    </div>
+
+                    {/* Image Previews */}
+                    {productForm.images.filter(url => url).length > 0 && (
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        {productForm.images.filter(url => url).map((url, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={url} 
+                              alt={`Product ${index + 1}`} 
+                              className="w-full h-24 object-cover rounded border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeProductImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Manual URL Input */}
+                    <div className="flex space-x-2">
+                      <input
+                        type="url"
+                        placeholder="Or paste image URL..."
+                        value={productForm.images[0] || ""}
+                        onChange={(e) => {
+                          const newImages = [...productForm.images];
+                          if (newImages.length === 0 || (newImages.length === 1 && newImages[0] === "")) {
+                            newImages[0] = e.target.value;
+                          } else if (!newImages.includes(e.target.value) && e.target.value) {
+                            newImages.push(e.target.value);
+                          }
+                          setProductForm({...productForm, images: newImages.filter(u => u)});
+                        }}
+                        className="flex-1 px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
