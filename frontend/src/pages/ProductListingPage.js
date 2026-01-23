@@ -85,6 +85,7 @@ export default function ProductListingPage() {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [fetchProducts]);
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export default function ProductListingPage() {
     } else {
       setCategoryBannersData({ header: null, side: null, footer: null });
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [searchParams, fetchCategoryBanners]);
 
   const filteredProducts = useMemo(() => {
