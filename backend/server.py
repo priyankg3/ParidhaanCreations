@@ -183,6 +183,8 @@ class Banner(BaseModel):
     active: bool = True
     banner_type: str = "promotional"  # "promotional", "header", "footer", "side"
     category: Optional[str] = None  # "handicrafts", "pooja", "perfumes", "jewellery" or None for all
+    start_date: Optional[datetime] = None  # Schedule start date
+    end_date: Optional[datetime] = None  # Schedule end date
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BannerCreate(BaseModel):
@@ -193,6 +195,8 @@ class BannerCreate(BaseModel):
     active: bool = True
     banner_type: str = "promotional"
     category: Optional[str] = None
+    start_date: Optional[str] = None  # ISO format string
+    end_date: Optional[str] = None  # ISO format string
 
 class Coupon(BaseModel):
     model_config = ConfigDict(extra="ignore")
