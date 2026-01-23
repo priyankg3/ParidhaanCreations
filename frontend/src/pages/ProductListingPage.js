@@ -84,6 +84,24 @@ export default function ProductListingPage() {
     }
   };
 
+  const fetchCategoryBanners = async (category) => {
+    try {
+      const [headerRes, sideRes, footerRes] = await Promise.all([
+        axios.get(`${API}/banners?banner_type=header&category=${category}`),
+        axios.get(`${API}/banners?banner_type=side&category=${category}`),
+        axios.get(`${API}/banners?banner_type=footer&category=${category}`)
+      ]);
+      
+      setCategoryBannersData({
+        header: headerRes.data[0] || null,
+        side: sideRes.data[0] || null,
+        footer: footerRes.data[0] || null
+      });
+    } catch (error) {
+      console.error("Error fetching category banners:", error);
+    }
+  };
+
   const filterAndSortProducts = () => {
     let filtered = [...products];
 
