@@ -439,7 +439,53 @@ export default function ProductListingPage() {
                 </div>
               )}
             </main>
+
+            {/* Side Banner */}
+            {sideBanner && (
+              <aside className="hidden xl:block w-64 flex-shrink-0">
+                <div className="sticky top-24">
+                  <a 
+                    href={sideBanner.link || "#"} 
+                    className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                    data-testid="side-banner"
+                  >
+                    <img 
+                      src={sideBanner.image} 
+                      alt={sideBanner.title} 
+                      className="w-full h-auto object-cover"
+                    />
+                    {sideBanner.title && (
+                      <div className="p-3 bg-primary text-primary-foreground text-center">
+                        <p className="font-medium text-sm">{sideBanner.title}</p>
+                      </div>
+                    )}
+                  </a>
+                </div>
+              </aside>
+            )}
           </div>
+
+          {/* Footer Banner */}
+          {footerBanner && (
+            <div className="mt-12">
+              <a 
+                href={footerBanner.link || "#"} 
+                className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                data-testid="footer-banner"
+              >
+                <img 
+                  src={footerBanner.image} 
+                  alt={footerBanner.title} 
+                  className="w-full h-48 md:h-64 object-cover"
+                />
+                {footerBanner.title && (
+                  <div className="p-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-center">
+                    <h3 className="font-heading font-bold text-xl">{footerBanner.title}</h3>
+                  </div>
+                )}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>
