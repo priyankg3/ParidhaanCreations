@@ -32,9 +32,25 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    checkAuth();
-    getCartCount();
-  }, [checkAuth, getCartCount]);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
+        setUser(response.data);
+      } catch (error) {
+        setUser(null);
+      }
+      
+      try {
+        const cartResponse = await axios.get(`${API}/cart`, { withCredentials: true });
+        const count = cartResponse.data.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        setCartCount(count);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   const handleLogout = async () => {
     try {
