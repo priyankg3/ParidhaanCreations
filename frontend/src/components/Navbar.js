@@ -47,22 +47,32 @@ export default function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-secondary/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center" data-testid="logo-link">
             <img 
               src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
               alt="Paridhaan Creations" 
-              className="h-16 w-auto"
+              className="h-20 w-auto"
             />
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-base font-medium hover:text-primary transition-colors duration-300" data-testid="nav-home">Home</Link>
-            <Link to="/products" className="text-base font-medium hover:text-primary transition-colors duration-300" data-testid="nav-products">Products</Link>
-            <Link to="/products?category=handicrafts" className="text-base font-medium hover:text-primary transition-colors duration-300">Handicrafts</Link>
-            <Link to="/products?category=pooja" className="text-base font-medium hover:text-primary transition-colors duration-300">Pooja Items</Link>
-            <Link to="/products?category=perfumes" className="text-base font-medium hover:text-primary transition-colors duration-300">Perfumes</Link>
-            <Link to="/products?category=jewellery" className="text-base font-medium hover:text-primary transition-colors duration-300">Jewellery</Link>
+            
+            <div className="relative group">
+              <Link to="/products" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-products">
+                Products
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+              <div className="absolute left-0 mt-2 w-48 bg-white border border-border shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                <Link to="/products?category=handicrafts" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-handicrafts">Handicrafts</Link>
+                <Link to="/products?category=pooja" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-pooja">Pooja Items</Link>
+                <Link to="/products?category=perfumes" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-perfumes">Perfumes</Link>
+                <Link to="/products?category=jewellery" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-jewellery">Jewellery</Link>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center space-x-6">
