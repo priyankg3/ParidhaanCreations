@@ -584,6 +584,43 @@ async def validate_coupon(coupon_data: CouponValidate):
         "final_amount": max(0, coupon_data.total_amount - discount)
     }
 
+@api_router.get("/user/first-time-buyer")
+async def check_first_time_buyer(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Check if the current user is a first-time buyer (no previous orders)"""
+    user = await get_current_user(authorization, session_token)
+    
+    if not user:
+        # For guests, always show the welcome offer
+        return {
+            "is_first_time": True,
+            "welcome_coupon": "WELCOME10",
+            "discount_percentage": 10,
+            "message": "Welcome! Use code WELCOME10 for 10% off your first order!"
+        }
+    
+    # Check if user has any completed orders
+    order_count = await db.orders.count_documents({
+        "user_id": user.user_id,
+        "payment_status": "paid"
+    })
+    
+    is_first_time = order_count == 0
+    
+    if is_first_time:
+        return {
+            "is_first_time": True,
+            "welcome_coupon": "WELCOME10",
+            "discount_percentage": 10,
+            "message": "Welcome! Use code WELCOME10 for 10% off your first order!"
+        }
+    else:
+        return {
+            "is_first_time": False,
+            "welcome_coupon": None,
+            "discount_percentage": 0,
+            "message": None
+        }
+
 @api_router.post("/coupons")
 async def create_coupon(coupon: CouponCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
