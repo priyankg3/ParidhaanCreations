@@ -177,7 +177,7 @@ class Banner(BaseModel):
     model_config = ConfigDict(extra="ignore")
     banner_id: str = Field(default_factory=lambda: f"banner_{uuid.uuid4().hex[:12]}")
     title: str
-    image: str
+    image: str = ""  # Will be set from uploaded file
     link: Optional[str] = None
     position: int
     active: bool = True
@@ -189,9 +189,9 @@ class Banner(BaseModel):
 
 class BannerCreate(BaseModel):
     title: str
-    image: str
+    image: str = ""  # Image path from upload
     link: Optional[str] = None
-    position: int
+    position: int = 1
     active: bool = True
     banner_type: str = "promotional"
     category: Optional[str] = None
