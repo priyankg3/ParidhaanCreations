@@ -1003,7 +1003,10 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-heading font-bold">Coupons Management</h2>
               <button
-                onClick={() => setShowCouponForm(!showCouponForm)}
+                onClick={() => {
+                  resetCouponForm();
+                  setShowCouponForm(!showCouponForm);
+                }}
                 className="bg-primary text-primary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-primary/90 transition-all"
                 data-testid="add-coupon-button"
               >
@@ -1014,6 +1017,7 @@ export default function AdminDashboard() {
 
             {showCouponForm && (
               <div className="bg-white border border-border/40 p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-4">{editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}</h3>
                 <form onSubmit={handleCreateCoupon} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Coupon Code *</label>
@@ -1024,29 +1028,37 @@ export default function AdminDashboard() {
                       onChange={(e) => setCouponForm({...couponForm, code: e.target.value.toUpperCase()})}
                       className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary uppercase"
                       placeholder="SAVE10"
+                      data-testid="coupon-code-input"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Discount Percentage</label>
+                      <label className="block text-sm font-medium mb-2">Discount Percentage (%)</label>
                       <input
                         type="number"
                         step="0.01"
+                        min="0"
+                        max="100"
                         value={couponForm.discount_percentage}
                         onChange={(e) => setCouponForm({...couponForm, discount_percentage: e.target.value, discount_amount: ""})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        placeholder="e.g., 10"
+                        data-testid="coupon-percentage-input"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">OR Discount Amount</label>
+                      <label className="block text-sm font-medium mb-2">OR Flat Discount (₹)</label>
                       <input
                         type="number"
                         step="0.01"
+                        min="0"
                         value={couponForm.discount_amount}
                         onChange={(e) => setCouponForm({...couponForm, discount_amount: e.target.value, discount_percentage: ""})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        placeholder="e.g., 100"
+                        data-testid="coupon-amount-input"
                       />
                     </div>
                   </div>
@@ -1060,6 +1072,7 @@ export default function AdminDashboard() {
                         value={couponForm.valid_from}
                         onChange={(e) => setCouponForm({...couponForm, valid_from: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="coupon-valid-from"
                       />
                     </div>
 
@@ -1071,16 +1084,29 @@ export default function AdminDashboard() {
                         value={couponForm.valid_to}
                         onChange={(e) => setCouponForm({...couponForm, valid_to: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        data-testid="coupon-valid-to"
                       />
                     </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={couponForm.active}
+                      onChange={(e) => setCouponForm({...couponForm, active: e.target.checked})}
+                      className="w-4 h-4"
+                      data-testid="coupon-active-checkbox"
+                    />
+                    <label className="text-sm font-medium">Active</label>
                   </div>
 
                   <div className="flex space-x-4">
                     <button
                       type="submit"
                       className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90 transition-all"
+                      data-testid="coupon-submit-btn"
                     >
-                      Create Coupon
+                      {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                     </button>
                     <button
                       type="button"
@@ -1094,6 +1120,120 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* Coupons List */}
+            {coupons.length === 0 ? (
+              <div className="bg-white border border-border/40 p-12 text-center">
+                <Tag className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-heading font-semibold mb-2">No Coupons Yet</h3>
+                <p className="text-muted-foreground mb-6">Create your first discount coupon to attract customers</p>
+                <button
+                  onClick={() => setShowCouponForm(true)}
+                  className="bg-primary text-primary-foreground px-6 py-3 hover:bg-primary/90 transition-all"
+                >
+                  Create First Coupon
+                </button>
+              </div>
+            ) : (
+              <div className="bg-white border border-border/40 overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-background-paper">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-medium">Code</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium">Discount</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium">Valid Period</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium">Status</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {coupons.map((coupon) => {
+                      const now = new Date();
+                      const validFrom = new Date(coupon.valid_from);
+                      const validTo = new Date(coupon.valid_to);
+                      const isExpired = now > validTo;
+                      const isUpcoming = now < validFrom;
+                      const isValid = !isExpired && !isUpcoming && coupon.active;
+                      
+                      return (
+                        <tr key={coupon.coupon_id} className="border-t border-border">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                              <Tag className="w-4 h-4 text-primary" />
+                              <span className="font-mono font-bold text-lg">{coupon.code}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-1">
+                              {coupon.discount_percentage ? (
+                                <>
+                                  <Percent className="w-4 h-4 text-accent" />
+                                  <span className="font-semibold">{coupon.discount_percentage}% OFF</span>
+                                </>
+                              ) : (
+                                <>
+                                  <DollarSign className="w-4 h-4 text-accent" />
+                                  <span className="font-semibold">₹{coupon.discount_amount} OFF</span>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col text-sm">
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="w-3 h-3 text-muted-foreground" />
+                                <span>{new Date(coupon.valid_from).toLocaleDateString()}</span>
+                              </div>
+                              <span className="text-muted-foreground">to</span>
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="w-3 h-3 text-muted-foreground" />
+                                <span>{new Date(coupon.valid_to).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => handleToggleCouponStatus(coupon)}
+                              className={`text-sm px-3 py-1 rounded-full font-medium ${
+                                isExpired 
+                                  ? 'bg-red-100 text-red-700 cursor-not-allowed' 
+                                  : isUpcoming
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : isValid
+                                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                              disabled={isExpired}
+                              data-testid={`coupon-status-${coupon.coupon_id}`}
+                            >
+                              {isExpired ? 'Expired' : isUpcoming ? 'Upcoming' : coupon.active ? 'Active' : 'Inactive'}
+                            </button>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-3">
+                              <button
+                                onClick={() => handleEditCoupon(coupon)}
+                                className="text-primary hover:text-primary/80 transition-colors"
+                                data-testid={`edit-coupon-${coupon.coupon_id}`}
+                              >
+                                <Edit className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCoupon(coupon.coupon_id)}
+                                className="text-accent hover:text-accent/80 transition-colors"
+                                data-testid={`delete-coupon-${coupon.coupon_id}`}
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
