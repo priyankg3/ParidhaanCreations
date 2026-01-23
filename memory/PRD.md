@@ -15,6 +15,10 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - **Payments:** Razorpay (UPI, Cards, Net Banking)
 - **Auth:** Google OAuth (via Emergent)
 
+## Domain & Deployment
+- **Domain:** paridhaancreations.xyz (ready to connect)
+- **Deploy:** Click Deploy in Emergent → Link Domain → Remove A records → Follow Entri setup
+
 ## Admin Access
 - **Admin Email:** priyankg3@gmail.com (ONLY this email has admin access)
 - Admin link appears in navbar dropdown when logged in
@@ -30,6 +34,7 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 
 ### Core E-commerce
 - [x] Product & Category Management
+- [x] **Product Image Upload** - Direct file upload in Admin Dashboard
 - [x] Cart & Checkout Flow with Razorpay
 - [x] Product reviews and ratings
 - [x] Product badges (New Arrival)
@@ -44,27 +49,28 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 ### Admin Dashboard (/admin)
 - [x] Analytics with charts
 - [x] Customer Insights
-- [x] Products management
+- [x] Products management with **image upload**
 - [x] Categories management
 - [x] Orders management
 - [x] Support Tickets management
-- [x] **Banners management** - with types (promotional, header, footer, side) + category targeting
+- [x] **Banners management** - header/footer/side + category targeting
 - [x] Coupons management
 - [x] Stock Alerts
 
-### Banner System
+### Banner System (Fully Implemented)
 - **Promotional** - Homepage slider/grid
 - **Header** - Top of category pages
 - **Footer** - Bottom of category pages
 - **Side** - Sidebar on category pages
 - Category-specific targeting (handicrafts, pooja, perfumes, jewellery)
+- **12 sample banners created** for all categories
 
 ### Customer Features
 - [x] Google Social Login
 - [x] Wishlist
 - [x] Order tracking
 - [x] Support Ticket System
-- [x] WhatsApp Support (+91 9871819508)
+- [x] WhatsApp Support
 - [x] Multi-language (English & Hindi)
 
 ### SEO
@@ -73,31 +79,36 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - [x] Dynamic meta tags
 - [x] Sitemap generation
 
+## API Endpoints (New)
+
+### File Upload
+- POST /api/upload/image - Upload single image (admin)
+- POST /api/upload/images - Upload multiple images (admin)
+- GET /api/uploads/{filename} - Get uploaded file
+- DELETE /api/upload/{filename} - Delete file (admin)
+
+### Banners
+- GET /api/banners?banner_type=header&category=handicrafts
+- POST /api/banners - Create banner with type/category
+- DELETE /api/banners/{id}
+
 ## Completed in Latest Session (Jan 2026)
-1. **Footer Updated:**
-   - Instagram link: https://www.instagram.com/paridhaancreations
-   - Facebook link: https://www.facebook.com/share/1HP4DzfcFi/
-   - Email: info@paridhaancreations.xyz
-   - WhatsApp icon (replaced Twitter): https://wa.me/message/4TZ5RAVABY4HG1
-   - Removed phone number
+1. **Category Banners Created:** 12 banners (header/side/footer for all 4 categories)
+2. **Product Image Upload:** Direct file upload in Admin Dashboard
+3. **Footer Social Links:** Instagram, Facebook, WhatsApp (no phone number)
+4. **All 4 categories displaying** on homepage
 
-2. **Categories Fixed:**
-   - All 4 categories now showing in Shop by Category section
-
-3. **Banner System Enhanced:**
-   - Added banner types: promotional, header, footer, side
-   - Added category targeting for banners
-   - Product listing pages support header/side/footer banners
-   - Admin can create category-specific banners
-
-4. **Previous Features:**
-   - Customer Support/Ticketing System
-   - WhatsApp Chat Integration
-   - Multi-language Support (English/Hindi)
-   - Stock Replenishment Alerts
+## Deployment Instructions
+1. Click "Preview" to test your application
+2. Click "Deploy" → "Deploy Now"
+3. Wait 10-15 minutes for deployment
+4. Click "Link Domain" → Enter "paridhaancreations.xyz"
+5. Click "Entri" and follow instructions
+6. **Important:** Remove all A records from your domain DNS settings
+7. Wait 5-15 minutes for DNS propagation
 
 ## Notes
 - All payments via Razorpay
 - Admin access email-locked to priyankg3@gmail.com
-- WhatsApp floating button on all pages
-- Banners can be managed via Admin Dashboard → Banners tab
+- Deployment costs 50 credits/month
+- Images stored in /app/backend/uploads/
