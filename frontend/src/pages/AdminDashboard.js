@@ -52,6 +52,16 @@ export default function AdminDashboard() {
     banner_type: "promotional",
     category: ""
   });
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const bannerFileInputRef = useRef(null);
+
+  // Banner size recommendations
+  const bannerSizeRecommendations = {
+    promotional: { size: "1920 x 600", priority: "High", placement: "Home Header" },
+    header: { size: "1200 x 250", priority: "Medium", placement: "Category Top" },
+    side: { size: "300 x 600", priority: "Low", placement: "Sidebar" },
+    footer: { size: "1200 x 100", priority: "Low", placement: "Footer Strip" }
+  };
 
   const [couponForm, setCouponForm] = useState({
     code: "",
@@ -227,8 +237,45 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleBannerImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Invalid file type. Please use JPG, PNG, WebP, or GIF");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large. Maximum size is 5MB");
+      return;
+    }
+
+    setBannerUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/upload/image`, formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setBannerForm({ ...bannerForm, image: response.data.url });
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setBannerUploading(false);
+    }
+  };
+
   const handleCreateBanner = async (e) => {
     e.preventDefault();
+    if (!bannerForm.image) {
+      toast.error("Please provide an image URL or upload an image");
+      return;
+    }
     try {
       const bannerData = {
         ...bannerForm,
