@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -27,6 +27,7 @@ export default function Footer() {
               <li><Link to="/products" className="text-sm hover:text-secondary transition-colors">Products</Link></li>
               <li><Link to="/cart" className="text-sm hover:text-secondary transition-colors">Cart</Link></li>
               <li><Link to="/my-orders" className="text-sm hover:text-secondary transition-colors">My Orders</Link></li>
+              <li><Link to="/support" className="text-sm hover:text-secondary transition-colors">Support</Link></li>
               <li><Link to="/terms" className="text-sm hover:text-secondary transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
@@ -49,18 +50,37 @@ export default function Footer() {
                 <span>India</span>
               </li>
               <li className="flex items-center space-x-2 text-sm">
-                <Phone className="w-4 h-4 flex-shrink-0" />
-                <span>+91 XXXXXXXXXX</span>
-              </li>
-              <li className="flex items-center space-x-2 text-sm">
                 <Mail className="w-4 h-4 flex-shrink-0" />
-                <span>info@paridhaancreations.com</span>
+                <a href="mailto:info@paridhaancreations.xyz" className="hover:text-secondary transition-colors">
+                  info@paridhaancreations.xyz
+                </a>
               </li>
             </ul>
             <div className="flex space-x-4 mt-6">
-              <Facebook className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
-              <Instagram className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
-              <Twitter className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
+              <a 
+                href="https://www.facebook.com/share/1HP4DzfcFi/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
+              </a>
+              <a 
+                href="https://www.instagram.com/paridhaancreations?igsh=eHFpbmZxMmUzYTIx" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
+              </a>
+              <a 
+                href="https://wa.me/message/4TZ5RAVABY4HG1" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle className="w-5 h-5 hover:text-secondary cursor-pointer transition-colors" />
+              </a>
             </div>
           </div>
         </div>
