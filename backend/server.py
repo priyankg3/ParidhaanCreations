@@ -648,72 +648,176 @@ async def get_order(order_id: str, authorization: Optional[str] = Header(None), 
     return order
 
 @api_router.get("/banners")
-async def get_banners(banner_type: Optional[str] = None, category: Optional[str] = None, include_scheduled: bool = False):
+async def get_banners(
+    placement: Optional[str] = None, 
+    category: Optional[str] = None, 
+    device: Optional[str] = None,
+    user_type: Optional[str] = None  # new or returning
+):
+    """Get active banners for public display with targeting"""
     now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
     
-    # Base query - active banners
-    query = {"active": True}
+    # Base query - only active status
+    query = {"status": "active"}
     
-    # For public display (not admin), filter by schedule
-    if not include_scheduled:
-        # Banner is valid if:
-        # 1. No schedule set (both dates are None) OR
-        # 2. Current time is within the scheduled range
-        query["$or"] = [
+    # Schedule filter - check if banner is within valid date range
+    schedule_filter = {
+        "$or": [
             {"start_date": None, "end_date": None},
             {"start_date": {"$exists": False}},
             {
                 "$and": [
-                    {"$or": [{"start_date": None}, {"start_date": {"$lte": now.isoformat()}}]},
-                    {"$or": [{"end_date": None}, {"end_date": {"$gte": now.isoformat()}}]}
+                    {"$or": [{"start_date": None}, {"start_date": {"$lte": now_iso}}]},
+                    {"$or": [{"end_date": None}, {"end_date": {"$gte": now_iso}}]}
                 ]
             }
         ]
+    }
     
-    if banner_type:
-        query["banner_type"] = banner_type
+    # Device targeting
+    device_filter = {"$or": [{"target_device": "all"}, {"target_device": {"$exists": False}}]}
+    if device:
+        device_filter["$or"].append({"target_device": device})
+    
+    # User type targeting
+    audience_filter = {"$or": [{"target_audience": "all"}, {"target_audience": {"$exists": False}}]}
+    if user_type:
+        audience_filter["$or"].append({"target_audience": f"{user_type}_users"})
+    
+    # Placement filter
+    if placement:
+        query["placement"] = placement
+    
+    # Category filter for category-specific placements
     if category:
-        if "$or" in query:
-            # Need to combine with existing $or using $and
-            existing_or = query.pop("$or")
-            query["$and"] = [
-                {"$or": existing_or},
-                {"$or": [{"category": category}, {"category": None}, {"category": {"$exists": False}}]}
-            ]
-        else:
-            query["$or"] = [{"category": category}, {"category": None}, {"category": {"$exists": False}}]
+        query["$or"] = [{"category": category}, {"category": None}, {"category": {"$exists": False}}]
     
-    banners = await db.banners.find(query, {"_id": 0}).sort("position", 1).to_list(100)
+    # Combine all filters
+    final_query = {
+        "$and": [query, schedule_filter, device_filter, audience_filter]
+    }
+    
+    banners = await db.banners.find(final_query, {"_id": 0}).sort("position", 1).to_list(100)
+    
+    # For backward compatibility, add 'image' field from 'image_desktop'
+    for banner in banners:
+        if not banner.get('image') and banner.get('image_desktop'):
+            banner['image'] = banner['image_desktop']
+    
     return banners
 
 @api_router.get("/banners/all")
 async def get_all_banners(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
-    """Get all banners including scheduled ones (admin only)"""
+    """Get all banners including drafts (admin only)"""
     await require_admin(authorization, session_token)
-    banners = await db.banners.find({}, {"_id": 0}).sort("position", 1).to_list(100)
+    banners = await db.banners.find({}, {"_id": 0}).sort([("placement", 1), ("position", 1)]).to_list(500)
     return banners
+
+@api_router.get("/banners/stats")
+async def get_banner_stats(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get banner analytics summary (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    pipeline = [
+        {"$group": {
+            "_id": "$placement",
+            "total": {"$sum": 1},
+            "active": {"$sum": {"$cond": [{"$eq": ["$status", "active"]}, 1, 0]}},
+            "total_impressions": {"$sum": {"$ifNull": ["$impressions", 0]}},
+            "total_clicks": {"$sum": {"$ifNull": ["$clicks", 0]}}
+        }}
+    ]
+    
+    stats = await db.banners.aggregate(pipeline).to_list(20)
+    
+    # Overall stats
+    total_banners = await db.banners.count_documents({})
+    active_banners = await db.banners.count_documents({"status": "active"})
+    
+    return {
+        "total_banners": total_banners,
+        "active_banners": active_banners,
+        "by_placement": {s["_id"]: s for s in stats if s["_id"]}
+    }
 
 @api_router.post("/banners")
 async def create_banner(banner: BannerCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
     
-    # Parse dates if provided
     banner_data = banner.model_dump()
+    
+    # Parse dates if provided
     if banner_data.get("start_date"):
         banner_data["start_date"] = datetime.fromisoformat(banner_data["start_date"].replace('Z', '+00:00'))
     if banner_data.get("end_date"):
         banner_data["end_date"] = datetime.fromisoformat(banner_data["end_date"].replace('Z', '+00:00'))
     
+    # Set status based on schedule
+    if banner_data.get("start_date") and banner_data["start_date"] > datetime.now(timezone.utc):
+        banner_data["status"] = "scheduled"
+    
     banner_obj = Banner(**banner_data)
     doc = banner_obj.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
+    doc["updated_at"] = doc["updated_at"].isoformat()
     if doc.get("start_date"):
         doc["start_date"] = doc["start_date"].isoformat()
     if doc.get("end_date"):
         doc["end_date"] = doc["end_date"].isoformat()
     
     await db.banners.insert_one(doc)
-    return banner_obj
+    return {"message": "Banner created successfully", "banner_id": banner_obj.banner_id}
+
+@api_router.put("/banners/{banner_id}")
+async def update_banner(banner_id: str, banner: BannerUpdate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Update an existing banner"""
+    await require_admin(authorization, session_token)
+    
+    existing = await db.banners.find_one({"banner_id": banner_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    update_data = {k: v for k, v in banner.model_dump().items() if v is not None}
+    
+    # Parse dates if provided
+    if update_data.get("start_date"):
+        update_data["start_date"] = datetime.fromisoformat(update_data["start_date"].replace('Z', '+00:00')).isoformat()
+    if update_data.get("end_date"):
+        update_data["end_date"] = datetime.fromisoformat(update_data["end_date"].replace('Z', '+00:00')).isoformat()
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.banners.update_one({"banner_id": banner_id}, {"$set": update_data})
+    return {"message": "Banner updated successfully"}
+
+@api_router.patch("/banners/{banner_id}/status")
+async def update_banner_status(banner_id: str, status: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Quick status update for banner"""
+    await require_admin(authorization, session_token)
+    
+    if status not in ["draft", "active", "paused", "scheduled", "expired"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    result = await db.banners.update_one(
+        {"banner_id": banner_id}, 
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    
+    return {"message": f"Banner status updated to {status}"}
+
+@api_router.post("/banners/{banner_id}/track")
+async def track_banner_interaction(banner_id: str, interaction_type: str = "impression"):
+    """Track banner impressions and clicks"""
+    if interaction_type not in ["impression", "click"]:
+        raise HTTPException(status_code=400, detail="Invalid interaction type")
+    
+    field = "impressions" if interaction_type == "impression" else "clicks"
+    await db.banners.update_one({"banner_id": banner_id}, {"$inc": {field: 1}})
+    
+    return {"success": True}
 
 @api_router.delete("/banners/{banner_id}")
 async def delete_banner(banner_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
@@ -722,6 +826,19 @@ async def delete_banner(banner_id: str, authorization: Optional[str] = Header(No
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Banner not found")
     return {"message": "Banner deleted successfully"}
+
+@api_router.post("/banners/reorder")
+async def reorder_banners(banner_orders: List[dict], authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Reorder banners by updating positions"""
+    await require_admin(authorization, session_token)
+    
+    for item in banner_orders:
+        await db.banners.update_one(
+            {"banner_id": item["banner_id"]},
+            {"$set": {"position": item["position"]}}
+        )
+    
+    return {"message": "Banners reordered successfully"}
 
 @api_router.post("/coupons/validate")
 async def validate_coupon(coupon_data: CouponValidate):
