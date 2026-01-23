@@ -1359,38 +1359,54 @@ export default function AdminDashboard() {
                     />
                   </div>
 
-                  {/* Banner Type Selection - moved up */}
+                  {/* Banner Type Selection */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Banner Type *</label>
                       <select
                         value={bannerForm.banner_type}
-                        onChange={(e) => setBannerForm({...bannerForm, banner_type: e.target.value})}
+                        onChange={(e) => {
+                          const newType = e.target.value;
+                          setBannerForm(prev => ({
+                            ...prev, 
+                            banner_type: newType,
+                            // Clear category if hero banner (doesn't need category)
+                            category: newType === 'hero' ? '' : prev.category
+                          }));
+                        }}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                         data-testid="banner-type-select"
                       >
-                        <option value="promotional">Promotional (Home Header - 1920x600)</option>
-                        <option value="header">Category Header (1200x250)</option>
-                        <option value="footer">Footer Strip (1200x100)</option>
-                        <option value="side">Sidebar (300x600)</option>
+                        <option value="hero">🏠 Homepage Hero Banner (1920x600)</option>
+                        <option value="header">📑 Category Header (1200x250)</option>
+                        <option value="side">📐 Category Sidebar (300x600)</option>
+                        <option value="footer">📋 Category Footer (1200x100)</option>
                       </select>
+                      {bannerForm.banner_type === 'hero' && (
+                        <p className="text-xs text-green-600 mt-1">✓ Hero banners display on the homepage slider - no category needed</p>
+                      )}
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Category (Optional)</label>
-                      <select
-                        value={bannerForm.category}
-                        onChange={(e) => setBannerForm({...bannerForm, category: e.target.value})}
-                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                        data-testid="banner-category-select"
-                      >
-                        <option value="">All Categories</option>
-                        <option value="handicrafts">Handicrafts</option>
-                        <option value="pooja">Pooja Articles</option>
-                        <option value="perfumes">Perfumes</option>
-                        <option value="jewellery">Jewellery</option>
-                      </select>
-                    </div>
+                    {/* Only show category for non-hero banners */}
+                    {bannerForm.banner_type !== 'hero' && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Category *</label>
+                        <select
+                          value={bannerForm.category}
+                          onChange={(e) => setBannerForm(prev => ({...prev, category: e.target.value}))}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                          data-testid="banner-category-select"
+                          required
+                        >
+                          <option value="">Select Category</option>
+                          <option value="handicrafts">Handicrafts</option>
+                          <option value="pooja">Pooja Articles</option>
+                          <option value="perfumes">Perfumes</option>
+                          <option value="jewellery">Jewellery</option>
+                        </select>
+                        <p className="text-xs text-muted-foreground mt-1">Banner will appear on this category page</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Image Upload Section */}
