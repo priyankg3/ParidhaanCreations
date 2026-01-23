@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "@/App";
-import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle } from "lucide-react";
+import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle, Tag, Calendar, Percent } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [banners, setBanners] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [salesData, setSalesData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
@@ -21,6 +22,7 @@ export default function AdminDashboard() {
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showBannerForm, setShowBannerForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState(null);
   
   const [productForm, setProductForm] = useState({
     name: "",
