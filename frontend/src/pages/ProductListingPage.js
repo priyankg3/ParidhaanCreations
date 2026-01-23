@@ -5,6 +5,7 @@ import { API } from "@/App";
 import { Search, SlidersHorizontal, Heart, X } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import ProductBadge from "@/components/ProductBadge";
 
 const categoryBanners = {
   handicrafts: {
