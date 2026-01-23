@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Heart, User, Menu, X, Search, Headphones } from "lucide-react";
 import { API } from "@/App";
@@ -12,21 +12,16 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  useEffect(() => {
-    checkAuth();
-    getCartCount();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
       setUser(response.data);
     } catch (error) {
       setUser(null);
     }
-  };
+  }, []);
 
-  const getCartCount = async () => {
+  const getCartCount = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/cart`, { withCredentials: true });
       const count = response.data.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -34,7 +29,12 @@ export default function Navbar() {
     } catch (error) {
       console.error("Error fetching cart:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+    getCartCount();
+  }, [checkAuth, getCartCount]);
 
   const handleLogout = async () => {
     try {
