@@ -14,6 +14,7 @@ import WishlistPage from "@/pages/WishlistPage";
 import MyOrdersPage from "@/pages/MyOrdersPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import LoginPage from "@/pages/LoginPage";
+import TermsPage from "@/pages/TermsPage";
 import AuthCallback from "@/components/AuthCallback";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
