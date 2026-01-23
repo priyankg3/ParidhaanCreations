@@ -50,24 +50,6 @@ export default function ProductListingPage() {
 
   const categories = ["handicrafts", "pooja", "perfumes", "jewellery"];
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    const categoryParam = searchParams.get("category");
-    if (categoryParam) {
-      setSelectedCategory(categoryParam);
-      fetchCategoryBanners(categoryParam);
-    } else {
-      setCategoryBannersData({ header: null, side: null, footer: null });
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    filterAndSortProducts();
-  }, [products, searchTerm, selectedCategory, priceRange, sortBy, filters]);
-
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/products`);
@@ -102,7 +84,21 @@ export default function ProductListingPage() {
     }
   };
 
-  const filterAndSortProducts = () => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+      fetchCategoryBanners(categoryParam);
+    } else {
+      setCategoryBannersData({ header: null, side: null, footer: null });
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     let filtered = [...products];
 
     if (searchTerm) {
@@ -126,17 +122,25 @@ export default function ProductListingPage() {
       filtered = filtered.filter(p => p.featured);
     }
 
-    filtered.sort((a, b) => {
-      if (sortBy === "price-low") return a.price - b.price;
-      if (sortBy === "price-high") return b.price - a.price;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      if (sortBy === "newest") return new Date(b.created_at) - new Date(a.created_at);
-      if (sortBy === "popular") return (b.stock < a.stock) ? 1 : -1;
-      return 0;
-    });
+    switch (sortBy) {
+      case "price-low":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-high":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "newest":
+        filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case "popular":
+        filtered.sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0));
+        break;
+      default:
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
 
     setFilteredProducts(filtered);
-  };
+  }, [products, searchTerm, selectedCategory, priceRange, sortBy, filters]);
 
   const addToCart = async (productId) => {
     try {
