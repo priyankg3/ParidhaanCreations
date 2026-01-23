@@ -1222,6 +1222,196 @@ async def get_customer_insights(authorization: Optional[str] = Header(None), ses
         "vip_customers": vip_customers
     }
 
+# ============ SUPPORT TICKET ENDPOINTS ============
+
+@api_router.post("/support/tickets")
+async def create_ticket(ticket_data: TicketCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Create a new support ticket"""
+    user = await get_current_user(authorization, session_token)
+    
+    ticket = SupportTicket(
+        user_id=user.user_id if user else None,
+        guest_email=ticket_data.guest_email if not user else None,
+        guest_name=ticket_data.guest_name if not user else None,
+        subject=ticket_data.subject,
+        category=ticket_data.category,
+        order_id=ticket_data.order_id,
+        messages=[TicketMessage(sender="customer", message=ticket_data.message)]
+    )
+    
+    ticket_doc = ticket.model_dump()
+    ticket_doc["created_at"] = ticket_doc["created_at"].isoformat()
+    ticket_doc["updated_at"] = ticket_doc["updated_at"].isoformat()
+    ticket_doc["messages"] = [{"sender": m["sender"], "message": m["message"], "timestamp": m["timestamp"].isoformat()} for m in ticket_doc["messages"]]
+    
+    await db.support_tickets.insert_one(ticket_doc)
+    return {"ticket_id": ticket.ticket_id, "message": "Ticket created successfully"}
+
+@api_router.get("/support/tickets")
+async def get_my_tickets(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get tickets for current user"""
+    user = await get_current_user(authorization, session_token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    tickets = await db.support_tickets.find({"user_id": user.user_id}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return tickets
+
+@api_router.get("/support/tickets/{ticket_id}")
+async def get_ticket(ticket_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get a specific ticket"""
+    user = await get_current_user(authorization, session_token)
+    
+    ticket = await db.support_tickets.find_one({"ticket_id": ticket_id}, {"_id": 0})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Check access - user can only see their own tickets, admin can see all
+    if user:
+        if not user.is_admin and ticket.get("user_id") != user.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+    
+    return ticket
+
+@api_router.post("/support/tickets/{ticket_id}/reply")
+async def reply_to_ticket(ticket_id: str, response: TicketResponse, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Add a reply to a ticket"""
+    user = await get_current_user(authorization, session_token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    ticket = await db.support_tickets.find_one({"ticket_id": ticket_id})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    # Determine sender type
+    sender = "admin" if user.is_admin else "customer"
+    
+    # Check access for non-admin
+    if not user.is_admin and ticket.get("user_id") != user.user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    new_message = {
+        "sender": sender,
+        "message": response.message,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Update status if admin replies
+    new_status = "in_progress" if sender == "admin" and ticket.get("status") == "open" else ticket.get("status")
+    
+    await db.support_tickets.update_one(
+        {"ticket_id": ticket_id},
+        {
+            "$push": {"messages": new_message},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat(), "status": new_status}
+        }
+    )
+    
+    return {"message": "Reply added successfully"}
+
+@api_router.put("/support/tickets/{ticket_id}/status")
+async def update_ticket_status(ticket_id: str, status: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Update ticket status (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    if status not in ["open", "in_progress", "resolved", "closed"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    
+    result = await db.support_tickets.update_one(
+        {"ticket_id": ticket_id},
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    
+    return {"message": f"Ticket status updated to {status}"}
+
+@api_router.get("/admin/support/tickets")
+async def get_all_tickets(status: Optional[str] = None, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get all support tickets (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    query = {}
+    if status:
+        query["status"] = status
+    
+    tickets = await db.support_tickets.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return tickets
+
+@api_router.get("/admin/support/stats")
+async def get_support_stats(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get support ticket statistics (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    total = await db.support_tickets.count_documents({})
+    open_tickets = await db.support_tickets.count_documents({"status": "open"})
+    in_progress = await db.support_tickets.count_documents({"status": "in_progress"})
+    resolved = await db.support_tickets.count_documents({"status": "resolved"})
+    
+    return {
+        "total": total,
+        "open": open_tickets,
+        "in_progress": in_progress,
+        "resolved": resolved,
+        "closed": total - open_tickets - in_progress - resolved
+    }
+
+# ============ STOCK ALERTS ENDPOINTS ============
+
+@api_router.get("/admin/stock-alerts")
+async def get_stock_alerts(threshold: int = 5, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get products with low stock (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    low_stock_products = await db.products.find(
+        {"stock": {"$lte": threshold}},
+        {"_id": 0}
+    ).sort("stock", 1).to_list(50)
+    
+    out_of_stock = [p for p in low_stock_products if p["stock"] == 0]
+    critical_stock = [p for p in low_stock_products if 0 < p["stock"] <= 2]
+    low_stock = [p for p in low_stock_products if 2 < p["stock"] <= threshold]
+    
+    return {
+        "out_of_stock": out_of_stock,
+        "critical": critical_stock,
+        "low": low_stock,
+        "total_alerts": len(low_stock_products)
+    }
+
+@api_router.put("/admin/products/{product_id}/restock")
+async def restock_product(product_id: str, quantity: int, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Add stock to a product (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    if quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be positive")
+    
+    result = await db.products.update_one(
+        {"product_id": product_id},
+        {"$inc": {"stock": quantity}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    product = await db.products.find_one({"product_id": product_id}, {"_id": 0, "name": 1, "stock": 1})
+    return {"message": f"Stock updated. New stock: {product['stock']}", "new_stock": product["stock"]}
+
+# ============ WHATSAPP CONFIG ============
+
+WHATSAPP_NUMBER = "919871819508"
+
+@api_router.get("/config/whatsapp")
+async def get_whatsapp_config():
+    """Get WhatsApp configuration for frontend"""
+    return {
+        "number": WHATSAPP_NUMBER,
+        "enabled": True
+    }
+
 @api_router.get("/sitemap.xml")
 async def generate_sitemap():
     """Generate XML sitemap for SEO"""
