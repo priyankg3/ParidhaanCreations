@@ -293,10 +293,21 @@ export default function AdminDashboard() {
       toast.error("Please provide an image URL or upload an image");
       return;
     }
+    
+    // Validate schedule dates
+    if (bannerForm.start_date && bannerForm.end_date) {
+      if (new Date(bannerForm.start_date) >= new Date(bannerForm.end_date)) {
+        toast.error("End date must be after start date");
+        return;
+      }
+    }
+    
     try {
       const bannerData = {
         ...bannerForm,
-        category: bannerForm.category || null
+        category: bannerForm.category || null,
+        start_date: bannerForm.start_date ? new Date(bannerForm.start_date).toISOString() : null,
+        end_date: bannerForm.end_date ? new Date(bannerForm.end_date).toISOString() : null
       };
       await axios.post(`${API}/banners`, bannerData, { withCredentials: true });
       toast.success("Banner created successfully");
