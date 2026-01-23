@@ -4,7 +4,7 @@ import axios from "axios";
 import { API } from "@/App";
 import { toast } from "sonner";
 import { useRazorpay } from "react-razorpay";
-import { Check, CreditCard, Smartphone, MapPin, Package, ShieldCheck, Truck } from "lucide-react";
+import { Check, CreditCard, Smartphone, MapPin, Package, ShieldCheck, Truck, Tag, X } from "lucide-react";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
