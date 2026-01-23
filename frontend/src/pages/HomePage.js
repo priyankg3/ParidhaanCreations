@@ -180,7 +180,8 @@ export default function HomePage() {
                   className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden"
                   data-testid={`product-${product.product_id}`}
                 >
-                  <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden">
+                  <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
+                    <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || 'featured'} />
                     <img
                       src={product.images[0]}
                       alt={product.name}
