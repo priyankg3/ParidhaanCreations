@@ -23,7 +23,6 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
-from datetime import timedelta
 from collections import Counter
 
 ROOT_DIR = Path(__file__).parent
@@ -804,7 +803,7 @@ async def update_order_status(order_id: str, status: str, authorization: Optiona
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    result = await db.orders.update_one(
+    await db.orders.update_one(
         {"order_id": order_id},
         {"$set": {"status": status}}
     )
