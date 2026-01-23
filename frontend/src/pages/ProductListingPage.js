@@ -33,7 +33,6 @@ const categoryBanners = {
 export default function ProductListingPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
   const [priceRange, setPriceRange] = useState([0, 10000]);
