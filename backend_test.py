@@ -46,17 +46,24 @@ class ECommerceAPITester:
 
         try:
             if method == 'GET':
-                response = requests.get(url, headers=request_headers, timeout=30)
+                response = requests.get(url, headers=request_headers, timeout=10)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=request_headers, timeout=30)
+                response = requests.post(url, json=data, headers=request_headers, timeout=10)
             elif method == 'PUT':
-                response = requests.put(url, json=data, headers=request_headers, timeout=30)
+                response = requests.put(url, json=data, headers=request_headers, timeout=10)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=request_headers, timeout=30)
+                response = requests.delete(url, headers=request_headers, timeout=10)
             
             return response
+        except requests.exceptions.Timeout:
+            print(f"⚠️  Timeout for {method} {endpoint}")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️  Request error for {method} {endpoint}: {str(e)}")
+            return None
         except Exception as e:
-            return None, str(e)
+            print(f"⚠️  Unexpected error for {method} {endpoint}: {str(e)}")
+            return None
 
     def test_basic_endpoints(self):
         """Test basic public endpoints"""
