@@ -66,6 +66,7 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - **12 sample banners created** for all categories
 - **Image Upload** - Direct file upload option (in addition to URL input)
 - **Size Recommendations** - Visual guide showing ideal sizes for each banner type
+- **Banner Scheduling** - Set start/end dates for automatic activation during festivals or sales
 
 ### Customer Features
 - [x] Google Social Login
@@ -104,6 +105,11 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
    - URL input as alternative option
    - Image preview with remove button
    - Size recommendations panel (1920x600 Home, 1200x250 Category Top, 300x600 Sidebar, 1200x100 Footer)
+6. **Banner Scheduling (NEW):** Schedule banners for festivals/sales
+   - Start/End date pickers in banner form
+   - Automatic activation based on schedule
+   - Schedule status badges (Always Active, Scheduled, Currently Active, Expired)
+   - Public banners API filters out non-scheduled banners automatically
 
 ## Deployment Instructions
 1. Click "Preview" to test your application
