@@ -148,8 +148,22 @@ export default function ProductListingPage() {
 
   const categoryBanner = selectedCategory ? categoryBanners[selectedCategory] : null;
 
+  const seoTitle = selectedCategory 
+    ? `${categoryBanners[selectedCategory]?.title} - Paridhaan Creations`
+    : "All Products - Paridhaan Creations";
+  
+  const seoDescription = selectedCategory
+    ? `${categoryBanners[selectedCategory]?.description}. Shop authentic ${selectedCategory} at Paridhaan Creations.`
+    : "Browse our complete collection of Indian handicrafts, pooja articles, perfumes, and traditional jewellery.";
+
   return (
     <div className="min-h-screen">
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        keywords={`${selectedCategory || 'products'}, Indian handicrafts, traditional items, online shopping`}
+      />
+      
       {categoryBanner && (
         <div className="relative h-80 overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
           <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" />
