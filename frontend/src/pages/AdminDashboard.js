@@ -292,7 +292,13 @@ export default function AdminDashboard() {
   const handleCreateBanner = async (e) => {
     e.preventDefault();
     if (!bannerForm.image) {
-      toast.error("Please provide an image URL or upload an image");
+      toast.error("Please upload a banner image");
+      return;
+    }
+    
+    // Validate category for non-hero banners
+    if (bannerForm.banner_type !== 'hero' && !bannerForm.category) {
+      toast.error("Please select a category for this banner type");
       return;
     }
     
@@ -307,7 +313,7 @@ export default function AdminDashboard() {
     try {
       const bannerData = {
         ...bannerForm,
-        category: bannerForm.category || null,
+        category: bannerForm.banner_type === 'hero' ? null : (bannerForm.category || null),
         start_date: bannerForm.start_date ? new Date(bannerForm.start_date).toISOString() : null,
         end_date: bannerForm.end_date ? new Date(bannerForm.end_date).toISOString() : null
       };
