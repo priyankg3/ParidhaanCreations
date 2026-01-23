@@ -1442,7 +1442,7 @@ export default function AdminDashboard() {
                         type="url"
                         placeholder="https://example.com/banner-image.jpg"
                         value={bannerForm.image}
-                        onChange={(e) => setBannerForm({...bannerForm, image: e.target.value})}
+                        onChange={(e) => setBannerForm(prev => ({...prev, image: e.target.value}))}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                         data-testid="banner-image-url-input"
                       />
@@ -1458,7 +1458,7 @@ export default function AdminDashboard() {
                           />
                           <button
                             type="button"
-                            onClick={() => setBannerForm({...bannerForm, image: ''})}
+                            onClick={() => setBannerForm(prev => ({...prev, image: ''}))}
                             className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                             data-testid="remove-banner-image-btn"
                           >
