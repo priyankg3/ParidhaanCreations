@@ -15,6 +15,7 @@ export default function ProductDetailPage() {
   const [user, setUser] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
+  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     fetchProduct();
