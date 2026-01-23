@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
-import { ShoppingCart, Heart, Minus, Plus } from "lucide-react";
+import { ShoppingCart, Heart, Minus, Plus, Star, User } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ProductDetailPage() {
