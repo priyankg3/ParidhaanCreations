@@ -587,22 +587,70 @@ async def get_order(order_id: str, authorization: Optional[str] = Header(None), 
     return order
 
 @api_router.get("/banners")
-async def get_banners(banner_type: Optional[str] = None, category: Optional[str] = None):
+async def get_banners(banner_type: Optional[str] = None, category: Optional[str] = None, include_scheduled: bool = False):
+    now = datetime.now(timezone.utc)
+    
+    # Base query - active banners
     query = {"active": True}
+    
+    # For public display (not admin), filter by schedule
+    if not include_scheduled:
+        # Banner is valid if:
+        # 1. No schedule set (both dates are None) OR
+        # 2. Current time is within the scheduled range
+        query["$or"] = [
+            {"start_date": None, "end_date": None},
+            {"start_date": {"$exists": False}},
+            {
+                "$and": [
+                    {"$or": [{"start_date": None}, {"start_date": {"$lte": now.isoformat()}}]},
+                    {"$or": [{"end_date": None}, {"end_date": {"$gte": now.isoformat()}}]}
+                ]
+            }
+        ]
+    
     if banner_type:
         query["banner_type"] = banner_type
     if category:
-        query["$or"] = [{"category": category}, {"category": None}, {"category": {"$exists": False}}]
+        if "$or" in query:
+            # Need to combine with existing $or using $and
+            existing_or = query.pop("$or")
+            query["$and"] = [
+                {"$or": existing_or},
+                {"$or": [{"category": category}, {"category": None}, {"category": {"$exists": False}}]}
+            ]
+        else:
+            query["$or"] = [{"category": category}, {"category": None}, {"category": {"$exists": False}}]
     
     banners = await db.banners.find(query, {"_id": 0}).sort("position", 1).to_list(100)
+    return banners
+
+@api_router.get("/banners/all")
+async def get_all_banners(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get all banners including scheduled ones (admin only)"""
+    await require_admin(authorization, session_token)
+    banners = await db.banners.find({}, {"_id": 0}).sort("position", 1).to_list(100)
     return banners
 
 @api_router.post("/banners")
 async def create_banner(banner: BannerCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
-    banner_obj = Banner(**banner.model_dump())
+    
+    # Parse dates if provided
+    banner_data = banner.model_dump()
+    if banner_data.get("start_date"):
+        banner_data["start_date"] = datetime.fromisoformat(banner_data["start_date"].replace('Z', '+00:00'))
+    if banner_data.get("end_date"):
+        banner_data["end_date"] = datetime.fromisoformat(banner_data["end_date"].replace('Z', '+00:00'))
+    
+    banner_obj = Banner(**banner_data)
     doc = banner_obj.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
+    if doc.get("start_date"):
+        doc["start_date"] = doc["start_date"].isoformat()
+    if doc.get("end_date"):
+        doc["end_date"] = doc["end_date"].isoformat()
+    
     await db.banners.insert_one(doc)
     return banner_obj
 
