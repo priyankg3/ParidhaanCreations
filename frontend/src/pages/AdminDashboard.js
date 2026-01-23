@@ -319,7 +319,9 @@ export default function AdminDashboard() {
       image: "",
       link: "",
       position: 1,
-      active: true
+      active: true,
+      banner_type: "promotional",
+      category: ""
     });
   };
 
