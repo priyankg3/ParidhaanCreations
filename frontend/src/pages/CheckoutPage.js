@@ -484,11 +484,59 @@ export default function CheckoutPage() {
                     })}
                   </div>
 
+                  {/* Coupon Code Section */}
+                  <div className="pt-4 border-t border-border">
+                    <label className="block text-sm font-medium mb-2">Have a coupon code?</label>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between bg-green-50 border border-green-200 p-3 rounded">
+                        <div className="flex items-center space-x-2">
+                          <Tag className="w-4 h-4 text-green-600" />
+                          <span className="font-mono font-bold text-green-700">{appliedCoupon.code}</span>
+                          <span className="text-sm text-green-600">-₹{appliedCoupon.discount.toFixed(2)}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="text-red-500 hover:text-red-700"
+                          data-testid="remove-coupon-btn"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="flex-1 px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-primary uppercase font-mono"
+                          data-testid="coupon-input"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading}
+                          className="px-4 py-2 bg-secondary text-secondary-foreground font-medium hover:bg-secondary/90 transition-all disabled:opacity-50"
+                          data-testid="apply-coupon-btn"
+                        >
+                          {couponLoading ? "..." : "Apply"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="space-y-3 pt-4 border-t-2 border-border">
                     <div className="flex justify-between text-muted-foreground">
                       <span>Subtotal</span>
-                      <span>₹{total.toFixed(2)}</span>
+                      <span>₹{subtotal.toFixed(2)}</span>
                     </div>
+                    {appliedCoupon && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-₹{discount.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-muted-foreground">
                       <span>Shipping</span>
                       <span className="text-green-600 font-medium">FREE</span>
