@@ -111,7 +111,7 @@ export default function SupportPage() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-heading font-bold mb-4">Customer Support</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            We're here to help! Create a support ticket or chat with us on WhatsApp for quick assistance.
+            We&apos;re here to help! Create a support ticket or chat with us on WhatsApp for quick assistance.
           </p>
         </div>
 
