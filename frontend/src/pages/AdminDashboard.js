@@ -1235,13 +1235,32 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {banners.map((banner) => (
                 <div key={banner.banner_id} className="bg-white border border-border/40 overflow-hidden">
-                  <img src={banner.image} alt={banner.title} className="w-full h-64 object-cover" />
+                  <img src={banner.image} alt={banner.title} className="w-full h-48 object-cover" />
                   <div className="p-4">
-                    <h3 className="text-xl font-heading font-semibold mb-2">{banner.title}</h3>
-                    {banner.link && <p className="text-sm text-muted-foreground">{banner.link}</p>}
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-lg font-heading font-semibold">{banner.title}</h3>
+                      <button
+                        onClick={() => handleDeleteBanner(banner.banner_id)}
+                        className="text-accent hover:text-accent/80"
+                        data-testid={`delete-banner-${banner.banner_id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        {banner.banner_type || "promotional"}
+                      </span>
+                      {banner.category && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                          {banner.category}
+                        </span>
+                      )}
+                    </div>
+                    {banner.link && <p className="text-xs text-muted-foreground truncate">{banner.link}</p>}
                   </div>
                 </div>
               ))}
