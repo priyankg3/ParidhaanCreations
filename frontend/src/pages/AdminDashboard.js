@@ -468,14 +468,24 @@ export default function AdminDashboard() {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-heading font-bold">Products Management</h2>
-              <button
-                onClick={() => setShowProductForm(!showProductForm)}
-                className="bg-primary text-primary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-primary/90 transition-all"
-                data-testid="add-product-button"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Product</span>
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleExportProducts}
+                  className="bg-secondary text-secondary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-secondary/90 transition-all"
+                  data-testid="export-products-button"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span>Export CSV</span>
+                </button>
+                <button
+                  onClick={() => setShowProductForm(!showProductForm)}
+                  className="bg-primary text-primary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-primary/90 transition-all"
+                  data-testid="add-product-button"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>Add Product</span>
+                </button>
+              </div>
             </div>
 
             {showProductForm && (
