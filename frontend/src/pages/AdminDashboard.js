@@ -314,6 +314,7 @@ export default function AdminDashboard() {
       valid_to: "",
       active: true
     });
+    setEditingCoupon(null);
   };
 
   const handleExportProducts = async () => {
