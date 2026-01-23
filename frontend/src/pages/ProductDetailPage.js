@@ -74,6 +74,39 @@ export default function ProductDetailPage() {
     navigate("/cart");
   };
 
+  const submitReview = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("Please login to submit a review");
+      return;
+    }
+
+    try {
+      await axios.post(`${API}/reviews`, {
+        product_id: id,
+        rating: reviewForm.rating,
+        comment: reviewForm.comment
+      }, { withCredentials: true });
+      
+      toast.success("Review submitted successfully!");
+      setShowReviewForm(false);
+      setReviewForm({ rating: 5, comment: "" });
+      fetchReviews();
+      fetchProduct();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to submit review");
+    }
+  };
+
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, index) => (
+      <Star
+        key={index}
+        className={`w-5 h-5 ${index < rating ? "fill-secondary text-secondary" : "text-gray-300"}`}
+      />
+    ));
+  };
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
