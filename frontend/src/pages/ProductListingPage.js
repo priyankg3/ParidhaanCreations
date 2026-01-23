@@ -357,21 +357,12 @@ export default function ProductListingPage() {
                       data-testid={`product-card-${product.product_id}`}
                     >
                       <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
+                        <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                         <img
                           src={product.images[0]}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
-                        {product.featured && (
-                          <span className="absolute top-4 left-4 bg-accent text-white text-xs px-3 py-1 font-medium">
-                            FEATURED
-                          </span>
-                        )}
-                        {product.stock === 0 && (
-                          <span className="absolute top-4 right-4 bg-muted text-muted-foreground text-xs px-3 py-1 font-medium">
-                            OUT OF STOCK
-                          </span>
-                        )}
                         <button
                           onClick={(e) => {
                             e.preventDefault();
