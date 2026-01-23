@@ -176,6 +176,8 @@ class Banner(BaseModel):
     link: Optional[str] = None
     position: int
     active: bool = True
+    banner_type: str = "promotional"  # "promotional", "header", "footer", "side"
+    category: Optional[str] = None  # "handicrafts", "pooja", "perfumes", "jewellery" or None for all
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BannerCreate(BaseModel):
@@ -184,6 +186,8 @@ class BannerCreate(BaseModel):
     link: Optional[str] = None
     position: int
     active: bool = True
+    banner_type: str = "promotional"
+    category: Optional[str] = None
 
 class Coupon(BaseModel):
     model_config = ConfigDict(extra="ignore")
