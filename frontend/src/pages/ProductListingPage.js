@@ -170,6 +170,9 @@ export default function ProductListingPage() {
   };
 
   const categoryBanner = selectedCategory ? categoryBanners[selectedCategory] : null;
+  const headerBanner = categoryBannersData.header;
+  const sideBanner = categoryBannersData.side;
+  const footerBanner = categoryBannersData.footer;
 
   const seoTitle = selectedCategory 
     ? `${categoryBanners[selectedCategory]?.title} - Paridhaan Creations`
@@ -187,7 +190,22 @@ export default function ProductListingPage() {
         keywords={`${selectedCategory || 'products'}, Indian handicrafts, traditional items, online shopping`}
       />
       
-      {categoryBanner && (
+      {/* Header Banner from DB or fallback to category banner */}
+      {headerBanner ? (
+        <div className="relative h-80 overflow-hidden" data-testid={`header-banner-${selectedCategory}`}>
+          <img src={headerBanner.image} alt={headerBanner.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
+            <div className="text-center text-white">
+              <h1 className="text-5xl md:text-6xl font-heading font-bold mb-4">{headerBanner.title}</h1>
+              {headerBanner.link && (
+                <a href={headerBanner.link} className="mt-4 inline-block bg-secondary text-secondary-foreground px-6 py-2 font-medium hover:bg-secondary/90 transition-all">
+                  Shop Now
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : categoryBanner && (
         <div className="relative h-80 overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
           <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
@@ -201,7 +219,7 @@ export default function ProductListingPage() {
 
       <div className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {!categoryBanner && (
+          {!categoryBanner && !headerBanner && (
             <div className="mb-12">
               <h1 className="text-5xl font-heading font-bold mb-6" data-testid="products-title">Our Products</h1>
             </div>
