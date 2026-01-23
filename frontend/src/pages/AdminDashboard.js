@@ -734,7 +734,17 @@ export default function AdminDashboard() {
 
         {activeTab === "orders" && (
           <div>
-            <h2 className="text-2xl font-heading font-bold mb-6">Orders Management</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-heading font-bold">Orders Management</h2>
+              <button
+                onClick={handleExportOrders}
+                className="bg-secondary text-secondary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-secondary/90 transition-all"
+                data-testid="export-orders-button"
+              >
+                <Upload className="w-5 h-5" />
+                <span>Export CSV</span>
+              </button>
+            </div>
             
             <div className="bg-white border border-border/40 overflow-x-auto">
               <table className="w-full">
