@@ -1714,8 +1714,17 @@ ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 @api_router.post("/upload/image")
-async def upload_image(file: UploadFile = File(...), authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+async def upload_image(
+    file: UploadFile = File(...), 
+    authorization: Optional[str] = Header(None), 
+    session_token: Optional[str] = Cookie(None)
+):
     """Upload an image file (admin only)"""
+    # Debug logging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Upload attempt - Auth header: {authorization is not None}, Cookie: {session_token is not None}")
+    
     await require_admin(authorization, session_token)
     
     # Validate file type
