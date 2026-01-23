@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /products
+Allow: /products/*
+
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /checkout
+Disallow: /cart
+Disallow: /my-orders
+Disallow: /wishlist
+
+# Sitemap
+Sitemap: https://pooja-treasures-2.preview.emergentagent.com/api/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
