@@ -27,6 +27,7 @@ export default function Footer() {
               <li><Link to="/products" className="text-sm hover:text-secondary transition-colors">Products</Link></li>
               <li><Link to="/cart" className="text-sm hover:text-secondary transition-colors">Cart</Link></li>
               <li><Link to="/my-orders" className="text-sm hover:text-secondary transition-colors">My Orders</Link></li>
+              <li><Link to="/terms" className="text-sm hover:text-secondary transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
 
