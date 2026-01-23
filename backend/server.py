@@ -821,7 +821,7 @@ async def create_stripe_session(request: Request, order_id: str, origin_url: str
 
 @api_router.get("/payments/stripe/status/{session_id}")
 async def get_stripe_status(session_id: str):
-    webhook_url = f"{os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')}/api/webhook/stripe"
+    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=os.environ['STRIPE_API_KEY'], webhook_url=webhook_url)
     
     status = await stripe_checkout.get_checkout_status(session_id)
@@ -845,7 +845,7 @@ async def stripe_webhook(request: Request):
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
     
-    webhook_url = f"{os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')}/api/webhook/stripe"
+    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=os.environ['STRIPE_API_KEY'], webhook_url=webhook_url)
     
     try:
