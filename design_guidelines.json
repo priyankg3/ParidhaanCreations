@@ -1,0 +1,146 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Paridhaan Creations",
+      "persona": "E1: The Anti-AI Designer",
+      "aesthetic": "Modern Heritage Fusion",
+      "core_philosophy": "Swiss Grid Precision meets Indian Royal Warmth. Clean lines, rich textures, deep emotions.",
+      "theme_mode": "light"
+    },
+    "typography": {
+      "font_family": {
+        "heading": "Cormorant Garamond, serif",
+        "body": "Manrope, sans-serif",
+        "accent": "Playfair Display, serif"
+      },
+      "scale": {
+        "h1": "text-5xl md:text-7xl font-bold tracking-tight leading-none",
+        "h2": "text-4xl md:text-5xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed text-muted-foreground",
+        "caption": "text-sm uppercase tracking-widest font-semibold text-accent"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Manrope:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap');"
+      ]
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#0F4C75",
+          "foreground": "#FFFFFF",
+          "description": "Deep Royal Peacock Blue. Use for primary buttons, active states, and strong brand moments."
+        },
+        "secondary": {
+          "DEFAULT": "#D4AF37",
+          "foreground": "#0F4C75",
+          "description": "Antique Brass/Gold. Use for borders, icons, and subtle highlights. NEVER for large backgrounds."
+        },
+        "accent": {
+          "DEFAULT": "#800000",
+          "foreground": "#FFFFFF",
+          "description": "Royal Maroon. Use for 'Sale' tags, urgent CTAs, and text emphasis."
+        },
+        "background": {
+          "DEFAULT": "#FDFBF7",
+          "paper": "#F5F2EB",
+          "description": "Warm Cream / Handmade Paper tone. Avoid pure #FFFFFF. Use this for the main page background."
+        },
+        "muted": {
+          "DEFAULT": "#E2E8F0",
+          "foreground": "#64748B"
+        }
+      },
+      "gradients": {
+        "hero_overlay": "linear-gradient(to bottom, rgba(15, 76, 117, 0.2), rgba(15, 76, 117, 0.8))",
+        "gold_shimmer": "linear-gradient(45deg, #D4AF37, #FAE588, #D4AF37)"
+      }
+    },
+    "layout": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "spacing": {
+        "section_gap": "py-24 md:py-32",
+        "element_gap": "gap-8 md:gap-12"
+      },
+      "grid_system": {
+        "bento_marketing": "grid grid-cols-1 md:grid-cols-12 gap-6",
+        "product_grid": "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+      },
+      "border_radius": {
+        "default": "rounded-none",
+        "soft": "rounded-md",
+        "pill": "rounded-full"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-none font-medium tracking-wide transition-all duration-300 ease-out hover:shadow-lg",
+        "secondary": "border border-primary text-primary hover:bg-primary hover:text-white h-12 px-8 rounded-none transition-all duration-300",
+        "ghost": "hover:bg-accent/10 text-accent hover:text-accent-foreground"
+      },
+      "cards": {
+        "product": "group relative bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden",
+        "feature": "bg-background-paper p-8 border-l-4 border-secondary"
+      },
+      "inputs": {
+        "default": "h-12 rounded-none border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-secondary disabled:cursor-not-allowed disabled:opacity-50"
+      }
+    },
+    "visual_enhancers": {
+      "shadows": {
+        "soft": "0 4px 20px -2px rgba(15, 76, 117, 0.1)",
+        "hover": "0 10px 40px -10px rgba(15, 76, 117, 0.2)"
+      },
+      "textures": {
+        "grain": "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")"
+      }
+    },
+    "assets": {
+      "logo_url": "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png",
+      "hero_images": [
+        {
+          "url": "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBoYW5kaWNyYWZ0cyUyMGJyYXNzJTIwZGVjb3J8ZW58MHx8fHwxNzY5MTYzOTIyfDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Antique Brass Handicrafts Shelf",
+          "position": "center"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1738754712726-d126c15e206b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBhcnRpZmljaWFsJTIwa3VuZGFuJTIwamV3ZWxsZXJ5fGVufDB8fHx8MTc2OTE2MzkyOHww&ixlib=rb-4.1.0&q=85",
+          "alt": "Traditional Kundan Jewellery Model",
+          "position": "top"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1768025719875-48ed072f3084?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBwZXJmdW1lJTIwYm90dGxlJTIwYWVzdGhldGljfGVufDB8fHx8MTc2OTE2MzkyNnww&ixlib=rb-4.1.0&q=85",
+          "alt": "Luxury Perfume Bottle in Sunlight",
+          "position": "center"
+        }
+      ],
+      "category_images": {
+        "handicrafts": "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBoYW5kaWNyYWZ0cyUyMGJyYXNzJTIwZGVjb3J8ZW58MHx8fHwxNzY5MTYzOTIyfDA&ixlib=rb-4.1.0&q=85",
+        "pooja": "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg",
+        "perfumes": "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwyfHxsdXh1cnklMjBwZXJmdW1lJTIwYm90dGxlJTIwYWVzdGhldGljfGVufDB8fHx8MTc2OTE2MzkyNnww&ixlib=rb-4.1.0&q=85",
+        "jewellery": "https://images.unsplash.com/photo-1738754719555-05aca36707b1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwyfHxpbmRpYW4lMjBhcnRpZmljaWFsJTIwa3VuZGFuJTIwamV3ZWxsZXJ5fGVufDB8fHx8MTc2OTE2MzkyOHww&ixlib=rb-4.1.0&q=85"
+      },
+      "background_texture": "https://images.unsplash.com/photo-1764345825061-8a84c3b19373?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxwZWFjb2NrJTIwZmVhdGhlciUyMGFydGlzdGljfGVufDB8fHx8MTc2OTE2MzkzMHww&ixlib=rb-4.1.0&q=85"
+    },
+    "instructions_to_main_agent": [
+      "CRITICAL: Use 'Cormorant Garamond' for all Headings. It is the soul of this brand.",
+      "CRITICAL: Use 'Manrope' for all body text. It provides the modern balance.",
+      "CRITICAL: Do not use rounded corners on buttons or inputs. Keep them sharp (rounded-none) or very subtle (rounded-sm) to mimic the precision of craftsmanship.",
+      "LAYOUT: For the Hero section, do not just slap text over an image. Use a split layout or a 'floating card' layout where the text sits on a solid paper-colored block overlapping the image.",
+      "NAVIGATION: Use a 'Glassmorphism' sticky header with a blur effect (backdrop-blur-md) to allow the rich colors to peek through.",
+      "PRODUCT CARDS: Focus on the image. Minimal text. The 'Add to Cart' button should only appear on hover to keep the interface clean.",
+      "FOOTER: Make it massive. Use a dark background (Primary Blue) with Gold text. Include the 'Peacock Abstract' image as a subtle watermark opacity-10.",
+      "FORMS: Use Shadcn components but strip the default rounded corners. Add a bottom border focus effect (border-b-2 border-secondary).",
+      "THEME: Default to LIGHT mode. The background should be #FDFBF7 (Cream), not #FFFFFF.",
+      "ACCESSIBILITY: Ensure the Gold (#D4AF37) is only used for large text or borders. Do not use it for small body text on white backgrounds."
+    ],
+    "universal_guidelines": [
+      "Avoid generic 'AI slop' designs. Be bold with whitespace.",
+      "Use z-index to create depth. Layer images behind text blocks.",
+      "Add micro-interactions: Buttons should lift, images should zoom slightly on hover.",
+      "Use 'sonner' for toasts.",
+      "All interactive elements must have 'data-testid'."
+    ]
+  }
+}
