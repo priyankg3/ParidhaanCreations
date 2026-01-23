@@ -442,7 +442,9 @@ export default function AdminDashboard() {
       position: 1,
       active: true,
       banner_type: "promotional",
-      category: ""
+      category: "",
+      start_date: "",
+      end_date: ""
     });
   };
 
