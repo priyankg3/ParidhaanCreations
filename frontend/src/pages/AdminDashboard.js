@@ -964,6 +964,145 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === "support" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-heading font-bold">Support Tickets</h2>
+              {supportStats && (
+                <div className="flex space-x-4">
+                  <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                    Open: {supportStats.open}
+                  </span>
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                    In Progress: {supportStats.in_progress}
+                  </span>
+                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                    Resolved: {supportStats.resolved}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {supportTickets.length === 0 ? (
+              <div className="bg-white border border-border/40 p-12 text-center">
+                <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-heading font-semibold mb-2">No Support Tickets</h3>
+                <p className="text-muted-foreground">All customer inquiries will appear here</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Tickets List */}
+                <div className="bg-white border border-border/40 max-h-[600px] overflow-y-auto">
+                  {supportTickets.map((ticket) => (
+                    <div
+                      key={ticket.ticket_id}
+                      onClick={() => setSelectedTicket(ticket)}
+                      className={`p-4 border-b border-border cursor-pointer hover:bg-background-paper/50 transition-all ${
+                        selectedTicket?.ticket_id === ticket.ticket_id ? "bg-primary/5" : ""
+                      }`}
+                      data-testid={`support-ticket-${ticket.ticket_id}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          ticket.status === "open" ? "bg-yellow-100 text-yellow-700" :
+                          ticket.status === "in_progress" ? "bg-blue-100 text-blue-700" :
+                          ticket.status === "resolved" ? "bg-green-100 text-green-700" :
+                          "bg-gray-100 text-gray-700"
+                        }`}>
+                          {ticket.status.replace("_", " ").toUpperCase()}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(ticket.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h4 className="font-medium mb-1 line-clamp-1">{ticket.subject}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {ticket.messages[0]?.message}
+                      </p>
+                      <div className="flex items-center space-x-2 mt-2 text-xs text-muted-foreground">
+                        <span className="px-2 py-0.5 bg-muted rounded">{ticket.category}</span>
+                        {ticket.order_id && <span>Order: {ticket.order_id}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Ticket Detail */}
+                {selectedTicket ? (
+                  <div className="bg-white border border-border/40 flex flex-col max-h-[600px]">
+                    <div className="p-4 border-b border-border">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-bold text-lg">{selectedTicket.subject}</h3>
+                        <select
+                          value={selectedTicket.status}
+                          onChange={(e) => handleUpdateTicketStatus(selectedTicket.ticket_id, e.target.value)}
+                          className="px-3 py-1 border border-input bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                          <option value="open">Open</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="resolved">Resolved</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        <p>Customer: {selectedTicket.guest_name || "Registered User"}</p>
+                        <p>Email: {selectedTicket.guest_email || "N/A"}</p>
+                        {selectedTicket.order_id && <p>Order: {selectedTicket.order_id}</p>}
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                      {selectedTicket.messages?.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          className={`p-3 rounded-lg ${
+                            msg.sender === "admin" ? "bg-primary/10 ml-8" : "bg-muted mr-8"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium">
+                              {msg.sender === "admin" ? "You (Admin)" : "Customer"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(msg.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm">{msg.message}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {selectedTicket.status !== "closed" && (
+                      <div className="p-4 border-t border-border">
+                        <div className="flex space-x-2">
+                          <input
+                            type="text"
+                            value={ticketReply}
+                            onChange={(e) => setTicketReply(e.target.value)}
+                            placeholder="Type your reply..."
+                            className="flex-1 px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-primary"
+                            onKeyPress={(e) => e.key === "Enter" && handleTicketReply(selectedTicket.ticket_id)}
+                          />
+                          <button
+                            onClick={() => handleTicketReply(selectedTicket.ticket_id)}
+                            className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 transition-all"
+                          >
+                            Send
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white border border-border/40 flex items-center justify-center p-12">
+                    <p className="text-muted-foreground">Select a ticket to view details</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "banners" && (
           <div>
             <div className="flex justify-between items-center mb-6">
