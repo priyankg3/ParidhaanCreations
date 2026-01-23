@@ -718,6 +718,71 @@ async def update_order_status(order_id: str, status: str, authorization: Optiona
         raise HTTPException(status_code=404, detail="Order not found")
     return {"message": "Order status updated"}
 
+@api_router.post("/reviews")
+async def create_review(review: ReviewCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    
+    if review.rating < 1 or review.rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+    
+    existing_review = await db.reviews.find_one({"product_id": review.product_id, "user_id": user.user_id}, {"_id": 0})
+    if existing_review:
+        raise HTTPException(status_code=400, detail="You have already reviewed this product")
+    
+    review_obj = Review(
+        **review.model_dump(),
+        user_id=user.user_id,
+        user_name=user.name
+    )
+    doc = review_obj.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    
+    await db.reviews.insert_one(doc)
+    
+    reviews = await db.reviews.find({"product_id": review.product_id}, {"_id": 0}).to_list(1000)
+    avg_rating = sum(r["rating"] for r in reviews) / len(reviews) if reviews else 0
+    review_count = len(reviews)
+    
+    await db.products.update_one(
+        {"product_id": review.product_id},
+        {"$set": {"avg_rating": avg_rating, "review_count": review_count}}
+    )
+    
+    return review_obj
+
+@api_router.get("/reviews/{product_id}")
+async def get_product_reviews(product_id: str):
+    reviews = await db.reviews.find({"product_id": product_id}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return reviews
+
+@api_router.delete("/reviews/{review_id}")
+async def delete_review(review_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Login required")
+    
+    review = await db.reviews.find_one({"review_id": review_id}, {"_id": 0})
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    if review["user_id"] != user.user_id and not user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this review")
+    
+    await db.reviews.delete_one({"review_id": review_id})
+    
+    reviews = await db.reviews.find({"product_id": review["product_id"]}, {"_id": 0}).to_list(1000)
+    avg_rating = sum(r["rating"] for r in reviews) / len(reviews) if reviews else 0
+    review_count = len(reviews)
+    
+    await db.products.update_one(
+        {"product_id": review["product_id"]},
+        {"$set": {"avg_rating": avg_rating, "review_count": review_count}}
+    )
+    
+    return {"message": "Review deleted"}
+
 app.include_router(api_router)
 
 app.add_middleware(
