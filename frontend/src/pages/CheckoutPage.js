@@ -62,10 +62,46 @@ export default function CheckoutPage() {
     }
   };
 
-  const total = cart.items.reduce((sum, item) => {
+  const subtotal = cart.items.reduce((sum, item) => {
     const product = products[item.product_id];
     return sum + (product ? product.price * item.quantity : 0);
   }, 0);
+
+  const discount = appliedCoupon ? appliedCoupon.discount : 0;
+  const total = Math.max(0, subtotal - discount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      const response = await axios.post(`${API}/coupons/validate`, {
+        code: couponCode.toUpperCase(),
+        total_amount: subtotal
+      });
+
+      setAppliedCoupon({
+        code: couponCode.toUpperCase(),
+        discount: response.data.discount,
+        final_amount: response.data.final_amount
+      });
+      toast.success(`Coupon applied! You save ₹${response.data.discount.toFixed(2)}`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Coupon removed");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,7 +125,9 @@ export default function CheckoutPage() {
         total_amount: total,
         payment_method: paymentMethod,
         shipping_address: shippingAddress,
-        guest_email: !user ? shippingAddress.email : undefined
+        guest_email: !user ? shippingAddress.email : undefined,
+        coupon_code: appliedCoupon?.code || null,
+        discount_amount: discount
       };
 
       const orderResponse = await axios.post(`${API}/orders`, orderData, { withCredentials: true });
