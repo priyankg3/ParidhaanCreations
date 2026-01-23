@@ -130,7 +130,9 @@ const BannerManagement = () => {
       }));
       toast.success(`${type === 'desktop' ? 'Desktop' : 'Mobile'} image uploaded`);
     } catch (error) {
-      toast.error("Upload failed");
+      console.error("Upload error:", error.response?.data || error.message);
+      const errorMsg = error.response?.data?.detail || "Upload failed. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setUploading(prev => ({ ...prev, [type]: false }));
     }
