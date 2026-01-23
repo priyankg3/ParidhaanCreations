@@ -50,7 +50,9 @@ export default function AdminDashboard() {
     position: 1,
     active: true,
     banner_type: "promotional",
-    category: ""
+    category: "",
+    start_date: "",
+    end_date: ""
   });
   const [bannerUploading, setBannerUploading] = useState(false);
   const bannerFileInputRef = useRef(null);
@@ -61,6 +63,21 @@ export default function AdminDashboard() {
     header: { size: "1200 x 250", priority: "Medium", placement: "Category Top" },
     side: { size: "300 x 600", priority: "Low", placement: "Sidebar" },
     footer: { size: "1200 x 100", priority: "Low", placement: "Footer Strip" }
+  };
+
+  // Helper to check banner schedule status
+  const getBannerScheduleStatus = (banner) => {
+    if (!banner.start_date && !banner.end_date) return { status: "always", label: "Always Active", color: "green" };
+    
+    const now = new Date();
+    const start = banner.start_date ? new Date(banner.start_date) : null;
+    const end = banner.end_date ? new Date(banner.end_date) : null;
+    
+    if (start && now < start) return { status: "scheduled", label: `Starts ${start.toLocaleDateString()}`, color: "blue" };
+    if (end && now > end) return { status: "expired", label: `Ended ${end.toLocaleDateString()}`, color: "red" };
+    if (start || end) return { status: "active", label: "Currently Active", color: "green" };
+    
+    return { status: "always", label: "Always Active", color: "green" };
   };
 
   const [couponForm, setCouponForm] = useState({
