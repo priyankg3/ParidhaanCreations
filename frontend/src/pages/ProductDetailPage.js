@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
     fetchProduct();
     fetchReviews();
     checkAuth();
+    fetchRecommendations();
   }, [id]);
 
   const checkAuth = async () => {
