@@ -1107,6 +1107,49 @@ async def get_customer_insights(authorization: Optional[str] = Header(None), ses
         "vip_customers": vip_customers
     }
 
+@api_router.get("/sitemap.xml")
+async def generate_sitemap():
+    """Generate XML sitemap for SEO"""
+    products = await db.products.find({"stock": {"$gt": 0}}, {"_id": 0, "product_id": 1, "created_at": 1}).to_list(1000)
+    categories = await db.categories.find({}, {"_id": 0, "slug": 1}).to_list(100)
+    
+    base_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://yourapp.com').replace('/api', '')
+    
+    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    sitemap_xml += f'''  <url>
+    <loc>{base_url}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>\n'''
+    
+    sitemap_xml += f'''  <url>
+    <loc>{base_url}/products</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>\n'''
+    
+    for category in categories:
+        sitemap_xml += f'''  <url>
+    <loc>{base_url}/products?category={category['slug']}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>\n'''
+    
+    for product in products:
+        lastmod = product.get('created_at', datetime.now(timezone.utc).isoformat())[:10]
+        sitemap_xml += f'''  <url>
+    <loc>{base_url}/products/{product['product_id']}</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>\n'''
+    
+    sitemap_xml += '</urlset>'
+    
+    return JSONResponse(content=sitemap_xml, media_type="application/xml")
+
 app.include_router(api_router)
 
 app.add_middleware(
