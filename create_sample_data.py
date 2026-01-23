@@ -196,7 +196,7 @@ def create_sample_data():
     admin_session = {
         "user_id": admin_user_id,
         "session_token": admin_session_token,
-        "expires_at": datetime.now(timezone.utc) + datetime.timedelta(days=7),
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
         "created_at": datetime.now(timezone.utc)
     }
     
