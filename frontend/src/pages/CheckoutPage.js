@@ -268,6 +268,34 @@ export default function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-heading font-bold mb-12 text-center" data-testid="checkout-title">Secure Checkout</h1>
 
+        {/* Welcome Offer Banner for First-time Buyers */}
+        {welcomeOffer && !appliedCoupon && (
+          <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-lg animate-pulse-slow" data-testid="welcome-offer-banner">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-500 text-white p-2 rounded-full">
+                  <Tag className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-green-800 text-lg">🎉 First Order Special!</p>
+                  <p className="text-green-700 text-sm">{welcomeOffer.message}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setCouponCode(welcomeOffer.welcome_coupon);
+                  handleApplyCoupon();
+                }}
+                className="bg-green-600 text-white px-6 py-2 font-medium hover:bg-green-700 transition-all rounded-full flex items-center space-x-2"
+                data-testid="apply-welcome-coupon-btn"
+              >
+                <span>Apply {welcomeOffer.welcome_coupon}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Progress Steps */}
         <div className="mb-12">
           <div className="flex items-center justify-center space-x-4">
