@@ -5,6 +5,7 @@ import { API } from "@/App";
 import { ChevronLeft, ChevronRight, ShoppingBag, Heart, Star } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import ProductBadge from "@/components/ProductBadge";
 
 const heroImages = [
   "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxpbmRpYW4lMjBoYW5kaWNyYWZ0cyUyMGJyYXNzJTIwZGVjb3J8ZW58MHx8fHwxNzY5MTYzOTIyfDA&ixlib=rb-4.1.0&q=85",
