@@ -158,6 +158,50 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+
+    try {
+      const response = await axios.post(`${API}/upload/images`, formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.uploaded && response.data.uploaded.length > 0) {
+        const newUrls = response.data.uploaded.map(img => `${API}${img.url.replace('/api', '')}`);
+        setProductForm(prev => ({
+          ...prev,
+          images: [...prev.images.filter(url => url !== ""), ...newUrls]
+        }));
+        toast.success(`${response.data.uploaded.length} image(s) uploaded`);
+      }
+
+      if (response.data.errors && response.data.errors.length > 0) {
+        response.data.errors.forEach(err => toast.error(`${err.filename}: ${err.error}`));
+      }
+    } catch (error) {
+      toast.error("Failed to upload images");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const removeProductImage = (indexToRemove) => {
+    setProductForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     
