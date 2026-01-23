@@ -78,8 +78,9 @@ export default function CheckoutPage() {
   const discount = appliedCoupon ? appliedCoupon.discount : 0;
   const total = Math.max(0, subtotal - discount);
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) {
+  const handleApplyCoupon = async (codeToApply = null) => {
+    const code = codeToApply || couponCode;
+    if (!code.trim()) {
       toast.error("Please enter a coupon code");
       return;
     }
@@ -87,16 +88,18 @@ export default function CheckoutPage() {
     setCouponLoading(true);
     try {
       const response = await axios.post(`${API}/coupons/validate`, {
-        code: couponCode.toUpperCase(),
+        code: code.toUpperCase(),
         total_amount: subtotal
       });
 
       setAppliedCoupon({
-        code: couponCode.toUpperCase(),
+        code: code.toUpperCase(),
         discount: response.data.discount,
         final_amount: response.data.final_amount
       });
+      setCouponCode(code.toUpperCase());
       toast.success(`Coupon applied! You save ₹${response.data.discount.toFixed(2)}`);
+      setWelcomeOffer(null); // Hide welcome banner after applying
     } catch (error) {
       toast.error(error.response?.data?.detail || "Invalid coupon code");
       setAppliedCoupon(null);
