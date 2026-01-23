@@ -1399,10 +1399,12 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       {/* File Upload */}
                       <div 
-                        className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${
-                          bannerUploading ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-primary hover:bg-gray-50'
+                        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
+                          bannerUploading ? 'border-blue-400 bg-blue-50' : 
+                          bannerForm.image ? 'border-green-400 bg-green-50' :
+                          'border-gray-300 hover:border-primary hover:bg-gray-50'
                         }`}
-                        onClick={() => bannerFileInputRef.current?.click()}
+                        onClick={() => !bannerForm.image && bannerFileInputRef.current?.click()}
                       >
                         <input
                           ref={bannerFileInputRef}
@@ -1417,55 +1419,53 @@ export default function AdminDashboard() {
                             <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                             <span>Uploading...</span>
                           </div>
+                        ) : bannerForm.image ? (
+                          <div className="space-y-3">
+                            <img 
+                              src={bannerForm.image.startsWith('/api') ? `${API.replace('/api', '')}${bannerForm.image}` : bannerForm.image} 
+                              alt="Banner preview" 
+                              className="w-full max-h-48 object-contain rounded border border-gray-200 mx-auto"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <div className="flex justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  bannerFileInputRef.current?.click();
+                                }}
+                                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                              >
+                                Change Image
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setBannerForm(prev => ({...prev, image: ''}));
+                                }}
+                                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                                data-testid="remove-banner-image-btn"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
                         ) : (
                           <>
-                            <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-600">
-                              <span className="text-primary font-medium">Click to upload</span> or drag and drop
+                            <Upload className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+                            <p className="text-sm text-gray-600 mb-1">
+                              <span className="text-primary font-medium">Click to upload</span> banner image
                             </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              JPG, PNG, WebP or GIF (Max 5MB) • Recommended: {bannerSizeRecommendations[bannerForm.banner_type]?.size || '1920x600'} px
+                            <p className="text-xs text-gray-400">
+                              JPG, PNG, WebP or GIF (Max 5MB)
+                            </p>
+                            <p className="text-xs text-blue-600 font-medium mt-2">
+                              Recommended: {bannerSizeRecommendations[bannerForm.banner_type]?.size || '1920x600'} px
                             </p>
                           </>
                         )}
                       </div>
-
-                      {/* OR Divider */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                        <span className="text-xs text-gray-400 uppercase">or enter URL</span>
-                        <div className="flex-1 h-px bg-gray-200"></div>
-                      </div>
-
-                      {/* URL Input */}
-                      <input
-                        type="url"
-                        placeholder="https://example.com/banner-image.jpg"
-                        value={bannerForm.image}
-                        onChange={(e) => setBannerForm(prev => ({...prev, image: e.target.value}))}
-                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                        data-testid="banner-image-url-input"
-                      />
-
-                      {/* Image Preview */}
-                      {bannerForm.image && (
-                        <div className="relative mt-3">
-                          <img 
-                            src={bannerForm.image.startsWith('/api') ? `${API.replace('/api', '')}${bannerForm.image}` : bannerForm.image} 
-                            alt="Banner preview" 
-                            className="w-full max-h-48 object-contain rounded border border-gray-200"
-                            onError={(e) => { e.target.style.display = 'none'; }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setBannerForm(prev => ({...prev, image: ''}))}
-                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                            data-testid="remove-banner-image-btn"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
 
