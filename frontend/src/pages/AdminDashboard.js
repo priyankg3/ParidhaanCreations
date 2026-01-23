@@ -184,13 +184,28 @@ export default function AdminDashboard() {
   const handleCreateBanner = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/banners`, bannerForm, { withCredentials: true });
+      const bannerData = {
+        ...bannerForm,
+        category: bannerForm.category || null
+      };
+      await axios.post(`${API}/banners`, bannerData, { withCredentials: true });
       toast.success("Banner created successfully");
       setShowBannerForm(false);
       resetBannerForm();
       fetchData();
     } catch (error) {
       toast.error("Failed to create banner");
+    }
+  };
+
+  const handleDeleteBanner = async (bannerId) => {
+    if (!window.confirm("Are you sure you want to delete this banner?")) return;
+    try {
+      await axios.delete(`${API}/banners/${bannerId}`, { withCredentials: true });
+      toast.success("Banner deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete banner");
     }
   };
 
