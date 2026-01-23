@@ -578,8 +578,14 @@ async def get_order(order_id: str, authorization: Optional[str] = Header(None), 
     return order
 
 @api_router.get("/banners")
-async def get_banners():
-    banners = await db.banners.find({"active": True}, {"_id": 0}).sort("position", 1).to_list(100)
+async def get_banners(banner_type: Optional[str] = None, category: Optional[str] = None):
+    query = {"active": True}
+    if banner_type:
+        query["banner_type"] = banner_type
+    if category:
+        query["$or"] = [{"category": category}, {"category": None}, {"category": {"$exists": False}}]
+    
+    banners = await db.banners.find(query, {"_id": 0}).sort("position", 1).to_list(100)
     return banners
 
 @api_router.post("/banners")
@@ -590,6 +596,19 @@ async def create_banner(banner: BannerCreate, authorization: Optional[str] = Hea
     doc["created_at"] = doc["created_at"].isoformat()
     await db.banners.insert_one(doc)
     return banner_obj
+
+@api_router.delete("/banners/{banner_id}")
+async def delete_banner(banner_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    await require_admin(authorization, session_token)
+    result = await db.banners.delete_one({"banner_id": banner_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Banner not found")
+    return {"message": "Banner deleted successfully"}
+
+@api_router.get("/categories")
+async def get_categories():
+    categories = await db.categories.find({}, {"_id": 0}).to_list(100)
+    return categories
 
 @api_router.post("/coupons/validate")
 async def validate_coupon(coupon_data: CouponValidate):
