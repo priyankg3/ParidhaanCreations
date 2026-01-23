@@ -141,10 +141,17 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleRazorpayPayment = async (orderId) => {
+  const handleRazorpayPayment = async (orderId, preferredMethod = "razorpay") => {
     try {
       const response = await axios.post(`${API}/payments/razorpay/order?order_id=${orderId}`);
       const razorpayOrder = response.data;
+
+      // Map payment method to Razorpay's preferred method
+      const methodConfig = {
+        razorpay: { method: "upi" },
+        card: { method: "card" },
+        netbanking: { method: "netbanking" }
+      };
 
       const options = {
         key: process.env.REACT_APP_RAZORPAY_KEY_ID || "rzp_live_S7Iuxv3a5NUNK3",
@@ -153,6 +160,7 @@ export default function CheckoutPage() {
         order_id: razorpayOrder.id,
         name: "Paridhaan Creations",
         description: `Order #${orderId}`,
+        image: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=100",
         handler: async (response) => {
           try {
             await axios.post(`${API}/payments/razorpay/verify`, {
@@ -172,8 +180,37 @@ export default function CheckoutPage() {
           contact: shippingAddress.phone,
           email: user?.email || shippingAddress.email || ""
         },
+        config: {
+          display: {
+            blocks: {
+              utib: {
+                name: "Pay using UPI",
+                instruments: [
+                  { method: "upi", flows: ["collect", "intent", "qr"] }
+                ]
+              },
+              other: {
+                name: "Other Methods",
+                instruments: [
+                  { method: "card" },
+                  { method: "netbanking" },
+                  { method: "wallet" }
+                ]
+              }
+            },
+            sequence: preferredMethod === "razorpay" ? ["block.utib", "block.other"] : ["block.other", "block.utib"],
+            preferences: {
+              show_default_blocks: true
+            }
+          }
+        },
         theme: {
           color: "#0F4C75"
+        },
+        modal: {
+          ondismiss: function() {
+            toast.error("Payment cancelled");
+          }
         }
       };
 
