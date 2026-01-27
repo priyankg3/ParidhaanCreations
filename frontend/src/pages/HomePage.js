@@ -122,7 +122,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen">
       <SEO 
         title="Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery | Shop Online"
         description="Discover authentic Indian handicrafts, brass pooja articles, traditional perfumes (attar), and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999. COD available."
