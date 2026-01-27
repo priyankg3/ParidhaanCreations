@@ -27,6 +27,7 @@ export default function CartPage() {
 
   const fetchCartBanner = async () => {
     try {
+      // Banner fetch doesn't need credentials - public API
       const response = await axios.get(`${API}/banners?placement=cart_page&status=active`);
       console.log("Cart banner response:", response.data);
       if (response.data && response.data.length > 0) {
