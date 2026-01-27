@@ -1791,6 +1791,194 @@ export default function AdminDashboard() {
 
         {activeTab === "settings" && (
           <div className="space-y-6">
+            {/* Site Branding Section */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+                <Settings className="w-6 h-6" />
+                Site Branding
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Upload and manage your website logos. These will appear in the header and footer of your site.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Header Logo */}
+                <div className="border border-border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">Header Logo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Recommended size: 200 x 80 px (PNG with transparent background)
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {siteSettings?.header_logo ? (
+                      <div className="relative border border-border rounded-lg p-4 bg-gray-50">
+                        <img 
+                          src={siteSettings.header_logo.startsWith('/api/') 
+                            ? `${API}${siteSettings.header_logo.replace('/api', '')}` 
+                            : siteSettings.header_logo} 
+                          alt="Header Logo" 
+                          className="h-20 w-auto mx-auto object-contain"
+                        />
+                        <button
+                          onClick={() => handleSettingsUpdate('header_logo', null)}
+                          className="absolute top-2 right-2 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-gray-50">
+                        <Image className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">No header logo uploaded</p>
+                      </div>
+                    )}
+                    
+                    <input
+                      type="file"
+                      ref={headerLogoRef}
+                      onChange={(e) => handleLogoUpload(e, 'header')}
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => headerLogoRef.current?.click()}
+                      disabled={logoUploading.header}
+                      className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {logoUploading.header ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Header Logo
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Footer Logo */}
+                <div className="border border-border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">Footer Logo</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Recommended size: 250 x 100 px (PNG with transparent background)
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {siteSettings?.footer_logo ? (
+                      <div className="relative border border-border rounded-lg p-4 bg-gray-50">
+                        <img 
+                          src={siteSettings.footer_logo.startsWith('/api/') 
+                            ? `${API}${siteSettings.footer_logo.replace('/api', '')}` 
+                            : siteSettings.footer_logo} 
+                          alt="Footer Logo" 
+                          className="h-24 w-auto mx-auto object-contain"
+                        />
+                        <button
+                          onClick={() => handleSettingsUpdate('footer_logo', null)}
+                          className="absolute top-2 right-2 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-gray-50">
+                        <Image className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">No footer logo uploaded</p>
+                      </div>
+                    )}
+                    
+                    <input
+                      type="file"
+                      ref={footerLogoRef}
+                      onChange={(e) => handleLogoUpload(e, 'footer')}
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => footerLogoRef.current?.click()}
+                      disabled={logoUploading.footer}
+                      className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {logoUploading.footer ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Footer Logo
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Favicon */}
+              <div className="mt-8 border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Favicon</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The small icon that appears in browser tabs. Recommended size: 32 x 32 px or 64 x 64 px (PNG or ICO)
+                </p>
+                
+                <div className="flex items-center gap-6">
+                  {siteSettings?.favicon ? (
+                    <div className="relative border border-border rounded-lg p-4 bg-gray-50 w-24 h-24 flex items-center justify-center">
+                      <img 
+                        src={siteSettings.favicon.startsWith('/api/') 
+                          ? `${API}${siteSettings.favicon.replace('/api', '')}` 
+                          : siteSettings.favicon} 
+                        alt="Favicon" 
+                        className="w-12 h-12 object-contain"
+                      />
+                      <button
+                        onClick={() => handleSettingsUpdate('favicon', null)}
+                        className="absolute -top-2 -right-2 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-border rounded-lg w-24 h-24 flex items-center justify-center bg-gray-50">
+                      <Image className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  <div>
+                    <input
+                      type="file"
+                      ref={faviconRef}
+                      onChange={(e) => handleLogoUpload(e, 'favicon')}
+                      accept="image/png,image/x-icon,image/jpeg"
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => faviconRef.current?.click()}
+                      disabled={logoUploading.favicon}
+                      className="bg-secondary text-secondary-foreground px-6 py-2 font-medium hover:bg-secondary/90 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {logoUploading.favicon ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload Favicon
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white border border-border/40 p-6">
               <h2 className="text-2xl font-heading font-bold mb-6">Notification Settings</h2>
               
