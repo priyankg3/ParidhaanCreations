@@ -1191,6 +1191,25 @@ export default function AdminDashboard() {
                     <label className="text-sm font-medium">Featured Product</label>
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Product Badge</label>
+                    <select
+                      value={productForm.badge}
+                      onChange={(e) => setProductForm({...productForm, badge: e.target.value})}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
+                      data-testid="product-badge-select"
+                    >
+                      <option value="">No Badge</option>
+                      <option value="new">✨ NEW ARRIVAL</option>
+                      <option value="hot">🔥 HOT</option>
+                      <option value="trending">📈 TRENDING</option>
+                      <option value="bestseller">🏆 BESTSELLER</option>
+                      <option value="limited">⏰ LIMITED</option>
+                      <option value="sale">💰 SALE</option>
+                      <option value="featured">⭐ FEATURED</option>
+                    </select>
+                  </div>
+
                   <div className="flex space-x-4">
                     <button
                       type="submit"
