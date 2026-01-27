@@ -192,20 +192,38 @@ export default function ProductListingPage() {
   const sideBanner = categoryBannersData.side;
   const footerBanner = categoryBannersData.footer;
 
+  // SEO optimized titles and descriptions
+  const categoryKeywords = {
+    handicrafts: "brass decorative items, wooden carvings, handmade crafts, indian handicrafts online",
+    pooja: "pooja thali, laddu gopal dress, brass diya, incense holder, pooja samagri",
+    perfumes: "indian attar, oud perfume, natural perfumes, traditional fragrances",
+    jewellery: "kundan necklace, artificial jewellery, bridal jewellery, traditional bangles"
+  };
+
   const seoTitle = selectedCategory 
-    ? `${categoryBanners[selectedCategory]?.title} - Paridhaan Creations`
-    : "All Products - Paridhaan Creations";
+    ? `${categoryBanners[selectedCategory]?.title || selectedCategory} - Buy Online at Paridhaan Creations`
+    : "Shop All Products - Handicrafts, Pooja Items, Perfumes & Jewellery | Paridhaan Creations";
   
   const seoDescription = selectedCategory
-    ? `${categoryBanners[selectedCategory]?.description}. Shop authentic ${selectedCategory} at Paridhaan Creations.`
-    : "Browse our complete collection of Indian handicrafts, pooja articles, perfumes, and traditional jewellery.";
+    ? `Buy authentic ${categoryBanners[selectedCategory]?.title || selectedCategory} online at Paridhaan Creations. ${categoryBanners[selectedCategory]?.description || ''}. Free shipping on orders above ₹999. COD available.`
+    : "Browse our complete collection of traditional Indian handicrafts, brass pooja articles, natural perfumes, and artificial jewellery. Handcrafted by skilled artisans.";
+
+  const seoKeywords = selectedCategory 
+    ? categoryKeywords[selectedCategory] || `${selectedCategory}, paridhaan creations`
+    : "indian handicrafts, pooja items, perfumes, jewellery, traditional items, paridhaan creations";
 
   return (
     <div className="min-h-screen">
       <SEO 
         title={seoTitle}
         description={seoDescription}
-        keywords={`${selectedCategory || 'products'}, Indian handicrafts, traditional items, online shopping`}
+        keywords={seoKeywords}
+        category={selectedCategory ? { name: categoryBanners[selectedCategory]?.title, productCount: filteredProducts.length } : null}
+        breadcrumbs={[
+          { name: 'Home', url: '/' },
+          { name: 'Products', url: '/products' },
+          ...(selectedCategory ? [{ name: categoryBanners[selectedCategory]?.title || selectedCategory, url: `/products?category=${selectedCategory}` }] : [])
+        ]}
       />
       
       {/* Header Banner from DB or fallback to category banner */}
