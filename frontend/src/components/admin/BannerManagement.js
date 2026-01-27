@@ -18,8 +18,8 @@ const PLACEMENTS = [
   { value: "category_sidebar", label: "📐 Category Sidebar", size: "300 x 600", description: "Side banner on category pages" },
   { value: "category_footer", label: "📋 Category Footer", size: "1200 x 100", description: "Bottom of category pages" },
   { value: "product_page", label: "🛍️ Product Page", size: "800 x 200", description: "Banner on product detail page" },
-  { value: "cart_page", label: "🛒 Cart Page", size: "800 x 150", description: "Promotional banner in cart" },
-  { value: "checkout_page", label: "💳 Checkout Page", size: "600 x 100", description: "Offer banner during checkout" }
+  { value: "cart_page", label: "🛒 Cart Page", size: "1200 x 300", description: "Promotional banner in cart" },
+  { value: "checkout_page", label: "💳 Checkout Page", size: "1200 x 200", description: "Offer banner during checkout" }
 ];
 
 const STATUS_OPTIONS = [
