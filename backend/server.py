@@ -125,7 +125,9 @@ class ProductCreate(BaseModel):
     length: Optional[float] = None
     breadth: Optional[float] = None
     height: Optional[float] = None
+    dimension_unit: str = "cm"  # cm, inches, feet
     weight: Optional[float] = None
+    weight_unit: str = "g"  # g, kg
     sizes: Optional[List[str]] = None
     sku: Optional[str] = None
     material: Optional[str] = None
