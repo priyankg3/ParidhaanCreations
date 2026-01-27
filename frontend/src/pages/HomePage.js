@@ -124,9 +124,10 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Paridhaan Creations - Traditional Indian Handicrafts & Jewellery"
-        description="Discover authentic Indian handicrafts, pooja articles, premium perfumes, and traditional artificial jewellery."
-        keywords="Indian handicrafts, pooja items, traditional jewellery, perfumes, artificial jewellery"
+        title="Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery | Shop Online"
+        description="Discover authentic Indian handicrafts, brass pooja articles, traditional perfumes (attar), and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999. COD available."
+        keywords="paridhaan creations, indian handicrafts, pooja items, brass pooja thali, laddu gopal dress, traditional jewellery, kundan necklace, indian perfumes, attar, incense sticks, decorative items, handmade crafts india, handicrafts online shopping"
+        breadcrumbs={[{ name: 'Home', url: '/' }]}
       />
       
       {/* Hero Section with Dynamic Banners */}
