@@ -324,11 +324,11 @@ export default function HomePage() {
               >
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={optimizeImageUrl(category.image, 400, 400)}
+                    src={optimizeImageUrl(category.image, isMobile ? 200 : 400, isMobile ? 200 : 400)}
                     alt={`${category.name} collection - Traditional ${category.name.toLowerCase()} items`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    width="400"
-                    height="400"
+                    width={isMobile ? "200" : "400"}
+                    height={isMobile ? "200" : "400"}
                     loading="lazy"
                     decoding="async"
                   />
