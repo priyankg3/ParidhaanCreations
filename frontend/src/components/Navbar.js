@@ -50,37 +50,39 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-secondary/20">
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
-          <Link to="/" className="flex items-center" data-testid="logo-link">
+          <Link to="/" className="flex items-center" data-testid="logo-link" aria-label="Paridhaan Creations Home">
             <img 
               src={headerLogo} 
-              alt={settings?.site_name || "Paridhaan Creations"} 
+              alt={`${settings?.site_name || "Paridhaan Creations"} - Home`}
               className="h-20 w-auto"
+              width="100"
+              height="80"
             />
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-base font-medium hover:text-primary transition-colors duration-300" data-testid="nav-home">{t("nav.home")}</Link>
+            <Link to="/" className="text-base font-medium text-gray-700 hover:text-primary transition-colors duration-300" data-testid="nav-home">{t("nav.home")}</Link>
             
             <div className="relative group">
-              <Link to="/products" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-products">
+              <Link to="/products" className="text-base font-medium text-gray-700 hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-products">
                 {t("nav.products")}
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </Link>
-              <div className="absolute left-0 mt-2 w-48 bg-white border border-border shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                <Link to="/products?category=handicrafts" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-handicrafts">{t("category.handicrafts")}</Link>
-                <Link to="/products?category=pooja" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-pooja">{t("category.pooja")}</Link>
-                <Link to="/products?category=perfumes" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-perfumes">{t("category.perfumes")}</Link>
-                <Link to="/products?category=jewellery" className="block px-4 py-3 hover:bg-background-paper transition-colors" data-testid="dropdown-jewellery">{t("category.jewellery")}</Link>
+              <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-lg" role="menu">
+                <Link to="/products?category=handicrafts" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-handicrafts" role="menuitem">{t("category.handicrafts")}</Link>
+                <Link to="/products?category=pooja" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-pooja" role="menuitem">{t("category.pooja")}</Link>
+                <Link to="/products?category=perfumes" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-perfumes" role="menuitem">{t("category.perfumes")}</Link>
+                <Link to="/products?category=jewellery" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-jewellery" role="menuitem">{t("category.jewellery")}</Link>
               </div>
             </div>
 
-            <Link to="/support" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-support">
-              <Headphones className="w-4 h-4 mr-1" />
+            <Link to="/support" className="text-base font-medium text-gray-700 hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-support">
+              <Headphones className="w-4 h-4 mr-1" aria-hidden="true" />
               {t("nav.support")}
             </Link>
           </div>
