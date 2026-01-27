@@ -21,6 +21,30 @@ const defaultCategories = [
   { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=400&h=400&fit=crop&q=60&fm=webp" }
 ];
 
+// Optimize external image URLs for better performance
+const optimizeImageUrl = (url, width = 400, height = 400) => {
+  if (!url) return url;
+  
+  // Already optimized or local image
+  if (url.includes('/api/') || url.includes('w=') || url.includes('auto=compress')) {
+    return url;
+  }
+  
+  // Unsplash optimization
+  if (url.includes('unsplash.com')) {
+    const baseUrl = url.split('?')[0];
+    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=60&fm=webp`;
+  }
+  
+  // Pexels optimization
+  if (url.includes('pexels.com')) {
+    const baseUrl = url.split('?')[0];
+    return `${baseUrl}?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`;
+  }
+  
+  return url;
+};
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState([]);
