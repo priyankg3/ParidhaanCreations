@@ -2012,7 +2012,7 @@ async def upload_multiple_images(files: List[UploadFile] = File(...), authorizat
 
 @api_router.get("/uploads/{filename}")
 async def get_uploaded_file(filename: str):
-    """Serve uploaded files"""
+    """Serve uploaded files with caching headers"""
     file_path = UPLOAD_DIR / filename
     
     if not file_path.exists():
@@ -2029,7 +2029,13 @@ async def get_uploaded_file(filename: str):
     }
     content_type = content_types.get(ext, 'application/octet-stream')
     
-    return FileResponse(file_path, media_type=content_type)
+    # Add cache headers for better performance
+    headers = {
+        "Cache-Control": "public, max-age=86400",  # 24 hours cache
+        "X-Content-Type-Options": "nosniff"
+    }
+    
+    return FileResponse(file_path, media_type=content_type, headers=headers)
 
 @api_router.delete("/upload/{filename}")
 async def delete_uploaded_file(filename: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
