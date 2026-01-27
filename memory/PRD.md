@@ -139,6 +139,22 @@ All 9 banner placements are fully functional with JPEG/PNG support:
 4. **Image Caching Fix:**
    - Added Cache-Control headers to uploaded files endpoint
    - CSS optimizations for image loading states
+5. **Banner Size Updates:**
+   - Cart page: Updated to 1200x300 (was 800x150)
+   - Checkout page: Updated to 1200x200 (was 600x100)
+   - Banner now displays at h-48 md:h-64 on Cart and Checkout pages
+6. **Banner Title Made Optional:**
+   - Backend model updated - title is no longer mandatory
+   - Can upload banners with just images, no title required
+7. **Site Logo Management Feature:**
+   - Added Site Branding section in Admin Dashboard Settings tab
+   - Header logo upload with 200x80 px recommendation
+   - Footer logo upload with 250x100 px recommendation
+   - Favicon upload with 32x32 or 64x64 px recommendation
+   - SiteSettingsContext for global access across app
+   - Dynamic logos in Navbar and Footer components
+8. **CORS Fix:**
+   - Added localhost:3000 to allowed origins for development
 
 ## Deployment Instructions
 1. Click "Preview" to test your application
