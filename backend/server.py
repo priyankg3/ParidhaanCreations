@@ -85,6 +85,11 @@ class User(BaseModel):
     is_admin: bool = False
     created_at: datetime
 
+class ProductDimensions(BaseModel):
+    length: Optional[float] = None  # in cm
+    breadth: Optional[float] = None  # in cm
+    height: Optional[float] = None  # in cm
+
 class Product(BaseModel):
     model_config = ConfigDict(extra="ignore")
     product_id: str = Field(default_factory=lambda: f"prod_{uuid.uuid4().hex[:12]}")
@@ -95,6 +100,15 @@ class Product(BaseModel):
     images: List[str]
     stock: int
     featured: bool = False
+    # Advanced attributes
+    dimensions: Optional[ProductDimensions] = None  # L x B x H in cm
+    weight: Optional[float] = None  # Weight in grams
+    sizes: Optional[List[str]] = None  # Available sizes like ["S", "M", "L", "XL"] or ["6", "7", "8", "9"]
+    sku: Optional[str] = None  # Stock Keeping Unit
+    material: Optional[str] = None  # Material type
+    color: Optional[str] = None  # Color
+    brand: Optional[str] = None  # Brand name
+    tags: Optional[List[str]] = None  # Tags for search
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
@@ -105,6 +119,17 @@ class ProductCreate(BaseModel):
     images: List[str]
     stock: int
     featured: bool = False
+    # Advanced attributes
+    length: Optional[float] = None
+    breadth: Optional[float] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    sizes: Optional[List[str]] = None
+    sku: Optional[str] = None
+    material: Optional[str] = None
+    color: Optional[str] = None
+    brand: Optional[str] = None
+    tags: Optional[List[str]] = None
 
 class Category(BaseModel):
     model_config = ConfigDict(extra="ignore")
