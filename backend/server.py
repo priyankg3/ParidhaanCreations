@@ -86,9 +86,10 @@ class User(BaseModel):
     created_at: datetime
 
 class ProductDimensions(BaseModel):
-    length: Optional[float] = None  # in cm
-    breadth: Optional[float] = None  # in cm
-    height: Optional[float] = None  # in cm
+    length: Optional[float] = None
+    breadth: Optional[float] = None
+    height: Optional[float] = None
+    unit: str = "cm"  # cm, inches, feet
 
 class Product(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -101,8 +102,9 @@ class Product(BaseModel):
     stock: int
     featured: bool = False
     # Advanced attributes
-    dimensions: Optional[ProductDimensions] = None  # L x B x H in cm
+    dimensions: Optional[ProductDimensions] = None  # L x B x H with unit
     weight: Optional[float] = None  # Weight in grams
+    weight_unit: str = "g"  # g, kg
     sizes: Optional[List[str]] = None  # Available sizes like ["S", "M", "L", "XL"] or ["6", "7", "8", "9"]
     sku: Optional[str] = None  # Stock Keeping Unit
     material: Optional[str] = None  # Material type
