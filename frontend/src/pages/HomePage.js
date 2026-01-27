@@ -140,7 +140,7 @@ export default function HomePage() {
             <div
               key={index}
               className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+                index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
               }`}
               aria-hidden={index !== currentSlide}
             >
@@ -149,6 +149,7 @@ export default function HomePage() {
                   to={banner.link} 
                   onClick={() => handleBannerClick(banner)}
                   className="block w-full h-full"
+                  tabIndex={index === currentSlide ? 0 : -1}
                 >
                   <img 
                     src={imageUrl} 
