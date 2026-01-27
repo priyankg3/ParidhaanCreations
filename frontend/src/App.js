@@ -67,9 +67,11 @@ function AppRouter() {
 function App() {
   return (
     <LanguageProvider>
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
+      <SiteSettingsProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </SiteSettingsProvider>
     </LanguageProvider>
   );
 }
