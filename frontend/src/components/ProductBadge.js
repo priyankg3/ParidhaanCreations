@@ -1,5 +1,5 @@
 import React from "react";
-import { Flame, Sparkles, Clock, XCircle, Star, TrendingUp } from "lucide-react";
+import { Flame, Sparkles, Clock, XCircle, Star, TrendingUp, Award, Tag } from "lucide-react";
 
 const ProductBadge = ({ type, className = "" }) => {
   if (!type) return null;
@@ -39,6 +39,18 @@ const ProductBadge = ({ type, className = "" }) => {
       label: 'FEATURED',
       bgColor: 'bg-gradient-to-r from-secondary to-accent',
       icon: Star,
+      position: 'top-4 left-4'
+    },
+    'bestseller': {
+      label: 'BESTSELLER',
+      bgColor: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+      icon: Award,
+      position: 'top-4 left-4'
+    },
+    'sale': {
+      label: 'SALE',
+      bgColor: 'bg-gradient-to-r from-rose-500 to-red-600',
+      icon: Tag,
       position: 'top-4 left-4'
     }
   };
