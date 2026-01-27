@@ -10,10 +10,10 @@ export const optimizeImageUrl = (url, width = 400, height = 400) => {
     return url;
   }
   
-  // Unsplash optimization - add WebP format and compression
+  // Unsplash optimization - add WebP format and compression (q=50 for mobile performance)
   if (url.includes('unsplash.com')) {
     const baseUrl = url.split('?')[0];
-    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=60&fm=webp`;
+    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=50&fm=webp`;
   }
   
   // Pexels optimization - use auto compress
