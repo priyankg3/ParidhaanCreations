@@ -43,9 +43,27 @@ export default function HomePage() {
   const [categoriesData, setCategoriesData] = useState(defaultCategories);
   const [loading, setLoading] = useState(true);
 
-  // Get display images - use database banners or fallback
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Get display images - use database banners or fallback (responsive)
+  const getHeroImageUrl = (index) => {
+    if (heroBanners.length > 0) {
+      const banner = heroBanners[index];
+      if (isMobile && banner?.image_mobile) return banner.image_mobile;
+      return banner?.image_desktop || banner?.image || '';
+    }
+    const fallback = fallbackHeroImages[index];
+    return isMobile ? fallback?.mobile : fallback?.desktop;
+  };
+
   const heroImages = heroBanners.length > 0 
-    ? heroBanners.map(b => b.image_desktop || b.image) 
+    ? heroBanners 
     : fallbackHeroImages;
 
   const fetchAllData = useCallback(async () => {
