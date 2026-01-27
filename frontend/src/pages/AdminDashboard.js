@@ -986,6 +986,128 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Advanced Product Attributes */}
+                  <div className="border-t pt-6 mt-6">
+                    <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Package className="w-5 h-5" />
+                      Advanced Product Details
+                    </h4>
+                    
+                    {/* Dimensions */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-2">Dimensions (L × B × H in cm)</label>
+                      <div className="grid grid-cols-3 gap-3">
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="Length"
+                          value={productForm.length}
+                          onChange={(e) => setProductForm({...productForm, length: e.target.value})}
+                          className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="Breadth"
+                          value={productForm.breadth}
+                          onChange={(e) => setProductForm({...productForm, breadth: e.target.value})}
+                          className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="Height"
+                          value={productForm.height}
+                          onChange={(e) => setProductForm({...productForm, height: e.target.value})}
+                          className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Weight and SKU */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Weight (grams)</label>
+                        <input
+                          type="number"
+                          step="1"
+                          placeholder="e.g., 500"
+                          value={productForm.weight}
+                          onChange={(e) => setProductForm({...productForm, weight: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">SKU (Stock Code)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., PROD-001"
+                          value={productForm.sku}
+                          onChange={(e) => setProductForm({...productForm, sku: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Sizes */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-2">Available Sizes (comma separated)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., S, M, L, XL or 6, 7, 8, 9, 10"
+                        value={productForm.sizes}
+                        onChange={(e) => setProductForm({...productForm, sizes: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+
+                    {/* Material, Color, Brand */}
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Material</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Brass, Cotton"
+                          value={productForm.material}
+                          onChange={(e) => setProductForm({...productForm, material: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Color</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Gold, Red"
+                          value={productForm.color}
+                          onChange={(e) => setProductForm({...productForm, color: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Brand</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Paridhaan"
+                          value={productForm.brand}
+                          onChange={(e) => setProductForm({...productForm, brand: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-2">Tags (comma separated)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., festival, gift, traditional, wedding"
+                        value={productForm.tags}
+                        onChange={(e) => setProductForm({...productForm, tags: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
