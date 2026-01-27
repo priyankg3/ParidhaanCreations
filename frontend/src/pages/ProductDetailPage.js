@@ -229,6 +229,87 @@ export default function ProductDetailPage() {
             >
               Buy Now
             </button>
+
+            {/* Advanced Product Details */}
+            {(product.dimensions || product.weight || product.sizes || product.material || product.color || product.brand || product.sku) && (
+              <div className="mt-8 border-t pt-6">
+                <h3 className="text-lg font-semibold mb-4">Product Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {product.dimensions && (product.dimensions.length || product.dimensions.breadth || product.dimensions.height) && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">Dimensions (L × B × H)</span>
+                      <span className="font-medium">
+                        {product.dimensions.length || '-'} × {product.dimensions.breadth || '-'} × {product.dimensions.height || '-'} cm
+                      </span>
+                    </div>
+                  )}
+                  {product.weight && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">Weight</span>
+                      <span className="font-medium">{product.weight >= 1000 ? `${(product.weight/1000).toFixed(2)} kg` : `${product.weight} g`}</span>
+                    </div>
+                  )}
+                  {product.material && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">Material</span>
+                      <span className="font-medium">{product.material}</span>
+                    </div>
+                  )}
+                  {product.color && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">Color</span>
+                      <span className="font-medium">{product.color}</span>
+                    </div>
+                  )}
+                  {product.brand && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">Brand</span>
+                      <span className="font-medium">{product.brand}</span>
+                    </div>
+                  )}
+                  {product.sku && (
+                    <div className="bg-background-paper p-3 rounded">
+                      <span className="text-muted-foreground block mb-1">SKU</span>
+                      <span className="font-medium font-mono">{product.sku}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Sizes */}
+                {product.sizes && product.sizes.length > 0 && (
+                  <div className="mt-4">
+                    <span className="text-sm text-muted-foreground block mb-2">Available Sizes</span>
+                    <div className="flex flex-wrap gap-2">
+                      {product.sizes.map((size, index) => (
+                        <span 
+                          key={index} 
+                          className="px-4 py-2 border border-border bg-background-paper text-sm font-medium hover:border-primary transition-colors cursor-pointer"
+                        >
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {product.tags && product.tags.length > 0 && (
+                  <div className="mt-4">
+                    <span className="text-sm text-muted-foreground block mb-2">Tags</span>
+                    <div className="flex flex-wrap gap-2">
+                      {product.tags.map((tag, index) => (
+                        <span 
+                          key={index} 
+                          className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
