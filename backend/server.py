@@ -2055,7 +2055,7 @@ async def upload_image(
 
 @api_router.post("/upload/images")
 async def upload_multiple_images(files: List[UploadFile] = File(...), authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
-    """Upload multiple image files (admin only)"""
+    """Upload multiple image files with compression (admin only)"""
     await require_admin(authorization, session_token)
     
     if len(files) > 10:
@@ -2071,23 +2071,33 @@ async def upload_multiple_images(files: List[UploadFile] = File(...), authorizat
                 continue
             
             content = await file.read()
+            original_size = len(content)
             
-            if len(content) > MAX_FILE_SIZE:
+            if original_size > MAX_FILE_SIZE:
                 errors.append({"filename": file.filename, "error": "File too large"})
                 continue
             
-            ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            # Compress image
+            compressed_content, new_ext = compress_image(content)
+            
+            if new_ext:
+                unique_filename = f"{uuid.uuid4().hex}.{new_ext}"
+            else:
+                ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+                unique_filename = f"{uuid.uuid4().hex}.{ext}"
+                compressed_content = content
+            
             file_path = UPLOAD_DIR / unique_filename
             
             with open(file_path, "wb") as f:
-                f.write(content)
+                f.write(compressed_content)
             
             uploaded.append({
                 "original_name": file.filename,
                 "filename": unique_filename,
                 "url": f"/api/uploads/{unique_filename}",
-                "size": len(content)
+                "original_size": original_size,
+                "compressed_size": len(compressed_content)
             })
         except Exception as e:
             errors.append({"filename": file.filename, "error": str(e)})
