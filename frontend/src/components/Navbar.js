@@ -127,33 +127,37 @@ export default function Navbar() {
             )}
 
             <button
-              className="md:hidden p-2"
+              className="md:hidden p-2 text-gray-700"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-toggle"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              type="button"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
             </button>
           </div>
         </div>
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200" data-testid="mobile-menu">
+        <div className="md:hidden bg-white border-t border-gray-200" data-testid="mobile-menu" id="mobile-menu" role="menu">
           <div className="px-4 py-4 space-y-3">
-            <Link to="/" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-            <Link to="/products" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Products</Link>
-            <Link to="/cart" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Cart</Link>
+            <Link to="/" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Home</Link>
+            <Link to="/products" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Products</Link>
+            <Link to="/cart" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Cart</Link>
             {user ? (
               <>
-                <Link to="/wishlist" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Wishlist</Link>
-                <Link to="/my-orders" className="block py-2" onClick={() => setMobileMenuOpen(false)}>My Orders</Link>
+                <Link to="/wishlist" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Wishlist</Link>
+                <Link to="/my-orders" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">My Orders</Link>
                 {user.is_admin && (
-                  <Link to="/admin" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Admin Dashboard</Link>
+                  <Link to="/admin" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Admin Dashboard</Link>
                 )}
-                <button onClick={handleLogout} className="block py-2 w-full text-left">Logout</button>
+                <button onClick={handleLogout} className="block py-2 w-full text-left text-gray-700 hover:text-primary" type="button" role="menuitem">Logout</button>
               </>
             ) : (
-              <Link to="/login" className="block py-2" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+              <Link to="/login" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Login</Link>
             )}
           </div>
         </div>
