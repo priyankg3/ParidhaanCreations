@@ -247,7 +247,7 @@ class Banner(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BannerCreate(BaseModel):
-    title: str
+    title: Optional[str] = None  # Title is now optional
     image_desktop: str = ""
     image_mobile: str = ""
     placement: str = "hero"
