@@ -8,18 +8,28 @@ import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 import { optimizeImageUrl } from "@/utils/imageUtils";
 
-// Fallback hero images if no banners in database - OPTIMIZED with WebP and smaller sizes
+// Fallback hero images - Mobile optimized (600px) and Desktop (1200px)
 const fallbackHeroImages = [
-  "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1200&h=600&fit=crop&q=60&fm=webp",
-  "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1200&h=600&fit=crop&q=60&fm=webp",
-  "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1200&h=600&fit=crop&q=60&fm=webp"
+  {
+    mobile: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=600&h=400&fit=crop&q=50&fm=webp",
+    desktop: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1200&h=600&fit=crop&q=60&fm=webp"
+  },
+  {
+    mobile: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=600&h=400&fit=crop&q=50&fm=webp",
+    desktop: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1200&h=600&fit=crop&q=60&fm=webp"
+  },
+  {
+    mobile: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=600&h=400&fit=crop&q=50&fm=webp",
+    desktop: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1200&h=600&fit=crop&q=60&fm=webp"
+  }
 ];
 
+// Category images - smaller for mobile
 const defaultCategories = [
-  { name: "Handicrafts", slug: "handicrafts", image: "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?w=400&h=400&fit=crop&q=60&fm=webp" },
-  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop" },
-  { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=400&h=400&fit=crop&q=60&fm=webp" },
-  { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=400&h=400&fit=crop&q=60&fm=webp" }
+  { name: "Handicrafts", slug: "handicrafts", image: "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?w=300&h=300&fit=crop&q=50&fm=webp" },
+  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&fit=crop" },
+  { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=300&h=300&fit=crop&q=50&fm=webp" },
+  { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=300&h=300&fit=crop&q=50&fm=webp" }
 ];
 
 export default function HomePage() {
@@ -28,6 +38,7 @@ export default function HomePage() {
   const [heroBanners, setHeroBanners] = useState([]);
   const [belowHeroBanners, setBelowHeroBanners] = useState([]);
   const [popupBanner, setPopupBanner] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [categoriesData, setCategoriesData] = useState(defaultCategories);
   const [loading, setLoading] = useState(true);
