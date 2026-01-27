@@ -131,7 +131,7 @@ export default function HomePage() {
       />
       
       {/* Hero Section with Dynamic Banners */}
-      <section className="relative h-[500px] md:h-[600px] overflow-hidden" data-testid="hero-section">
+      <section className="relative h-[500px] md:h-[600px] overflow-hidden" data-testid="hero-section" role="region" aria-label="Featured promotions">
         {heroImages.map((img, index) => {
           const banner = heroBanners[index];
           const imageUrl = banner ? getImageUrl(banner) : img;
@@ -142,6 +142,7 @@ export default function HomePage() {
               className={`absolute inset-0 transition-opacity duration-1000 ${
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
+              aria-hidden={index !== currentSlide}
             >
               {banner?.link ? (
                 <Link 
@@ -151,17 +152,25 @@ export default function HomePage() {
                 >
                   <img 
                     src={imageUrl} 
-                    alt={banner?.title || `Hero ${index + 1}`} 
+                    alt={banner?.title || `Promotional banner ${index + 1} - Shop handicrafts and traditional items`} 
                     className="w-full h-full object-cover"
+                    width="1200"
+                    height="600"
                     loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "low"}
+                    decoding={index === 0 ? "sync" : "async"}
                   />
                 </Link>
               ) : (
                 <img 
                   src={imageUrl} 
-                  alt={banner?.title || `Hero ${index + 1}`} 
+                  alt={banner?.title || `Promotional banner ${index + 1} - Shop handicrafts and traditional items`} 
                   className="w-full h-full object-cover"
+                  width="1200"
+                  height="600"
                   loading={index === 0 ? "eager" : "lazy"}
+                  fetchPriority={index === 0 ? "high" : "low"}
+                  decoding={index === 0 ? "sync" : "async"}
                 />
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/80"></div>
@@ -174,12 +183,12 @@ export default function HomePage() {
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-heading text-white mb-4 md:mb-6 tracking-tight" data-testid="hero-title">
               {heroBanners[currentSlide]?.title || "Paridhaan Creations"}
             </h1>
-            <p className="text-base md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-xl text-white mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
               {heroBanners[currentSlide]?.cta_text || "Discover authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery"}
             </p>
             <Link
               to="/products"
-              className="pointer-events-auto inline-block bg-secondary text-secondary-foreground px-6 md:px-8 py-3 md:py-4 font-medium tracking-wide hover:bg-secondary/90 transition-all duration-300 hover:shadow-xl"
+              className="pointer-events-auto inline-block bg-white text-primary px-6 md:px-8 py-3 md:py-4 font-semibold tracking-wide hover:bg-gray-100 transition-all duration-300 hover:shadow-xl rounded-lg"
               data-testid="shop-now-button"
             >
               Shop Now
@@ -191,29 +200,37 @@ export default function HomePage() {
           <>
             <button
               onClick={() => setCurrentSlide((currentSlide - 1 + heroImages.length) % heroImages.length)}
-              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm p-2 hover:bg-white/30 transition-all"
+              className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 bg-white/30 backdrop-blur-sm p-3 hover:bg-white/50 transition-all rounded-full"
               data-testid="hero-prev-button"
+              aria-label="Previous slide"
+              type="button"
             >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" aria-hidden="true" />
             </button>
             <button
               onClick={() => setCurrentSlide((currentSlide + 1) % heroImages.length)}
-              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-sm p-2 hover:bg-white/30 transition-all"
+              className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 bg-white/30 backdrop-blur-sm p-3 hover:bg-white/50 transition-all rounded-full"
               data-testid="hero-next-button"
+              aria-label="Next slide"
+              type="button"
             >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" aria-hidden="true" />
             </button>
             
             {/* Slide indicators */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" role="tablist" aria-label="Slide indicators">
               {heroImages.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
-                    index === currentSlide ? "bg-white w-6 md:w-8" : "bg-white/50"
+                  className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all ${
+                    index === currentSlide ? "bg-white w-8 md:w-10" : "bg-white/60"
                   }`}
                   data-testid={`hero-indicator-${index}`}
+                  aria-label={`Go to slide ${index + 1}`}
+                  aria-selected={index === currentSlide}
+                  role="tab"
+                  type="button"
                 />
               ))}
             </div>
