@@ -12,10 +12,38 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [cartBanner, setCartBanner] = useState(null);
 
   useEffect(() => {
     fetchCart();
+    fetchCartBanner();
   }, []);
+
+  const fetchCartBanner = async () => {
+    try {
+      const response = await axios.get(`${API}/banners?placement=cart_page&status=active`);
+      if (response.data && response.data.length > 0) {
+        setCartBanner(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching cart banner:", error);
+    }
+  };
+
+  const getImageUrl = (banner) => {
+    if (!banner) return '';
+    let url = banner.image_desktop || banner.image || '';
+    if (url && url.startsWith('/api/')) {
+      url = `${API}${url.replace('/api', '')}`;
+    }
+    return url;
+  };
+
+  const handleBannerClick = (banner) => {
+    if (banner?.banner_id) {
+      axios.post(`${API}/banners/${banner.banner_id}/click`).catch(() => {});
+    }
+  };
 
   const fetchCart = async () => {
     try {
