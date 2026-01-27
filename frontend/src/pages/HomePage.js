@@ -313,16 +313,16 @@ export default function HomePage() {
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
-        <section className="py-16 md:py-24 bg-background-paper">
+        <section className="py-16 md:py-24 bg-gray-50" aria-labelledby="featured-heading">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10 md:mb-16">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-3 md:mb-4" data-testid="featured-title">Featured Products</h2>
-              <p className="text-base md:text-lg text-muted-foreground">Handpicked treasures for you</p>
+              <h2 id="featured-heading" className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-3 md:mb-4" data-testid="featured-title">Featured Products</h2>
+              <p className="text-base md:text-lg text-gray-600">Handpicked treasures for you</p>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {featuredProducts.map((product) => (
-                <div
+                <article
                   key={product.product_id}
                   className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
                   data-testid={`product-${product.product_id}`}
@@ -331,9 +331,12 @@ export default function HomePage() {
                     <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || 'featured'} />
                     <img
                       src={product.images[0]}
-                      alt={product.name}
+                      alt={`${product.name} - ₹${product.price}`}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      width="300"
+                      height="300"
                       loading="lazy"
+                      decoding="async"
                     />
                   </Link>
                   <div className="p-4 md:p-6">
@@ -342,16 +345,18 @@ export default function HomePage() {
                         {product.name}
                       </h3>
                     </Link>
-                    <p className="text-xl md:text-2xl font-bold text-accent mb-3 md:mb-4">₹{product.price}</p>
+                    <p className="text-xl md:text-2xl font-bold text-primary mb-3 md:mb-4">₹{product.price}</p>
                     <button
                       onClick={() => addToCart(product.product_id)}
-                      className="w-full bg-primary text-primary-foreground py-2 md:py-3 text-sm md:text-base font-medium hover:bg-primary/90 transition-all duration-300"
+                      className="w-full bg-primary text-white py-2 md:py-3 text-sm md:text-base font-medium hover:bg-primary/90 transition-all duration-300 rounded"
                       data-testid={`add-to-cart-${product.product_id}`}
+                      aria-label={`Add ${product.name} to cart`}
+                      type="button"
                     >
                       Add to Cart
                     </button>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
