@@ -8,18 +8,18 @@ import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 import { optimizeImageUrl } from "@/utils/imageUtils";
 
-// Fallback hero images - Mobile optimized (600px) and Desktop (1200px)
+// Fallback hero images - Mobile optimized (500px, q=40) and Desktop (1200px)
 const fallbackHeroImages = [
   {
-    mobile: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=600&h=400&fit=crop&q=50&fm=webp",
+    mobile: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=500&h=350&fit=crop&q=40&fm=webp",
     desktop: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1200&h=600&fit=crop&q=60&fm=webp"
   },
   {
-    mobile: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=600&h=400&fit=crop&q=50&fm=webp",
+    mobile: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=500&h=350&fit=crop&q=40&fm=webp",
     desktop: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1200&h=600&fit=crop&q=60&fm=webp"
   },
   {
-    mobile: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=600&h=400&fit=crop&q=50&fm=webp",
+    mobile: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=500&h=350&fit=crop&q=40&fm=webp",
     desktop: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1200&h=600&fit=crop&q=60&fm=webp"
   }
 ];
