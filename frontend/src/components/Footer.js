@@ -1,8 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle } from "lucide-react";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+
+const DEFAULT_LOGO = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
 
 export default function Footer() {
+  const { settings, getLogoUrl } = useSiteSettings();
+  const footerLogo = getLogoUrl(settings?.footer_logo) || getLogoUrl(settings?.header_logo) || DEFAULT_LOGO;
+
   return (
     <footer className="bg-primary text-primary-foreground mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -10,13 +16,13 @@ export default function Footer() {
           <div>
             <div className="bg-white p-4 rounded mb-4 inline-block">
               <img 
-                src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
-                alt="Paridhaan Creations" 
+                src={footerLogo} 
+                alt={settings?.site_name || "Paridhaan Creations"} 
                 className="h-28 w-auto"
               />
             </div>
             <p className="text-sm text-primary-foreground/80 leading-relaxed">
-              Traditional Indian handicrafts, pooja items, perfumes, and artificial jewellery.
+              {settings?.tagline || "Traditional Indian handicrafts, pooja items, perfumes, and artificial jewellery."}
             </p>
           </div>
 
