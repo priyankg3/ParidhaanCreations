@@ -275,11 +275,11 @@ export default function HomePage() {
       )}
 
       {/* Categories Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24" aria-labelledby="categories-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-3 md:mb-4" data-testid="categories-title">Shop by Category</h2>
-            <p className="text-base md:text-lg text-muted-foreground">Explore our curated collections</p>
+            <h2 id="categories-heading" className="text-3xl md:text-4xl lg:text-5xl font-bold font-heading mb-3 md:mb-4" data-testid="categories-title">Shop by Category</h2>
+            <p className="text-base md:text-lg text-gray-600">Explore our curated collections</p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
@@ -289,13 +289,17 @@ export default function HomePage() {
                 to={`/products?category=${category.slug}`}
                 className="group relative overflow-hidden bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl rounded-lg"
                 data-testid={`category-${category.slug}`}
+                aria-label={`Shop ${category.name} - Browse our ${category.name.toLowerCase()} collection`}
               >
                 <div className="aspect-square overflow-hidden">
                   <img
                     src={category.image}
-                    alt={category.name}
+                    alt={`${category.name} collection - Traditional ${category.name.toLowerCase()} items`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    width="400"
+                    height="400"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex items-end">
