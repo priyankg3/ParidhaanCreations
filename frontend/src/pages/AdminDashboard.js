@@ -176,9 +176,49 @@ export default function AdminDashboard() {
       } else if (activeTab === "coupons") {
         const response = await axios.get(`${API}/coupons`, { withCredentials: true });
         setCoupons(response.data);
+      } else if (activeTab === "settings") {
+        const response = await axios.get(`${API}/settings`);
+        setSiteSettings(response.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleLogoUpload = async (e, logoType) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setLogoUploading(prev => ({ ...prev, [logoType]: true }));
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/settings/upload-logo?logo_type=${logoType}`, formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      if (response.data.success) {
+        toast.success(`${logoType.charAt(0).toUpperCase() + logoType.slice(1)} logo uploaded successfully!`);
+        // Refresh settings to get new logo URL
+        const settingsRes = await axios.get(`${API}/settings`);
+        setSiteSettings(settingsRes.data);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || `Failed to upload ${logoType} logo`);
+    } finally {
+      setLogoUploading(prev => ({ ...prev, [logoType]: false }));
+    }
+  };
+
+  const handleSettingsUpdate = async (field, value) => {
+    try {
+      await axios.put(`${API}/settings`, { [field]: value }, { withCredentials: true });
+      setSiteSettings(prev => ({ ...prev, [field]: value }));
+      toast.success("Settings updated!");
+    } catch (error) {
+      toast.error("Failed to update settings");
     }
   };
 
