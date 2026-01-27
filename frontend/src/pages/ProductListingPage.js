@@ -440,9 +440,13 @@ export default function ProductListingPage() {
                       <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
                         <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                         <img
-                          src={product.images[0]}
+                          src={optimizeImageUrl(product.images[0], 300, 300)}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                          decoding="async"
+                          width="300"
+                          height="300"
                         />
                         <button
                           onClick={(e) => {
