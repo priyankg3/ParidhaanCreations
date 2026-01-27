@@ -441,7 +441,17 @@ export default function AdminDashboard() {
       category: "",
       images: [""],
       stock: "",
-      featured: false
+      featured: false,
+      length: "",
+      breadth: "",
+      height: "",
+      weight: "",
+      sizes: "",
+      sku: "",
+      material: "",
+      color: "",
+      brand: "",
+      tags: ""
     });
   };
 
