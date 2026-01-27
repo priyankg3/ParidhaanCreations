@@ -34,7 +34,18 @@ export default function AdminDashboard() {
     category: "",
     images: [""],
     stock: "",
-    featured: false
+    featured: false,
+    // Advanced attributes
+    length: "",
+    breadth: "",
+    height: "",
+    weight: "",
+    sizes: "",
+    sku: "",
+    material: "",
+    color: "",
+    brand: "",
+    tags: ""
   });
 
   const [categoryForm, setCategoryForm] = useState({
