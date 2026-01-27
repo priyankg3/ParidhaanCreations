@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
+import { optimizeImageUrl } from "@/utils/imageUtils";
 
 // Fallback hero images if no banners in database - OPTIMIZED with WebP and smaller sizes
 const fallbackHeroImages = [
@@ -20,30 +21,6 @@ const defaultCategories = [
   { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=400&h=400&fit=crop&q=60&fm=webp" },
   { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=400&h=400&fit=crop&q=60&fm=webp" }
 ];
-
-// Optimize external image URLs for better performance
-const optimizeImageUrl = (url, width = 400, height = 400) => {
-  if (!url) return url;
-  
-  // Already optimized or local image
-  if (url.includes('/api/') || url.includes('w=') || url.includes('auto=compress')) {
-    return url;
-  }
-  
-  // Unsplash optimization
-  if (url.includes('unsplash.com')) {
-    const baseUrl = url.split('?')[0];
-    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=60&fm=webp`;
-  }
-  
-  // Pexels optimization
-  if (url.includes('pexels.com')) {
-    const baseUrl = url.split('?')[0];
-    return `${baseUrl}?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`;
-  }
-  
-  return url;
-};
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
