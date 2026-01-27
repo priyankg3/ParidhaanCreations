@@ -120,18 +120,61 @@ export default function CartPage() {
 
   if (!cart.items || cart.items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center py-12">
-        <div className="text-center">
-          <ShoppingBag className="w-24 h-24 mx-auto text-muted-foreground mb-6" />
-          <h2 className="text-3xl font-heading font-bold mb-4" data-testid="empty-cart-title">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-8">Start shopping to add items to your cart</p>
-          <Link
-            to="/products"
-            className="inline-block bg-primary text-primary-foreground px-8 py-3 font-medium hover:bg-primary/90 transition-all"
-            data-testid="continue-shopping-link"
-          >
-            Continue Shopping
-          </Link>
+      <div className="min-h-screen py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Cart Banner - even on empty cart */}
+          {cartBanner && (
+            <div className="mb-8" data-testid="cart-banner-empty">
+              {cartBanner.link ? (
+                <Link 
+                  to={cartBanner.link} 
+                  onClick={() => handleBannerClick(cartBanner)}
+                  className="block overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow"
+                >
+                  <img 
+                    src={getImageUrl(cartBanner)} 
+                    alt={cartBanner.title || 'Special offer'} 
+                    className="w-full h-48 md:h-64 object-cover"
+                    loading="lazy"
+                  />
+                  {cartBanner.title && (
+                    <div className="bg-primary/10 p-4 text-center">
+                      <p className="font-bold text-primary text-lg">{cartBanner.title}</p>
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <div className="overflow-hidden rounded-lg shadow-md">
+                  <img 
+                    src={getImageUrl(cartBanner)} 
+                    alt={cartBanner.title || 'Special offer'} 
+                    className="w-full h-48 md:h-64 object-cover"
+                    loading="lazy"
+                  />
+                  {cartBanner.title && (
+                    <div className="bg-primary/10 p-4 text-center">
+                      <p className="font-bold text-primary text-lg">{cartBanner.title}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <ShoppingBag className="w-24 h-24 mx-auto text-muted-foreground mb-6" />
+              <h2 className="text-3xl font-heading font-bold mb-4" data-testid="empty-cart-title">Your cart is empty</h2>
+              <p className="text-muted-foreground mb-8">Start shopping to add items to your cart</p>
+              <Link
+                to="/products"
+                className="inline-block bg-primary text-primary-foreground px-8 py-3 font-medium hover:bg-primary/90 transition-all"
+                data-testid="continue-shopping-link"
+              >
+                Continue Shopping
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
