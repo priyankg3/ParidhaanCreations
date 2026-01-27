@@ -198,7 +198,7 @@ export default function HomePage() {
                   alt={banner?.title || `Promotional banner ${index + 1} - Shop handicrafts and traditional items`} 
                   className="w-full h-full object-cover"
                   width={isMobile ? "600" : "1200"}
-                  height="600"
+                  height={isMobile ? "400" : "600"}
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "low"}
                   decoding={index === 0 ? "sync" : "async"}
