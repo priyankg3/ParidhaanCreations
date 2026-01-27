@@ -183,11 +183,28 @@ export default function AdminDashboard() {
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API}/products`, {
-        ...productForm,
+      const productData = {
+        name: productForm.name,
+        description: productForm.description,
         price: parseFloat(productForm.price),
-        stock: parseInt(productForm.stock)
-      }, { withCredentials: true });
+        category: productForm.category,
+        images: productForm.images.filter(url => url),
+        stock: parseInt(productForm.stock),
+        featured: productForm.featured,
+        // Advanced attributes
+        length: productForm.length ? parseFloat(productForm.length) : null,
+        breadth: productForm.breadth ? parseFloat(productForm.breadth) : null,
+        height: productForm.height ? parseFloat(productForm.height) : null,
+        weight: productForm.weight ? parseFloat(productForm.weight) : null,
+        sizes: productForm.sizes ? productForm.sizes.split(',').map(s => s.trim()).filter(s => s) : null,
+        sku: productForm.sku || null,
+        material: productForm.material || null,
+        color: productForm.color || null,
+        brand: productForm.brand || null,
+        tags: productForm.tags ? productForm.tags.split(',').map(t => t.trim()).filter(t => t) : null
+      };
+      
+      await axios.post(`${API}/products`, productData, { withCredentials: true });
       toast.success("Product created successfully");
       setShowProductForm(false);
       resetProductForm();
