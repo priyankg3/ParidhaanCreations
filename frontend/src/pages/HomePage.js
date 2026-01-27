@@ -16,7 +16,7 @@ const fallbackHeroImages = [
 
 const defaultCategories = [
   { name: "Handicrafts", slug: "handicrafts", image: "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?w=400&h=400&fit=crop&q=60&fm=webp" },
-  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?w=400&h=400&fit=crop" },
+  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?auto=compress&cs=tinysrgb&w=400&h=400&fit=crop" },
   { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=400&h=400&fit=crop&q=60&fm=webp" },
   { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=400&h=400&fit=crop&q=60&fm=webp" }
 ];
