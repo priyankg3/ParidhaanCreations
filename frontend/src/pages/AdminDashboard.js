@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { API } from "@/App";
-import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle, Tag, Calendar, Percent, Image, X } from "lucide-react";
+import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle, Tag, Calendar, Percent, Image, X, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import BannerManagement from "../components/admin/BannerManagement";
@@ -13,6 +13,11 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [banners, setBanners] = useState([]);
+  const [siteSettings, setSiteSettings] = useState(null);
+  const [logoUploading, setLogoUploading] = useState({ header: false, footer: false, favicon: false });
+  const headerLogoRef = useRef(null);
+  const footerLogoRef = useRef(null);
+  const faviconRef = useRef(null);
   const [coupons, setCoupons] = useState([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
