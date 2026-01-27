@@ -149,8 +149,33 @@ export default function ProductDetailPage() {
     );
   }
 
+  // Calculate average rating
+  const avgRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
   return (
     <div className="min-h-screen py-12">
+      {product && (
+        <SEO 
+          title={`${product.name} - Buy Online at Paridhaan Creations`}
+          description={`${product.description?.slice(0, 150) || product.name}. Price: ₹${product.price}. ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}. Free shipping on orders above ₹999.`}
+          keywords={`${product.name}, ${product.category}, buy online, paridhaan creations, ${product.material || ''}, ${product.brand || ''}`}
+          image={product.images?.[0]}
+          type="product"
+          product={{
+            ...product,
+            rating: avgRating,
+            reviewCount: reviews.length
+          }}
+          breadcrumbs={[
+            { name: 'Home', url: '/' },
+            { name: 'Products', url: '/products' },
+            { name: product.category, url: `/products?category=${product.category}` },
+            { name: product.name, url: `/products/${product.product_id}` }
+          ]}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Product Page Banner */}
         {productBanner && (
