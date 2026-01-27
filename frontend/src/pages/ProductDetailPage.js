@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
@@ -18,24 +18,45 @@ export default function ProductDetailPage() {
   const [recommendations, setRecommendations] = useState([]);
   const [productBanner, setProductBanner] = useState(null);
 
-  useEffect(() => {
-    fetchProduct();
-    fetchReviews();
-    checkAuth();
-    fetchRecommendations();
-    fetchProductBanner();
+  const fetchProduct = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/products/${id}`);
+      setProduct(response.data);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      toast.error("Product not found");
+      navigate("/products");
+    }
+  }, [id, navigate]);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/reviews/${id}`);
+      setReviews(response.data);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
   }, [id]);
 
-  const checkAuth = async () => {
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/products/${id}/recommendations`);
+      setRecommendations(response.data);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  }, [id]);
+
+  const checkAuth = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
       setUser(response.data);
     } catch (error) {
       setUser(null);
     }
-  };
+  }, []);
 
-  const fetchProductBanner = async () => {
+  const fetchProductBanner = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/banners?placement=product_page&status=active`);
       if (response.data && response.data.length > 0) {
@@ -44,7 +65,15 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Error fetching product banner:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchReviews();
+    checkAuth();
+    fetchRecommendations();
+    fetchProductBanner();
+  }, [fetchProduct, fetchReviews, checkAuth, fetchRecommendations, fetchProductBanner]);
 
   const getImageUrl = (banner) => {
     if (!banner) return '';
@@ -54,20 +83,6 @@ export default function ProductDetailPage() {
     }
     return url;
   };
-
-  const fetchProduct = async () => {
-    try {
-      const response = await axios.get(`${API}/products/${id}`);
-      setProduct(response.data);
-    } catch (error) {
-      console.error("Error fetching product:", error);
-      toast.error("Product not found");
-      navigate("/products");
-    }
-  };
-
-  const fetchReviews = async () => {
-    try {
       const response = await axios.get(`${API}/reviews/${id}`);
       setReviews(response.data);
     } catch (error) {
