@@ -57,16 +57,28 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for selling
 - [x] Coupons management
 - [x] Stock Alerts
 
-### Banner System (Fully Implemented)
-- **Promotional** - Homepage slider/grid (Recommended: 1920x600 px)
-- **Header** - Top of category pages (Recommended: 1200x250 px)
-- **Footer** - Bottom of category pages (Recommended: 1200x100 px)
-- **Side** - Sidebar on category pages (Recommended: 300x600 px)
-- Category-specific targeting (handicrafts, pooja, perfumes, jewellery)
-- **12 sample banners created** for all categories
-- **Image Upload** - Direct file upload option (in addition to URL input)
-- **Size Recommendations** - Visual guide showing ideal sizes for each banner type
-- **Banner Scheduling** - Set start/end dates for automatic activation during festivals or sales
+### Banner System (Fully Implemented - 9 Placements)
+All 9 banner placements are fully functional with JPEG/PNG support:
+
+| Placement | Location | Recommended Size | Status |
+|-----------|----------|-----------------|--------|
+| hero | Homepage slider | 1920x600 px | ✅ Working (2 banners) |
+| below_hero | Below homepage slider | 1200x400 px | ✅ Working |
+| popup | Homepage modal popup | 600x400 px | ✅ Working |
+| category_header | Category page top | 1200x250 px | ✅ Working (4 banners) |
+| category_sidebar | Category sidebar | 300x600 px | ✅ Working (5 banners) |
+| category_footer | Category page bottom | 1200x100 px | ✅ Working (4 banners) |
+| product_page | Product detail page | 800x200 px | ✅ Working (1 banner) |
+| cart_page | Cart page sidebar | 800x150 px | ✅ Working |
+| checkout_page | Checkout offers | 600x100 px | ✅ Working |
+
+**Features:**
+- **Image Upload:** Direct file upload via Admin Dashboard
+- **Category Targeting:** Assign banners to specific product categories
+- **Scheduling:** Set start/end dates for automatic activation
+- **Tracking:** Impression and click analytics
+- **Responsive:** Desktop and mobile image variants
+- **Lazy Loading:** Optimized loading for better performance
 
 ### Customer Features
 - [x] Google Social Login
