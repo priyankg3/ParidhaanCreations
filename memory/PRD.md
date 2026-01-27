@@ -45,6 +45,12 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 - [x] Order management and tracking
 - [x] User authentication (Email + Google OAuth)
 
+### Product Badge System (Jan 27, 2026) ✨
+- [x] 8 badge types: NEW ARRIVAL, HOT, TRENDING, BESTSELLER, LIMITED, SALE, FEATURED, OUT OF STOCK
+- [x] Admin panel inline badge dropdown (quick edit)
+- [x] Badge display on ProductListing, HomePage, ProductDetail
+- [x] Auto OUT OF STOCK badge when stock=0
+
 ### Admin Dashboard
 - [x] Product management (CRUD, images, variants)
 - [x] Category management
