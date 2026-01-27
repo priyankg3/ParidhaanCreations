@@ -5,6 +5,7 @@ import { API } from "@/App";
 import { ShoppingCart, Heart, Minus, Plus, Star, User } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import ProductBadge from "@/components/ProductBadge";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
