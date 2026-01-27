@@ -1,5 +1,5 @@
 # Robots.txt for Paridhaan Creations
-# https://handicraft-haven.preview.emergentagent.com
+# https://artisanal-hub.preview.emergentagent.com
 
 User-agent: *
 Allow: /
@@ -18,7 +18,7 @@ Disallow: /auth/*
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://handicraft-haven.preview.emergentagent.com/sitemap.xml
+Sitemap: https://artisanal-hub.preview.emergentagent.com/sitemap.xml
 
 # Specific bot instructions
 User-agent: Googlebot
