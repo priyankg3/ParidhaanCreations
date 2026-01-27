@@ -4,6 +4,9 @@ import { ShoppingCart, Heart, User, Menu, X, Headphones } from "lucide-react";
 import { API } from "@/App";
 import axios from "axios";
 import { LanguageSwitcher, useLanguage } from "@/contexts/LanguageContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+
+const DEFAULT_LOGO = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -11,6 +14,9 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { settings, getLogoUrl } = useSiteSettings();
+
+  const headerLogo = getLogoUrl(settings?.header_logo) || DEFAULT_LOGO;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +55,8 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center" data-testid="logo-link">
             <img 
-              src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
-              alt="Paridhaan Creations" 
+              src={headerLogo} 
+              alt={settings?.site_name || "Paridhaan Creations"} 
               className="h-20 w-auto"
             />
           </Link>
