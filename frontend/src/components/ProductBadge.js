@@ -73,6 +73,8 @@ const ProductBadge = ({ type, className = "" }) => {
         type === 'trending' ? 'border-t-purple-700' :
         type === 'limited' ? 'border-t-amber-700' :
         type === 'out-of-stock' ? 'border-t-gray-700' :
+        type === 'bestseller' ? 'border-t-blue-700' :
+        type === 'sale' ? 'border-t-rose-700' :
         'border-t-accent'
       }`}></div>
     </div>
