@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   });
 
   const [welcomeOffer, setWelcomeOffer] = useState(null);
+  const [checkoutBanner, setCheckoutBanner] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -38,10 +39,11 @@ export default function CheckoutPage() {
 
   const fetchData = async () => {
     try {
-      const [cartRes, userRes, welcomeRes] = await Promise.all([
+      const [cartRes, userRes, welcomeRes, bannerRes] = await Promise.all([
         axios.get(`${API}/cart`, { withCredentials: true }),
         axios.get(`${API}/auth/me`, { withCredentials: true }).catch(() => null),
-        axios.get(`${API}/user/first-time-buyer`, { withCredentials: true }).catch(() => null)
+        axios.get(`${API}/user/first-time-buyer`, { withCredentials: true }).catch(() => null),
+        axios.get(`${API}/banners?placement=checkout_page&status=active`).catch(() => ({ data: [] }))
       ]);
 
       setCart(cartRes.data);
@@ -50,6 +52,11 @@ export default function CheckoutPage() {
       // Check for first-time buyer welcome offer
       if (welcomeRes?.data?.is_first_time) {
         setWelcomeOffer(welcomeRes.data);
+      }
+
+      // Set checkout banner
+      if (bannerRes.data && bannerRes.data.length > 0) {
+        setCheckoutBanner(bannerRes.data[0]);
       }
 
       if (cartRes.data.items && cartRes.data.items.length > 0) {
@@ -68,6 +75,15 @@ export default function CheckoutPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getImageUrl = (banner) => {
+    if (!banner) return '';
+    let url = banner.image_desktop || banner.image || '';
+    if (url && url.startsWith('/api/')) {
+      url = `${API}${url.replace('/api', '')}`;
+    }
+    return url;
   };
 
   const subtotal = cart.items.reduce((sum, item) => {
