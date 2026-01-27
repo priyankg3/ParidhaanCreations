@@ -1779,38 +1779,23 @@ async def upload_image(
     session_token: Optional[str] = Cookie(None)
 ):
     """Upload an image file (admin only)"""
-    # Try to get session_token from cookies in multiple ways
+    # Get session token from cookie if not in parameter
     if not session_token:
         session_token = request.cookies.get("session_token")
     
-    # Debug output
-    print(f"[UPLOAD DEBUG] Auth header: {authorization}")
-    print(f"[UPLOAD DEBUG] Cookie param: {session_token}")
+    # Verify admin access
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
     
-    # Manually check admin status if cookie is present
-    if session_token:
-        try:
-            # Use user_sessions collection (not sessions!)
-            session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
-            if session_doc:
-                user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
-                print(f"[UPLOAD DEBUG] User found: {user.get('email') if user else 'None'}, is_admin: {user.get('is_admin') if user else 'None'}")
-                if user and user.get("is_admin"):
-                    print("[UPLOAD DEBUG] Admin verified!")
-                else:
-                    print("[UPLOAD DEBUG] User not admin")
-                    raise HTTPException(status_code=403, detail="Admin access required")
-            else:
-                print("[UPLOAD DEBUG] Session not found in user_sessions")
-                raise HTTPException(status_code=403, detail="Invalid session")
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"[UPLOAD DEBUG] Error: {e}")
-            raise HTTPException(status_code=403, detail="Admin access required")
-    else:
-        # Fallback to original method
-        await require_admin(authorization, session_token)
+    # Check session in user_sessions collection
+    session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
+    if not session_doc:
+        raise HTTPException(status_code=401, detail="Invalid session - please login again")
+    
+    # Check if user is admin
+    user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
+    if not user or not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
     
     # Validate file type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
