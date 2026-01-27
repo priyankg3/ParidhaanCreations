@@ -497,12 +497,14 @@ async def create_product(product: ProductCreate, authorization: Optional[str] = 
         product_data['dimensions'] = {
             'length': product_data.pop('length', None),
             'breadth': product_data.pop('breadth', None),
-            'height': product_data.pop('height', None)
+            'height': product_data.pop('height', None),
+            'unit': product_data.pop('dimension_unit', 'cm')
         }
     else:
         product_data.pop('length', None)
         product_data.pop('breadth', None)
         product_data.pop('height', None)
+        product_data.pop('dimension_unit', None)
         product_data['dimensions'] = None
     
     product_obj = Product(**product_data)
@@ -523,12 +525,14 @@ async def update_product(product_id: str, product: ProductCreate, authorization:
         update_data['dimensions'] = {
             'length': update_data.pop('length', None),
             'breadth': update_data.pop('breadth', None),
-            'height': update_data.pop('height', None)
+            'height': update_data.pop('height', None),
+            'unit': update_data.pop('dimension_unit', 'cm')
         }
     else:
         update_data.pop('length', None)
         update_data.pop('breadth', None)
         update_data.pop('height', None)
+        update_data.pop('dimension_unit', None)
     
     result = await db.products.update_one(
         {"product_id": product_id},
