@@ -1932,7 +1932,58 @@ async def generate_sitemap():
 # ============ FILE UPLOAD ENDPOINTS ============
 
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB upload limit (will be compressed)
+TARGET_MAX_SIZE = 200 * 1024  # Target 200KB after compression for web performance
+
+def compress_image(content: bytes, max_width: int = 1200, max_height: int = 800, quality: int = 70) -> tuple:
+    """Compress image for web performance - returns (compressed_content, new_ext)"""
+    try:
+        img = PILImage.open(io.BytesIO(content))
+        
+        # Convert to RGB if necessary (for PNG with transparency, etc.)
+        if img.mode in ('RGBA', 'P'):
+            # Create white background for transparency
+            background = PILImage.new('RGB', img.size, (255, 255, 255))
+            if img.mode == 'RGBA':
+                background.paste(img, mask=img.split()[3])
+            else:
+                background.paste(img)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize if larger than max dimensions (maintain aspect ratio)
+        original_size = img.size
+        if img.width > max_width or img.height > max_height:
+            img.thumbnail((max_width, max_height), PILImage.Resampling.LANCZOS)
+            logging.info(f"Resized image from {original_size} to {img.size}")
+        
+        # Save as WebP for best compression (or JPEG as fallback)
+        output = io.BytesIO()
+        
+        # Try WebP first (best compression)
+        try:
+            img.save(output, format='WEBP', quality=quality, optimize=True)
+            new_ext = 'webp'
+        except Exception:
+            # Fallback to JPEG
+            output = io.BytesIO()
+            img.save(output, format='JPEG', quality=quality, optimize=True)
+            new_ext = 'jpg'
+        
+        compressed = output.getvalue()
+        
+        # If still too large, reduce quality further
+        if len(compressed) > TARGET_MAX_SIZE and quality > 40:
+            return compress_image(content, max_width, max_height, quality - 15)
+        
+        logging.info(f"Compressed image: {len(content)} bytes -> {len(compressed)} bytes ({(1-len(compressed)/len(content))*100:.1f}% reduction)")
+        return compressed, new_ext
+        
+    except Exception as e:
+        logging.error(f"Image compression failed: {e}")
+        # Return original content if compression fails
+        return content, None
 
 @api_router.post("/upload/image")
 async def upload_image(
@@ -1941,7 +1992,7 @@ async def upload_image(
     authorization: Optional[str] = Header(None), 
     session_token: Optional[str] = Cookie(None)
 ):
-    """Upload an image file (admin only)"""
+    """Upload an image file with automatic compression (admin only)"""
     # Get session token from cookie if not in parameter
     if not session_token:
         session_token = request.cookies.get("session_token")
@@ -1966,19 +2017,28 @@ async def upload_image(
     
     # Read file content
     content = await file.read()
+    original_size = len(content)
     
     # Validate file size
-    if len(content) > MAX_FILE_SIZE:
+    if original_size > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB")
     
-    # Generate unique filename
-    ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-    unique_filename = f"{uuid.uuid4().hex}.{ext}"
+    # Compress image for web performance
+    compressed_content, new_ext = compress_image(content)
+    
+    # Generate unique filename with potentially new extension
+    if new_ext:
+        unique_filename = f"{uuid.uuid4().hex}.{new_ext}"
+    else:
+        ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        unique_filename = f"{uuid.uuid4().hex}.{ext}"
+        compressed_content = content  # Use original if compression failed
+    
     file_path = UPLOAD_DIR / unique_filename
     
-    # Save file
+    # Save compressed file
     with open(file_path, "wb") as f:
-        f.write(content)
+        f.write(compressed_content)
     
     # Return the URL that can be used to access the image
     image_url = f"/api/uploads/{unique_filename}"
@@ -1987,8 +2047,10 @@ async def upload_image(
         "success": True,
         "filename": unique_filename,
         "url": image_url,
-        "size": len(content),
-        "content_type": file.content_type
+        "original_size": original_size,
+        "compressed_size": len(compressed_content),
+        "compression_ratio": f"{(1-len(compressed_content)/original_size)*100:.1f}%",
+        "content_type": f"image/{new_ext}" if new_ext else file.content_type
     }
 
 @api_router.post("/upload/images")
