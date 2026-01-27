@@ -287,6 +287,42 @@ export default function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-heading font-bold mb-12 text-center" data-testid="checkout-title">Secure Checkout</h1>
 
+        {/* Checkout Page Banner */}
+        {checkoutBanner && (
+          <div className="mb-8" data-testid="checkout-banner">
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center space-x-4">
+                  {checkoutBanner.image_desktop && (
+                    <img 
+                      src={getImageUrl(checkoutBanner)} 
+                      alt={checkoutBanner.title || 'Special offer'}
+                      className="h-16 w-auto object-contain rounded"
+                    />
+                  )}
+                  <div>
+                    {checkoutBanner.title && (
+                      <p className="font-bold text-primary">{checkoutBanner.title}</p>
+                    )}
+                    {checkoutBanner.cta_text && (
+                      <p className="text-sm text-muted-foreground">{checkoutBanner.cta_text}</p>
+                    )}
+                  </div>
+                </div>
+                {checkoutBanner.link && (
+                  <a 
+                    href={checkoutBanner.link}
+                    className="text-primary hover:underline text-sm font-medium"
+                    onClick={() => axios.post(`${API}/banners/${checkoutBanner.banner_id}/click`).catch(() => {})}
+                  >
+                    Learn More →
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Offer Banner for First-time Buyers */}
         {welcomeOffer && !appliedCoupon && (
           <div className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-lg" data-testid="welcome-offer-banner">
