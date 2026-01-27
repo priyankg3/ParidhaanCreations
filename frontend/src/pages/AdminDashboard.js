@@ -1241,6 +1241,7 @@ export default function AdminDashboard() {
                     <th className="px-6 py-4 text-left text-sm font-medium">Category</th>
                     <th className="px-6 py-4 text-left text-sm font-medium">Price</th>
                     <th className="px-6 py-4 text-left text-sm font-medium">Stock</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium">Badge</th>
                     <th className="px-6 py-4 text-left text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
@@ -1254,6 +1255,34 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 capitalize">{product.category}</td>
                       <td className="px-6 py-4">₹{product.price}</td>
                       <td className="px-6 py-4">{product.stock}</td>
+                      <td className="px-6 py-4">
+                        <select
+                          value={product.badge || ""}
+                          onChange={async (e) => {
+                            try {
+                              await axios.put(`${API}/products/${product.product_id}`, {
+                                ...product,
+                                badge: e.target.value || null
+                              }, { withCredentials: true });
+                              toast.success("Badge updated!");
+                              fetchData();
+                            } catch (error) {
+                              toast.error("Failed to update badge");
+                            }
+                          }}
+                          className="text-xs p-1 border rounded"
+                          data-testid={`badge-select-${product.product_id}`}
+                        >
+                          <option value="">None</option>
+                          <option value="new">✨ NEW</option>
+                          <option value="hot">🔥 HOT</option>
+                          <option value="trending">📈 TRENDING</option>
+                          <option value="bestseller">🏆 BESTSELLER</option>
+                          <option value="limited">⏰ LIMITED</option>
+                          <option value="sale">💰 SALE</option>
+                          <option value="featured">⭐ FEATURED</option>
+                        </select>
+                      </td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleDeleteProduct(product.product_id)}
