@@ -61,47 +61,6 @@ const webpackConfig = {
         ],
       };
 
-      // Optimization for code splitting
-      webpackConfig.optimization = {
-        ...webpackConfig.optimization,
-        splitChunks: {
-          chunks: 'all',
-          maxInitialRequests: 25,
-          minSize: 20000,
-          cacheGroups: {
-            // Vendor chunk for node_modules
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name(module) {
-                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-                return `vendor.${packageName.replace('@', '')}`;
-              },
-              priority: 10,
-            },
-            // React core in separate chunk
-            react: {
-              test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
-              name: 'react-vendor',
-              chunks: 'all',
-              priority: 20,
-            },
-            // UI components
-            ui: {
-              test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-              name: 'ui-components',
-              chunks: 'all',
-              priority: 15,
-            },
-            // Common chunk for shared code
-            common: {
-              minChunks: 2,
-              priority: 5,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-
       // Add health check plugin to webpack if enabled
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
