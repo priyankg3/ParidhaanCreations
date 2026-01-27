@@ -205,7 +205,7 @@ class OrderCreate(BaseModel):
 class Banner(BaseModel):
     model_config = ConfigDict(extra="ignore")
     banner_id: str = Field(default_factory=lambda: f"banner_{uuid.uuid4().hex[:12]}")
-    title: str
+    title: Optional[str] = None  # Title is now optional
     
     # Images - Desktop & Mobile
     image_desktop: str = ""  # Desktop image (required)
