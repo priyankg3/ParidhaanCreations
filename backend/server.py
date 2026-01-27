@@ -123,6 +123,7 @@ class ProductCreate(BaseModel):
     images: List[str]
     stock: int
     featured: bool = False
+    badge: Optional[str] = None  # new, hot, trending, limited, featured, bestseller, sale
     # Advanced attributes
     length: Optional[float] = None
     breadth: Optional[float] = None
