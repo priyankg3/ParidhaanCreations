@@ -90,10 +90,10 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             <LanguageSwitcher />
             
-            <Link to="/cart" className="relative hidden md:block" data-testid="nav-cart">
-              <ShoppingCart className="w-6 h-6 hover:text-primary transition-colors duration-300" />
+            <Link to="/cart" className="relative hidden md:block" data-testid="nav-cart" aria-label={`Shopping cart with ${cartCount} items`}>
+              <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-primary transition-colors duration-300" aria-hidden="true" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-testid="cart-count">
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-testid="cart-count" aria-hidden="true">
                   {cartCount}
                 </span>
               )}
@@ -101,33 +101,33 @@ export default function Navbar() {
             
             {user ? (
               <div className="hidden md:flex items-center space-x-4">
-                <Link to="/wishlist" data-testid="nav-wishlist">
-                  <Heart className="w-6 h-6 hover:text-accent transition-colors duration-300" />
+                <Link to="/wishlist" data-testid="nav-wishlist" aria-label="Wishlist">
+                  <Heart className="w-6 h-6 text-gray-700 hover:text-red-500 transition-colors duration-300" aria-hidden="true" />
                 </Link>
                 <div className="relative group">
-                  <button className="flex items-center space-x-2" data-testid="user-menu-button">
-                    <User className="w-6 h-6" />
+                  <button className="flex items-center space-x-2 text-gray-700" data-testid="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                    <User className="w-6 h-6" aria-hidden="true" />
                     <span className="text-sm font-medium">{user.name}</span>
                   </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                    <Link to="/my-orders" className="block px-4 py-2 hover:bg-background-paper" data-testid="nav-my-orders">My Orders</Link>
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-lg" role="menu">
+                    <Link to="/my-orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-50" data-testid="nav-my-orders" role="menuitem">My Orders</Link>
                     {user.is_admin && (
-                      <Link to="/admin" className="block px-4 py-2 hover:bg-background-paper" data-testid="nav-admin">Admin Dashboard</Link>
+                      <Link to="/admin" className="block px-4 py-2 text-gray-700 hover:bg-gray-50" data-testid="nav-admin" role="menuitem">Admin Dashboard</Link>
                     )}
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-background-paper" data-testid="logout-button">
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50" data-testid="logout-button" role="menuitem" type="button">
                       Logout
                     </button>
                   </div>
                 </div>
               </div>
             ) : (
-              <Link to="/login" className="hidden md:block bg-primary text-primary-foreground px-6 py-2 font-medium tracking-wide hover:bg-primary/90 transition-all duration-300" data-testid="login-button">
+              <Link to="/login" className="hidden md:block bg-primary text-white px-6 py-2 font-medium tracking-wide hover:bg-primary/90 transition-all duration-300 rounded" data-testid="login-button">
                 Login
               </Link>
             )}
 
             <button
-              className="md:hidden"
+              className="md:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-toggle"
             >
