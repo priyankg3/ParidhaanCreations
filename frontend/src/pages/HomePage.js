@@ -161,10 +161,10 @@ export default function HomePage() {
       />
       
       {/* Hero Section with Dynamic Banners */}
-      <section className="relative h-[500px] md:h-[600px] overflow-hidden" data-testid="hero-section" role="region" aria-label="Featured promotions">
-        {heroImages.map((img, index) => {
+      <section className="relative h-[400px] md:h-[600px] overflow-hidden" data-testid="hero-section" role="region" aria-label="Featured promotions">
+        {heroImages.map((item, index) => {
           const banner = heroBanners[index];
-          const imageUrl = banner ? getImageUrl(banner) : img;
+          const imageUrl = getHeroImageUrl(index);
           
           return (
             <div
@@ -185,8 +185,8 @@ export default function HomePage() {
                     src={imageUrl} 
                     alt={banner?.title || `Promotional banner ${index + 1} - Shop handicrafts and traditional items`} 
                     className="w-full h-full object-cover"
-                    width="1200"
-                    height="600"
+                    width={isMobile ? "600" : "1200"}
+                    height={isMobile ? "400" : "600"}
                     loading={index === 0 ? "eager" : "lazy"}
                     fetchPriority={index === 0 ? "high" : "low"}
                     decoding={index === 0 ? "sync" : "async"}
@@ -197,7 +197,7 @@ export default function HomePage() {
                   src={imageUrl} 
                   alt={banner?.title || `Promotional banner ${index + 1} - Shop handicrafts and traditional items`} 
                   className="w-full h-full object-cover"
-                  width="1200"
+                  width={isMobile ? "600" : "1200"}
                   height="600"
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "low"}
