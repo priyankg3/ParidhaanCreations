@@ -468,13 +468,15 @@ export default function ProductListingPage() {
                 <div className="sticky top-24">
                   <a 
                     href={sideBanner.link || "#"} 
+                    onClick={() => handleBannerClick(sideBanner)}
                     className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
                     data-testid="side-banner"
                   >
                     <img 
-                      src={sideBanner.image} 
-                      alt={sideBanner.title} 
+                      src={getImageUrl(sideBanner)} 
+                      alt={sideBanner.title || 'Side banner'} 
                       className="w-full h-auto object-cover"
+                      loading="lazy"
                     />
                     {sideBanner.title && (
                       <div className="p-3 bg-primary text-primary-foreground text-center">
@@ -492,13 +494,15 @@ export default function ProductListingPage() {
             <div className="mt-12">
               <a 
                 href={footerBanner.link || "#"} 
+                onClick={() => handleBannerClick(footerBanner)}
                 className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
                 data-testid="footer-banner"
               >
                 <img 
-                  src={footerBanner.image} 
-                  alt={footerBanner.title} 
+                  src={getImageUrl(footerBanner)} 
+                  alt={footerBanner.title || 'Footer banner'} 
                   className="w-full h-48 md:h-64 object-cover"
+                  loading="lazy"
                 />
                 {footerBanner.title && (
                   <div className="p-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-center">
