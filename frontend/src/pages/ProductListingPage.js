@@ -68,9 +68,9 @@ export default function ProductListingPage() {
   const fetchCategoryBanners = useCallback(async (category) => {
     try {
       const [headerRes, sideRes, footerRes] = await Promise.all([
-        axios.get(`${API}/banners?banner_type=header&category=${category}`),
-        axios.get(`${API}/banners?banner_type=side&category=${category}`),
-        axios.get(`${API}/banners?banner_type=footer&category=${category}`)
+        axios.get(`${API}/banners?placement=category_header&category=${category}&status=active`),
+        axios.get(`${API}/banners?placement=category_sidebar&category=${category}&status=active`),
+        axios.get(`${API}/banners?placement=category_footer&category=${category}&status=active`)
       ]);
       
       setCategoryBannersData({
