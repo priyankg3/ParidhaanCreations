@@ -355,7 +355,7 @@ export default function HomePage() {
                   <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
                     <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || 'featured'} />
                     <img
-                      src={product.images[0]}
+                      src={optimizeImageUrl(product.images[0], 300, 300)}
                       alt={`${product.name} - ₹${product.price}`}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       width="300"
