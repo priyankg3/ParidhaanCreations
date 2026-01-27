@@ -318,7 +318,7 @@ export default function HomePage() {
               >
                 <div className="aspect-square overflow-hidden">
                   <img
-                    src={category.image}
+                    src={optimizeImageUrl(category.image, 400, 400)}
                     alt={`${category.name} collection - Traditional ${category.name.toLowerCase()} items`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     width="400"
