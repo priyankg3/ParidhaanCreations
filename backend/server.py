@@ -1765,6 +1765,100 @@ async def get_whatsapp_config():
         "enabled": True
     }
 
+# ============ SITE SETTINGS ENDPOINTS ============
+@api_router.get("/settings")
+async def get_site_settings():
+    """Get site settings (public)"""
+    settings = await db.site_settings.find_one({"setting_id": "site_settings"}, {"_id": 0})
+    if not settings:
+        # Return default settings if none exist
+        default_settings = SiteSettings()
+        return default_settings.model_dump()
+    return settings
+
+@api_router.put("/settings")
+async def update_site_settings(
+    settings: SiteSettingsUpdate, 
+    authorization: Optional[str] = Header(None), 
+    session_token: Optional[str] = Cookie(None)
+):
+    """Update site settings (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    update_data = {k: v for k, v in settings.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.site_settings.update_one(
+        {"setting_id": "site_settings"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"message": "Settings updated successfully"}
+
+@api_router.post("/settings/upload-logo")
+async def upload_logo(
+    request: Request,
+    file: UploadFile = File(...),
+    logo_type: str = "header",  # header, footer, favicon
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None)
+):
+    """Upload logo image (admin only)"""
+    # Get session token from cookie if not in parameter
+    if not session_token:
+        session_token = request.cookies.get("session_token")
+    
+    # Verify admin access
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
+    if not session_doc:
+        raise HTTPException(status_code=401, detail="Invalid session - please login again")
+    
+    user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
+    if not user or not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate logo type
+    if logo_type not in ["header", "footer", "favicon"]:
+        raise HTTPException(status_code=400, detail="Invalid logo type. Use: header, footer, or favicon")
+    
+    # Validate file type
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}")
+    
+    # Read and validate file size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB")
+    
+    # Generate unique filename
+    ext = file.filename.split('.')[-1] if '.' in file.filename else 'png'
+    unique_filename = f"logo_{logo_type}_{uuid.uuid4().hex[:8]}.{ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as f:
+        f.write(content)
+    
+    # Update site settings with new logo URL
+    logo_url = f"/api/uploads/{unique_filename}"
+    logo_field = f"{logo_type}_logo" if logo_type != "favicon" else "favicon"
+    
+    await db.site_settings.update_one(
+        {"setting_id": "site_settings"},
+        {"$set": {logo_field: logo_url, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {
+        "success": True,
+        "logo_type": logo_type,
+        "url": logo_url
+    }
+
 @api_router.get("/sitemap.xml")
 async def generate_sitemap():
     """Generate XML sitemap for SEO"""
