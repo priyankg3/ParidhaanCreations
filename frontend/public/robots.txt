@@ -1,17 +1,32 @@
+# Robots.txt for Paridhaan Creations
+# https://handicraft-haven.preview.emergentagent.com
+
 User-agent: *
 Allow: /
 Allow: /products
 Allow: /products/*
+Allow: /cart
+Allow: /checkout
 
+# Disallow admin and auth pages
 Disallow: /admin
 Disallow: /admin/*
-Disallow: /checkout
-Disallow: /cart
-Disallow: /my-orders
-Disallow: /wishlist
-
-# Sitemap
-Sitemap: https://handicraft-haven.preview.emergentagent.com/api/sitemap.xml
+Disallow: /login
+Disallow: /auth/*
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://handicraft-haven.preview.emergentagent.com/sitemap.xml
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
