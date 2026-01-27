@@ -40,6 +40,7 @@ export default function AdminDashboard() {
     images: [""],
     stock: "",
     featured: false,
+    badge: "",  // new, hot, trending, limited, featured, bestseller, sale
     // Advanced attributes
     length: "",
     breadth: "",
