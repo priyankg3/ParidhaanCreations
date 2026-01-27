@@ -151,6 +151,35 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Product Page Banner */}
+        {productBanner && (
+          <div className="mb-8" data-testid="product-page-banner">
+            {productBanner.link ? (
+              <a 
+                href={productBanner.link}
+                onClick={() => axios.post(`${API}/banners/${productBanner.banner_id}/click`).catch(() => {})}
+                className="block overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              >
+                <img 
+                  src={getImageUrl(productBanner)} 
+                  alt={productBanner.title || 'Special offer'}
+                  className="w-full h-32 md:h-40 object-cover"
+                  loading="lazy"
+                />
+              </a>
+            ) : (
+              <div className="overflow-hidden rounded-lg shadow-sm">
+                <img 
+                  src={getImageUrl(productBanner)} 
+                  alt={productBanner.title || 'Special offer'}
+                  className="w-full h-32 md:h-40 object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <div className="aspect-square mb-4 overflow-hidden bg-white border border-border/40">
