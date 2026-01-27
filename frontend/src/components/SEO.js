@@ -1,23 +1,29 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+const SEO_SITE_NAME = "Paridhaan Creations";
+const SEO_BASE_URL = "https://handicraft-haven.preview.emergentagent.com";
+const SEO_DEFAULT_IMAGE = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
+
 const SEO = ({ 
-  title = "Paridhaan Creations - Traditional Indian Handicrafts & Jewellery",
-  description = "Shop authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery. Discover handcrafted treasures by skilled artisans.",
-  keywords = "Indian handicrafts, pooja items, traditional jewellery, perfumes, artificial jewellery, handicrafts online",
-  image = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png",
+  title = "Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery",
+  description = "Shop authentic Indian handicrafts, brass pooja articles, traditional perfumes (attar), and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999.",
+  keywords = "paridhaan creations, indian handicrafts, pooja items online, brass pooja thali, laddu gopal dress, traditional jewellery, kundan jewellery, indian perfumes, attar, incense sticks, decorative items, handmade crafts india",
+  image = SEO_DEFAULT_IMAGE,
   type = "website",
   product = null,
-  breadcrumbs = null
+  category = null,
+  breadcrumbs = null,
+  noindex = false
 }) => {
   const location = useLocation();
-  const url = `${window.location.origin}${location.pathname}`;
+  const url = `${SEO_BASE_URL}${location.pathname}`;
 
   useEffect(() => {
-    // Update title
-    document.title = title;
+    // Update document title
+    document.title = title.includes(SEO_SITE_NAME) ? title : `${title} | ${SEO_SITE_NAME}`;
 
-    // Update or create meta tags
+    // Helper to update meta tags
     const updateMetaTag = (property, content, nameAttr = 'property') => {
       let element = document.querySelector(`meta[${nameAttr}="${property}"]`);
       if (!element) {
@@ -28,24 +34,31 @@ const SEO = ({
       element.setAttribute('content', content);
     };
 
-    // Basic meta tags
+    // Basic SEO Meta Tags
     updateMetaTag('description', description, 'name');
     updateMetaTag('keywords', keywords, 'name');
+    updateMetaTag('author', SEO_SITE_NAME, 'name');
+    updateMetaTag('robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large', 'name');
 
-    // Open Graph tags for social sharing
+    // Open Graph Tags
     updateMetaTag('og:title', title);
     updateMetaTag('og:description', description);
     updateMetaTag('og:image', image);
+    updateMetaTag('og:image:width', '1200');
+    updateMetaTag('og:image:height', '630');
     updateMetaTag('og:url', url);
     updateMetaTag('og:type', type);
+    updateMetaTag('og:site_name', SEO_SITE_NAME);
+    updateMetaTag('og:locale', 'en_IN');
 
-    // Twitter Card tags
+    // Twitter Card Tags
     updateMetaTag('twitter:card', 'summary_large_image', 'name');
     updateMetaTag('twitter:title', title, 'name');
     updateMetaTag('twitter:description', description, 'name');
     updateMetaTag('twitter:image', image, 'name');
+    updateMetaTag('twitter:site', '@ParidhaaCreates', 'name');
 
-    // Canonical link
+    // Canonical URL
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement('link');
@@ -54,107 +67,180 @@ const SEO = ({
     }
     canonical.setAttribute('href', url);
 
-    // Remove existing JSON-LD scripts
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
+    // Clear existing JSON-LD scripts
+    document.querySelectorAll('script[data-seo="dynamic"]').forEach(el => el.remove());
 
-    // Add Organization structured data
-    const organizationSchema = {
+    // Add structured data scripts
+    const addJsonLd = (data) => {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-seo', 'dynamic');
+      script.textContent = JSON.stringify(data);
+      document.head.appendChild(script);
+    };
+
+    // Organization Schema (always present)
+    addJsonLd({
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "Paridhaan Creations",
-      "url": window.location.origin,
-      "logo": image,
+      "name": SEO_SITE_NAME,
+      "alternateName": "Paridhaan",
+      "url": SEO_BASE_URL,
+      "logo": SEO_DEFAULT_IMAGE,
       "description": "Shop authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery.",
+      "foundingDate": "2024",
+      "areaServed": "IN",
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "Customer Service",
         "availableLanguage": ["English", "Hindi"]
-      },
-      "sameAs": []
-    };
+      }
+    });
 
-    const orgScript = document.createElement('script');
-    orgScript.type = 'application/ld+json';
-    orgScript.textContent = JSON.stringify(organizationSchema);
-    document.head.appendChild(orgScript);
-
-    // Add WebSite structured data with search
-    const websiteSchema = {
+    // WebSite Schema with SearchAction
+    addJsonLd({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Paridhaan Creations",
-      "url": window.location.origin,
+      "name": SEO_SITE_NAME,
+      "url": SEO_BASE_URL,
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": `${window.location.origin}/products?search={search_term_string}`
+          "urlTemplate": `${SEO_BASE_URL}/products?search={search_term_string}`
         },
         "query-input": "required name=search_term_string"
       }
-    };
+    });
 
-    const siteScript = document.createElement('script');
-    siteScript.type = 'application/ld+json';
-    siteScript.textContent = JSON.stringify(websiteSchema);
-    document.head.appendChild(siteScript);
-
-    // Add Product structured data if product is provided
+    // Product Schema (for product pages)
     if (product) {
       const productSchema = {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.name,
         "description": product.description,
-        "image": product.images,
-        "sku": product.product_id,
+        "image": product.images || [],
+        "sku": product.sku || product.product_id,
+        "mpn": product.product_id,
+        "brand": {
+          "@type": "Brand",
+          "name": product.brand || SEO_SITE_NAME
+        },
         "category": product.category,
+        "material": product.material || undefined,
+        "color": product.color || undefined,
         "offers": {
           "@type": "Offer",
+          "url": url,
           "price": product.price,
           "priceCurrency": "INR",
-          "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          "availability": product.stock > 0 
+            ? "https://schema.org/InStock" 
+            : "https://schema.org/OutOfStock",
           "seller": {
             "@type": "Organization",
-            "name": "Paridhaan Creations"
+            "name": SEO_SITE_NAME
+          },
+          "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "IN"
+            },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 1,
+                "maxValue": 2,
+                "unitCode": "DAY"
+              },
+              "transitTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 3,
+                "maxValue": 7,
+                "unitCode": "DAY"
+              }
+            }
           }
         }
       };
 
-      if (product.rating) {
+      if (product.rating && product.reviewCount) {
         productSchema.aggregateRating = {
           "@type": "AggregateRating",
           "ratingValue": product.rating,
-          "reviewCount": product.reviewCount || 1
+          "reviewCount": product.reviewCount,
+          "bestRating": 5,
+          "worstRating": 1
         };
       }
 
-      const productScript = document.createElement('script');
-      productScript.type = 'application/ld+json';
-      productScript.textContent = JSON.stringify(productSchema);
-      document.head.appendChild(productScript);
+      addJsonLd(productSchema);
     }
 
-    // Add BreadcrumbList structured data if breadcrumbs provided
+    // Category/Collection Schema
+    if (category) {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": `${category.name} - ${SEO_SITE_NAME}`,
+        "description": category.description || `Shop ${category.name} at ${SEO_SITE_NAME}`,
+        "url": url,
+        "mainEntity": {
+          "@type": "ItemList",
+          "name": category.name,
+          "numberOfItems": category.productCount || 0
+        }
+      });
+    }
+
+    // Breadcrumb Schema
     if (breadcrumbs && breadcrumbs.length > 0) {
-      const breadcrumbSchema = {
+      addJsonLd({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": breadcrumbs.map((crumb, index) => ({
           "@type": "ListItem",
           "position": index + 1,
           "name": crumb.name,
-          "item": `${window.location.origin}${crumb.url}`
+          "item": `${SEO_BASE_URL}${crumb.url}`
         }))
-      };
-
-      const breadcrumbScript = document.createElement('script');
-      breadcrumbScript.type = 'application/ld+json';
-      breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema);
-      document.head.appendChild(breadcrumbScript);
+      });
     }
 
-  }, [title, description, keywords, image, url, type, product, breadcrumbs]);
+    // LocalBusiness Schema (for local SEO)
+    if (location.pathname === '/') {
+      addJsonLd({
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": SEO_SITE_NAME,
+        "description": "Online store for traditional Indian handicrafts, pooja items, perfumes and jewellery",
+        "url": SEO_BASE_URL,
+        "logo": SEO_DEFAULT_IMAGE,
+        "priceRange": "₹₹",
+        "paymentAccepted": "Cash on Delivery, Credit Card, Debit Card, UPI, Net Banking",
+        "currenciesAccepted": "INR",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Paridhaan Creations Products",
+          "itemListElement": [
+            { "@type": "OfferCatalog", "name": "Handicrafts" },
+            { "@type": "OfferCatalog", "name": "Pooja Articles" },
+            { "@type": "OfferCatalog", "name": "Perfumes & Attars" },
+            { "@type": "OfferCatalog", "name": "Jewellery" }
+          ]
+        }
+      });
+    }
+
+  }, [title, description, keywords, image, url, type, product, category, breadcrumbs, noindex]);
 
   return null;
 };
