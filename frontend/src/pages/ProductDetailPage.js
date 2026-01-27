@@ -239,14 +239,19 @@ export default function ProductDetailPage() {
                     <div className="bg-background-paper p-3 rounded">
                       <span className="text-muted-foreground block mb-1">Dimensions (L × B × H)</span>
                       <span className="font-medium">
-                        {product.dimensions.length || '-'} × {product.dimensions.breadth || '-'} × {product.dimensions.height || '-'} cm
+                        {product.dimensions.length || '-'} × {product.dimensions.breadth || '-'} × {product.dimensions.height || '-'} {product.dimensions.unit || 'cm'}
                       </span>
                     </div>
                   )}
                   {product.weight && (
                     <div className="bg-background-paper p-3 rounded">
                       <span className="text-muted-foreground block mb-1">Weight</span>
-                      <span className="font-medium">{product.weight >= 1000 ? `${(product.weight/1000).toFixed(2)} kg` : `${product.weight} g`}</span>
+                      <span className="font-medium">
+                        {product.weight_unit === 'kg' 
+                          ? `${product.weight} kg` 
+                          : (product.weight >= 1000 ? `${(product.weight/1000).toFixed(2)} kg` : `${product.weight} g`)
+                        }
+                      </span>
                     </div>
                   )}
                   {product.material && (
