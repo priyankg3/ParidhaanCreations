@@ -359,7 +359,7 @@ export default function HomePage() {
                   data-testid={`product-${product.product_id}`}
                 >
                   <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
-                    <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || 'featured'} />
+                    <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                     <img
                       src={optimizeImageUrl(product.images[0], isMobile ? 200 : 300, isMobile ? 200 : 300)}
                       alt={`${product.name} - ₹${product.price}`}
