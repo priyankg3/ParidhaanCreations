@@ -7,18 +7,18 @@ import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 
-// Fallback hero images if no banners in database
+// Fallback hero images if no banners in database - OPTIMIZED with WebP and smaller sizes
 const fallbackHeroImages = [
-  "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1920&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1920&h=600&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1920&h=600&fit=crop&q=80"
+  "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1200&h=600&fit=crop&q=60&fm=webp",
+  "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1200&h=600&fit=crop&q=60&fm=webp",
+  "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1200&h=600&fit=crop&q=60&fm=webp"
 ];
 
 const defaultCategories = [
-  { name: "Handicrafts", slug: "handicrafts", image: "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?w=600&h=600&fit=crop&q=80" },
-  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?w=600&h=600&fit=crop" },
-  { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=600&h=600&fit=crop&q=80" },
-  { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=600&h=600&fit=crop&q=80" }
+  { name: "Handicrafts", slug: "handicrafts", image: "https://images.unsplash.com/photo-1759607236409-1df137ecb3b6?w=400&h=400&fit=crop&q=60&fm=webp" },
+  { name: "Pooja Articles", slug: "pooja", image: "https://images.pexels.com/photos/14855916/pexels-photo-14855916.jpeg?w=400&h=400&fit=crop" },
+  { name: "Perfumes", slug: "perfumes", image: "https://images.unsplash.com/photo-1758871992965-836e1fb0f9bc?w=400&h=400&fit=crop&q=60&fm=webp" },
+  { name: "Jewellery", slug: "jewellery", image: "https://images.unsplash.com/photo-1738754719555-05aca36707b1?w=400&h=400&fit=crop&q=60&fm=webp" }
 ];
 
 export default function HomePage() {
