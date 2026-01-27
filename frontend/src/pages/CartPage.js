@@ -13,20 +13,29 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [cartBanner, setCartBanner] = useState(null);
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   useEffect(() => {
-    fetchCart();
-    fetchCartBanner();
+    const fetchAll = async () => {
+      // Fetch banner and cart in parallel
+      const bannerPromise = fetchCartBanner();
+      const cartPromise = fetchCart();
+      await Promise.all([bannerPromise, cartPromise]);
+    };
+    fetchAll();
   }, []);
 
   const fetchCartBanner = async () => {
     try {
       const response = await axios.get(`${API}/banners?placement=cart_page&status=active`);
+      console.log("Cart banner response:", response.data);
       if (response.data && response.data.length > 0) {
         setCartBanner(response.data[0]);
       }
     } catch (error) {
       console.error("Error fetching cart banner:", error);
+    } finally {
+      setBannerLoading(false);
     }
   };
 
