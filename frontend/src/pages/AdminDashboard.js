@@ -1001,8 +1001,8 @@ export default function AdminDashboard() {
                     
                     {/* Dimensions */}
                     <div className="mb-4">
-                      <label className="block text-sm font-medium mb-2">Dimensions (L × B × H in cm)</label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <label className="block text-sm font-medium mb-2">Dimensions (L × B × H)</label>
+                      <div className="grid grid-cols-4 gap-3">
                         <input
                           type="number"
                           step="0.1"
@@ -1027,21 +1027,40 @@ export default function AdminDashboard() {
                           onChange={(e) => setProductForm({...productForm, height: e.target.value})}
                           className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                         />
+                        <select
+                          value={productForm.dimension_unit}
+                          onChange={(e) => setProductForm({...productForm, dimension_unit: e.target.value})}
+                          className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        >
+                          <option value="cm">cm</option>
+                          <option value="inches">inches</option>
+                          <option value="feet">feet</option>
+                        </select>
                       </div>
                     </div>
 
                     {/* Weight and SKU */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Weight (grams)</label>
-                        <input
-                          type="number"
-                          step="1"
-                          placeholder="e.g., 500"
-                          value={productForm.weight}
-                          onChange={(e) => setProductForm({...productForm, weight: e.target.value})}
-                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                        />
+                        <label className="block text-sm font-medium mb-2">Weight</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            step="0.1"
+                            placeholder="e.g., 500"
+                            value={productForm.weight}
+                            onChange={(e) => setProductForm({...productForm, weight: e.target.value})}
+                            className="flex-1 px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                          />
+                          <select
+                            value={productForm.weight_unit}
+                            onChange={(e) => setProductForm({...productForm, weight_unit: e.target.value})}
+                            className="px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                          >
+                            <option value="g">grams</option>
+                            <option value="kg">kg</option>
+                          </select>
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">SKU (Stock Code)</label>
