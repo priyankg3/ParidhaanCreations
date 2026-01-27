@@ -510,6 +510,7 @@ export default function AdminDashboard() {
       images: [""],
       stock: "",
       featured: false,
+      badge: "",
       length: "",
       breadth: "",
       height: "",
