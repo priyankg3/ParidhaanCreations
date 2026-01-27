@@ -266,6 +266,45 @@ export default function CartPage() {
                 Continue Shopping
               </Link>
             </div>
+
+            {/* Cart Page Banner */}
+            {cartBanner && (
+              <div className="mt-6" data-testid="cart-banner">
+                {cartBanner.link ? (
+                  <Link 
+                    to={cartBanner.link} 
+                    onClick={() => handleBannerClick(cartBanner)}
+                    className="block overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow"
+                  >
+                    <img 
+                      src={getImageUrl(cartBanner)} 
+                      alt={cartBanner.title || 'Special offer'} 
+                      className="w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                    {cartBanner.title && (
+                      <div className="bg-primary/10 p-3 text-center">
+                        <p className="font-medium text-primary">{cartBanner.title}</p>
+                      </div>
+                    )}
+                  </Link>
+                ) : (
+                  <div className="overflow-hidden rounded-lg shadow-md">
+                    <img 
+                      src={getImageUrl(cartBanner)} 
+                      alt={cartBanner.title || 'Special offer'} 
+                      className="w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                    {cartBanner.title && (
+                      <div className="bg-primary/10 p-3 text-center">
+                        <p className="font-medium text-primary">{cartBanner.title}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
