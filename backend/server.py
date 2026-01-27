@@ -1861,36 +1861,48 @@ async def upload_logo(
 
 @api_router.get("/sitemap.xml")
 async def generate_sitemap():
-    """Generate XML sitemap for SEO"""
-    products = await db.products.find({"stock": {"$gt": 0}}, {"_id": 0, "product_id": 1, "created_at": 1}).to_list(1000)
-    categories = await db.categories.find({}, {"_id": 0, "slug": 1}).to_list(100)
+    """Generate XML sitemap for SEO - Enhanced for better crawling"""
+    products = await db.products.find({"stock": {"$gt": 0}}, {"_id": 0, "product_id": 1, "name": 1, "created_at": 1, "updated_at": 1}).to_list(1000)
+    categories = await db.categories.find({}, {"_id": 0, "slug": 1, "name": 1}).to_list(100)
     
     base_url = os.environ['REACT_APP_BACKEND_URL'].replace('/api', '')
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
     
+    # Homepage - highest priority
     sitemap_xml += f'''  <url>
     <loc>{base_url}/</loc>
+    <lastmod>{today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>\n'''
     
+    # Products listing page
     sitemap_xml += f'''  <url>
     <loc>{base_url}/products</loc>
+    <lastmod>{today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>\n'''
     
+    # Category pages
     for category in categories:
         sitemap_xml += f'''  <url>
     <loc>{base_url}/products?category={category['slug']}</loc>
+    <lastmod>{today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>\n'''
     
+    # Individual product pages
     for product in products:
-        lastmod = product.get('created_at', datetime.now(timezone.utc).isoformat())[:10]
+        updated = product.get('updated_at', product.get('created_at', ''))
+        if updated:
+            lastmod = str(updated)[:10]
+        else:
+            lastmod = today
         sitemap_xml += f'''  <url>
     <loc>{base_url}/products/{product['product_id']}</loc>
     <lastmod>{lastmod}</lastmod>
@@ -1898,9 +1910,23 @@ async def generate_sitemap():
     <priority>0.7</priority>
   </url>\n'''
     
+    # Static pages
+    static_pages = [
+        ('cart', '0.5', 'monthly'),
+        ('checkout', '0.4', 'monthly'),
+        ('support', '0.3', 'monthly'),
+        ('terms', '0.2', 'yearly')
+    ]
+    for page, priority, freq in static_pages:
+        sitemap_xml += f'''  <url>
+    <loc>{base_url}/{page}</loc>
+    <changefreq>{freq}</changefreq>
+    <priority>{priority}</priority>
+  </url>\n'''
+    
     sitemap_xml += '</urlset>'
     
-    return JSONResponse(content=sitemap_xml, media_type="application/xml")
+    return Response(content=sitemap_xml, media_type="application/xml")
 
 # ============ FILE UPLOAD ENDPOINTS ============
 
