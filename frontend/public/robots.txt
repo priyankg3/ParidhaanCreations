@@ -11,7 +11,7 @@ Disallow: /my-orders
 Disallow: /wishlist
 
 # Sitemap
-Sitemap: https://tradition-mart.preview.emergentagent.com/api/sitemap.xml
+Sitemap: https://handicraft-haven.preview.emergentagent.com/api/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
