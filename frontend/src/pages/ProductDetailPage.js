@@ -16,12 +16,14 @@ export default function ProductDetailPage() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [recommendations, setRecommendations] = useState([]);
+  const [productBanner, setProductBanner] = useState(null);
 
   useEffect(() => {
     fetchProduct();
     fetchReviews();
     checkAuth();
     fetchRecommendations();
+    fetchProductBanner();
   }, [id]);
 
   const checkAuth = async () => {
@@ -31,6 +33,26 @@ export default function ProductDetailPage() {
     } catch (error) {
       setUser(null);
     }
+  };
+
+  const fetchProductBanner = async () => {
+    try {
+      const response = await axios.get(`${API}/banners?placement=product_page&status=active`);
+      if (response.data && response.data.length > 0) {
+        setProductBanner(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching product banner:", error);
+    }
+  };
+
+  const getImageUrl = (banner) => {
+    if (!banner) return '';
+    let url = banner.image_desktop || banner.image || '';
+    if (url && url.startsWith('/api/')) {
+      url = `${API}${url.replace('/api', '')}`;
+    }
+    return url;
   };
 
   const fetchProduct = async () => {
