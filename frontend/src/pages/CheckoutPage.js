@@ -290,36 +290,49 @@ export default function CheckoutPage() {
         {/* Checkout Page Banner */}
         {checkoutBanner && (
           <div className="mb-8" data-testid="checkout-banner">
-            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center space-x-4">
-                  {checkoutBanner.image_desktop && (
-                    <img 
-                      src={getImageUrl(checkoutBanner)} 
-                      alt={checkoutBanner.title || 'Special offer'}
-                      className="h-16 w-auto object-contain rounded"
-                    />
-                  )}
-                  <div>
+            {checkoutBanner.link ? (
+              <a 
+                href={checkoutBanner.link}
+                onClick={() => axios.post(`${API}/banners/${checkoutBanner.banner_id}/click`).catch(() => {})}
+                className="block overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow"
+              >
+                <img 
+                  src={getImageUrl(checkoutBanner)} 
+                  alt={checkoutBanner.title || 'Special offer'}
+                  className="w-full h-40 md:h-52 object-cover"
+                  loading="lazy"
+                />
+                {(checkoutBanner.title || checkoutBanner.cta_text) && (
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4">
                     {checkoutBanner.title && (
-                      <p className="font-bold text-primary">{checkoutBanner.title}</p>
+                      <p className="font-bold text-primary text-lg">{checkoutBanner.title}</p>
                     )}
                     {checkoutBanner.cta_text && (
                       <p className="text-sm text-muted-foreground">{checkoutBanner.cta_text}</p>
                     )}
                   </div>
-                </div>
-                {checkoutBanner.link && (
-                  <a 
-                    href={checkoutBanner.link}
-                    className="text-primary hover:underline text-sm font-medium"
-                    onClick={() => axios.post(`${API}/banners/${checkoutBanner.banner_id}/click`).catch(() => {})}
-                  >
-                    Learn More →
-                  </a>
+                )}
+              </a>
+            ) : (
+              <div className="overflow-hidden rounded-lg shadow-md">
+                <img 
+                  src={getImageUrl(checkoutBanner)} 
+                  alt={checkoutBanner.title || 'Special offer'}
+                  className="w-full h-40 md:h-52 object-cover"
+                  loading="lazy"
+                />
+                {(checkoutBanner.title || checkoutBanner.cta_text) && (
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4">
+                    {checkoutBanner.title && (
+                      <p className="font-bold text-primary text-lg">{checkoutBanner.title}</p>
+                    )}
+                    {checkoutBanner.cta_text && (
+                      <p className="text-sm text-muted-foreground">{checkoutBanner.cta_text}</p>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
