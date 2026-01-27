@@ -25,6 +25,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
