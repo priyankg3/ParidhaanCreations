@@ -209,7 +209,8 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
-            <div className="aspect-square mb-4 overflow-hidden bg-white border border-border/40">
+            <div className="aspect-square mb-4 overflow-hidden bg-white border border-border/40 relative">
+              <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
