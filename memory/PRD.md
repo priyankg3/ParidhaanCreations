@@ -1,193 +1,107 @@
-# Paridhaan Creations - E-commerce Platform
+# Paridhaan Creations - E-Commerce Platform
 
 ## Original Problem Statement
-Build a full-featured e-commerce website named "Paridhaan Creations" for selling:
-- Handicrafts
-- Pooja articles
-- Perfumes
-- Artificial jewellery
-- Traditional & decorative items
+Build a full-featured e-commerce website named "Paridhaan Creations" for handicrafts, pooja articles, perfumes, artificial jewellery, and traditional/decorative items.
 
-## Tech Stack
-- **Frontend:** React, React Router, Tailwind CSS, Recharts, Axios
-- **Backend:** FastAPI, Pydantic, Motor (async MongoDB driver)
-- **Database:** MongoDB
-- **Payments:** Razorpay (UPI, Cards, Net Banking)
-- **Auth:** Google OAuth (via Emergent)
+## Product Requirements
+- **Store Focus:** Handicrafts, Pooja articles, Perfumes, Artificial jewellery, Traditional & decorative items
+- **Frontend:** Clean, elegant design with homepage banner, product listings with filters, product detail pages, cart, and user authentication (Email/Google)
+- **Backend:** Admin dashboard to manage products, categories, banners, orders, users, coupons, and view analytics
+- **Checkout & Payments:** Full checkout system with Razorpay integration
+- **Advertisement System:** Admin-controlled banner uploads for 9 distinct placements
+- **Performance & SEO:** Achieve PageSpeed score of 90+ for Performance and 100/100 for SEO and Best Practices
 
-## Domain & Deployment
-- **Domain:** paridhaancreations.xyz (ready to connect)
-- **Deploy:** Click Deploy in Emergent → Link Domain → Remove A records → Follow Entri setup
+## Architecture
+```
+/app/
+├── backend/
+│   ├── server.py       # FastAPI monolith (needs refactoring)
+│   ├── uploads/        # Compressed WebP images
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   │   ├── index.html  # SEO optimized
+│   │   ├── manifest.json
+│   │   └── robots.txt
+│   ├── src/
+│   │   ├── utils/
+│   │   │   └── imageUtils.js  # Image optimization utility
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   │   └── SiteSettingsContext.js
+│   │   ├── pages/
+│   │   └── App.js      # Route-based code splitting
+│   └── craco.config.js
+└── memory/
+    └── PRD.md
+```
 
-## Admin Access
-- **Admin Email:** priyankg3@gmail.com (ONLY this email has admin access)
-- Admin link appears in navbar dropdown when logged in
-- Admin dashboard accessible at `/admin`
+## What's Been Implemented
 
-## Social Links & Contact
-- **Email:** info@paridhaancreations.xyz
-- **Instagram:** https://www.instagram.com/paridhaancreations
-- **Facebook:** https://www.facebook.com/share/1HP4DzfcFi/
-- **WhatsApp:** https://wa.me/message/4TZ5RAVABY4HG1 (+91 9871819508)
+### Core E-Commerce
+- [x] Product catalog with categories, filters, search
+- [x] Shopping cart and checkout flow
+- [x] Razorpay payment integration (TEST MODE)
+- [x] Order management and tracking
+- [x] User authentication (Email + Google OAuth)
 
-## Features Implemented
+### Admin Dashboard
+- [x] Product management (CRUD, images, variants)
+- [x] Category management
+- [x] Banner system (9 placements)
+- [x] Order management
+- [x] User management
+- [x] Coupon system
+- [x] Analytics dashboard
+- [x] Site Logo Management (verification pending)
 
-### Core E-commerce
-- [x] Product & Category Management
-- [x] **Product Image Upload** - Direct file upload in Admin Dashboard
-- [x] Cart & Checkout Flow with Razorpay
-- [x] Product reviews and ratings
-- [x] Product badges (New Arrival)
-- [x] PDF Invoice Generation
-- [x] Product Recommendations
+### Performance Optimizations (Jan 27, 2026)
+- [x] Route-based code splitting (85% bundle reduction)
+- [x] Server-side image compression to WebP (Pillow)
+- [x] External image URL optimization (Unsplash/Pexels)
+- [x] imageUtils.js utility for centralized optimization
+- [x] Preconnect hints for external resources
+- [x] Lazy loading for images
 
-### Payment Options (via Razorpay)
-- [x] UPI Payment (Google Pay, PhonePe, Paytm, BHIM)
-- [x] Credit/Debit Card (Visa, Mastercard, Rupay)
-- [x] Net Banking (50+ banks)
-
-### Admin Dashboard (/admin)
-- [x] Analytics with charts
-- [x] Customer Insights
-- [x] Products management with **image upload**
-- [x] Categories management
-- [x] Orders management
-- [x] Support Tickets management
-- [x] **Banners management** - header/footer/side + category targeting
-- [x] Coupons management
-- [x] Stock Alerts
-
-### Banner System (Fully Implemented - 9 Placements)
-All 9 banner placements are fully functional with JPEG/PNG support:
-
-| Placement | Location | Recommended Size | Status |
-|-----------|----------|-----------------|--------|
-| hero | Homepage slider | 1920x600 px | ✅ Working (2 banners) |
-| below_hero | Below homepage slider | 1200x400 px | ✅ Working |
-| popup | Homepage modal popup | 600x400 px | ✅ Working |
-| category_header | Category page top | 1200x250 px | ✅ Working (4 banners) |
-| category_sidebar | Category sidebar | 300x600 px | ✅ Working (5 banners) |
-| category_footer | Category page bottom | 1200x100 px | ✅ Working (4 banners) |
-| product_page | Product detail page | 800x200 px | ✅ Working (1 banner) |
-| cart_page | Cart page sidebar | 800x150 px | ✅ Working |
-| checkout_page | Checkout offers | 600x100 px | ✅ Working |
-
-**Features:**
-- **Image Upload:** Direct file upload via Admin Dashboard
-- **Category Targeting:** Assign banners to specific product categories
-- **Scheduling:** Set start/end dates for automatic activation
-- **Tracking:** Impression and click analytics
-- **Responsive:** Desktop and mobile image variants
-- **Lazy Loading:** Optimized loading for better performance
-
-### Customer Features
-- [x] Google Social Login
-- [x] Wishlist
-- [x] Order tracking
-- [x] Support Ticket System
-- [x] WhatsApp Support
-- [x] Multi-language (English & Hindi)
-
-### SEO
-- [x] robots.txt
+### SEO Enhancements
+- [x] Comprehensive meta tags
 - [x] JSON-LD structured data
-- [x] Dynamic meta tags
-- [x] Sitemap generation
+- [x] Dynamic sitemap.xml
+- [x] robots.txt
+- [x] Open Graph and Twitter cards
 
-## API Endpoints (New)
+## Pending Issues
 
-### File Upload
-- POST /api/upload/image - Upload single image (admin)
-- POST /api/upload/images - Upload multiple images (admin)
-- GET /api/uploads/{filename} - Get uploaded file
-- DELETE /api/upload/{filename} - Delete file (admin)
+### P0 - Critical
+- [ ] Improve PageSpeed Performance to 90+ (currently ~62)
+- [ ] Improve Best Practices to 100 (currently 92)
 
-### Banners
-- GET /api/banners?banner_type=header&category=handicrafts
-- POST /api/banners - Create banner with type/category
-- DELETE /api/banners/{id}
+### P1 - High
+- [ ] Site Logo Management final verification
+- [ ] Advanced Product Attributes verification
 
-## Completed in Latest Session (Jan 2026)
-1. **Category Banners Created:** 12 banners (header/side/footer for all 4 categories)
-2. **Product Image Upload:** Direct file upload in Admin Dashboard
-3. **Footer Social Links:** Instagram, Facebook, WhatsApp (no phone number)
-4. **All 4 categories displaying** on homepage
-5. **Banner Image Upload (NEW):** Added file upload option for banners with size recommendations
-   - Upload area with drag-drop styling
-   - URL input as alternative option
-   - Image preview with remove button
-   - Size recommendations panel (1920x600 Home, 1200x250 Category Top, 300x600 Sidebar, 1200x100 Footer)
-6. **Banner Scheduling (NEW):** Schedule banners for festivals/sales
-   - Start/End date pickers in banner form
-   - Automatic activation based on schedule
-   - Schedule status badges (Always Active, Scheduled, Currently Active, Expired)
-   - Public banners API filters out non-scheduled banners automatically
+### P2 - Technical Debt
+- [ ] Backend `server.py` refactoring (monolith breakdown)
+- [ ] Frontend `AdminDashboard.js` refactoring (2100+ lines)
+- [ ] N+1 Query Pattern in `/admin/customer-insights`
 
-## Completed in Current Session (Jan 27, 2026)
-1. **9-Placement Banner System Complete:**
-   - Homepage: hero (slider), below_hero, popup
-   - Category pages: header, sidebar, footer
-   - Product page, Cart page, Checkout page
-2. **Frontend Banner Display Fixed:**
-   - All pages now fetch and display banners from database
-   - getImageUrl helper handles both external URLs and /api/uploads/ paths
-   - Lazy loading implemented for better performance
-3. **Speed Optimizations:**
-   - Backend file serving with Cache-Control headers (24hr cache)
-   - Image lazy loading on all banner displays
-   - useCallback pattern for data fetching functions
-4. **Image Caching Fix:**
-   - Added Cache-Control headers to uploaded files endpoint
-   - CSS optimizations for image loading states
-5. **Banner Size Updates:**
-   - Cart page: Updated to 1200x300 (was 800x150)
-   - Checkout page: Updated to 1200x200 (was 600x100)
-   - Banner now displays at h-48 md:h-64 on Cart and Checkout pages
-6. **Banner Title Made Optional:**
-   - Backend model updated - title is no longer mandatory
-   - Can upload banners with just images, no title required
-7. **Site Logo Management Feature:**
-   - Added Site Branding section in Admin Dashboard Settings tab
-   - Header logo upload with 200x80 px recommendation
-   - Footer logo upload with 250x100 px recommendation
-   - Favicon upload with 32x32 or 64x64 px recommendation
-   - SiteSettingsContext for global access across app
-   - Dynamic logos in Navbar and Footer components
-8. **CORS Fix:**
-   - Added localhost:3000 to allowed origins for development
-9. **Product Image URL Fix:**
-   - Fixed old emergentagent URLs in database to current domain
-   - Laddu Gopal Dress images now properly display
-10. **High Advanced SEO Implementation:**
-    - Removed all "Emergent" references, replaced with "Paridhaan Creations"
-    - index.html completely rewritten with JSON-LD structured data
-    - SEO.js component with Product, Organization, Store schemas
-    - Enhanced sitemap.xml, robots.txt, manifest.json
-11. **Performance Optimization - Bundle Size:**
-    - Code splitting with React.lazy() - Pages lazy loaded
-    - main.js reduced from 756KB to 109KB (85% reduction!)
-    - Multiple chunks for on-demand loading
-12. **Performance Optimization - Images:**
-    - Server-side image compression with Pillow (WebP, quality 70%)
-    - Existing uploads compressed (saved 819KB)
-    - All Unsplash URLs optimized with w=1200&q=60&fm=webp
-13. **Accessibility Improvements:**
-    - All buttons have aria-label
-    - Proper landmark roles (navigation, main, contentinfo)
-    - Fixed aria-hidden with focusable elements
-    - Improved color contrast (gray-900 footer, white Shop Now button)
+## Future/Backlog Tasks
+- [ ] Abandoned Cart Recovery system
+- [ ] Live payments (production Razorpay keys)
+- [ ] Email/SMS notification system
+- [ ] Stock replenishment alerts
 
-## Deployment Instructions
-1. Click "Preview" to test your application
-2. Click "Deploy" → "Deploy Now"
-3. Wait 10-15 minutes for deployment
-4. Click "Link Domain" → Enter "paridhaancreations.xyz"
-5. Click "Entri" and follow instructions
-6. **Important:** Remove all A records from your domain DNS settings
-7. Wait 5-15 minutes for DNS propagation
+## 3rd Party Integrations
+- **Razorpay** (Payments) - TEST MODE, needs user API keys for production
+- **Emergent Google Auth** (Authentication)
+- **Twilio** (SMS) - Code exists, inactive
+- **Recharts** (Charts/Analytics)
+- **Pillow** (Backend Image Compression)
+
+## Credentials
+- **Admin Access:** Google Sign-In with `priyankg3@gmail.com`
 
 ## Notes
-- All payments via Razorpay
-- Admin access email-locked to priyankg3@gmail.com
-- Deployment costs 50 credits/month
-- Images stored in /app/backend/uploads/
+- User prefers Hinglish communication
+- PageSpeed scores are primary focus right now
+- Email/SMS notifications are MOCKED/inactive
