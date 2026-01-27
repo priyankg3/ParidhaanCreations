@@ -279,12 +279,12 @@ export default function CartPage() {
                     <img 
                       src={getImageUrl(cartBanner)} 
                       alt={cartBanner.title || 'Special offer'} 
-                      className="w-full h-auto object-cover"
+                      className="w-full h-48 md:h-64 object-cover"
                       loading="lazy"
                     />
                     {cartBanner.title && (
-                      <div className="bg-primary/10 p-3 text-center">
-                        <p className="font-medium text-primary">{cartBanner.title}</p>
+                      <div className="bg-primary/10 p-4 text-center">
+                        <p className="font-bold text-primary text-lg">{cartBanner.title}</p>
                       </div>
                     )}
                   </Link>
