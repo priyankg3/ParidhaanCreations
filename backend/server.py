@@ -331,6 +331,40 @@ class TicketCreate(BaseModel):
 class TicketResponse(BaseModel):
     message: str
 
+class SiteSettings(BaseModel):
+    """Site-wide settings including logos and branding"""
+    model_config = ConfigDict(extra="ignore")
+    setting_id: str = "site_settings"  # Single document
+    header_logo: Optional[str] = None  # Header logo URL
+    footer_logo: Optional[str] = None  # Footer logo URL (can be same as header)
+    favicon: Optional[str] = None  # Favicon URL
+    site_name: str = "Paridhaan Creations"
+    tagline: Optional[str] = "Traditional & Handicraft Store"
+    primary_color: Optional[str] = "#8B4513"  # Theme color
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    address: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_facebook: Optional[str] = None
+    social_twitter: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SiteSettingsUpdate(BaseModel):
+    header_logo: Optional[str] = None
+    footer_logo: Optional[str] = None
+    favicon: Optional[str] = None
+    site_name: Optional[str] = None
+    tagline: Optional[str] = None
+    primary_color: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    whatsapp_number: Optional[str] = None
+    address: Optional[str] = None
+    social_instagram: Optional[str] = None
+    social_facebook: Optional[str] = None
+    social_twitter: Optional[str] = None
+
 class Review(BaseModel):
     model_config = ConfigDict(extra="ignore")
     review_id: str = Field(default_factory=lambda: f"review_{uuid.uuid4().hex[:12]}")
