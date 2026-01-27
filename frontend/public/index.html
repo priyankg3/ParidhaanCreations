@@ -2,177 +2,235 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="description" content="A product of emergent.sh" />
-        <!--
-        manifest.json provides metadata used when your web app is installed on a
-        user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-        -->
-        <!--
-        Notice the use of %PUBLIC_URL% in the tags above.
-        It will be replaced with the URL of the `public` folder during the build.
-        Only files inside the `public` folder can be referenced from the HTML.
-
-        Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-        work correctly both with client-side routing and a non-root public URL.
-        Learn how to configure a non-root public URL by running `npm run build`.
-        -->
-        <title>Emergent | Fullstack App</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="theme-color" content="#8B4513" />
+        
+        <!-- Primary SEO Meta Tags -->
+        <title>Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery | Shop Online</title>
+        <meta name="title" content="Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery | Shop Online" />
+        <meta name="description" content="Shop authentic Indian handicrafts, brass pooja articles, traditional perfumes (attar), and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999. COD available." />
+        <meta name="keywords" content="paridhaan creations, indian handicrafts, pooja items online, brass pooja thali, laddu gopal dress, traditional jewellery, kundan jewellery, indian perfumes, attar, incense sticks, decorative items, handmade crafts india, handicrafts online shopping, pooja samagri, religious items" />
+        <meta name="author" content="Paridhaan Creations" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="bingbot" content="index, follow" />
+        
+        <!-- Canonical URL -->
+        <link rel="canonical" href="https://handicraft-haven.preview.emergentagent.com/" />
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://handicraft-haven.preview.emergentagent.com/" />
+        <meta property="og:title" content="Paridhaan Creations - Traditional Indian Handicrafts & Jewellery" />
+        <meta property="og:description" content="Discover authentic Indian handicrafts, pooja articles, traditional perfumes, and artificial jewellery. Handcrafted treasures by skilled artisans." />
+        <meta property="og:image" content="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Paridhaan Creations" />
+        <meta property="og:locale" content="en_IN" />
+        
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://handicraft-haven.preview.emergentagent.com/" />
+        <meta name="twitter:title" content="Paridhaan Creations - Traditional Indian Handicrafts & Jewellery" />
+        <meta name="twitter:description" content="Shop authentic Indian handicrafts, pooja articles, perfumes & traditional jewellery online." />
+        <meta name="twitter:image" content="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" />
+        
+        <!-- Geo Tags for Local SEO -->
+        <meta name="geo.region" content="IN" />
+        <meta name="geo.placename" content="India" />
+        <meta name="ICBM" content="20.5937, 78.9629" />
+        
+        <!-- Language and Content -->
+        <meta http-equiv="content-language" content="en-IN" />
+        <meta name="language" content="English" />
+        
+        <!-- Mobile App Tags -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Paridhaan Creations" />
+        <meta name="application-name" content="Paridhaan Creations" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
+        
+        <!-- Favicon and Icons -->
+        <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+        <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+        
+        <!-- Preconnect for Performance -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://images.pexels.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        
+        <!-- Critical CSS Preload -->
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" as="style" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" />
+        
+        <!-- Emergent Scripts -->
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
-        <!--
-        These two scripts have been added for the Visual Edits, please do not edit or remove them
-        -->
         <script>
-            // Only load visual edit scripts when inside an iframe
             if (window.self !== window.top) {
-                // Load debug monitor script
                 var debugMonitorScript = document.createElement('script');
                 debugMonitorScript.src = 'https://assets.emergent.sh/scripts/debug-monitor.js';
                 document.head.appendChild(debugMonitorScript);
-
-                // Configure Tailwind
                 window.tailwind = window.tailwind || {};
-                tailwind.config = {
-                    corePlugins: { preflight: false },
-                };
-
-                // Load Tailwind CDN
+                tailwind.config = { corePlugins: { preflight: false } };
                 var tailwindScript = document.createElement('script');
                 tailwindScript.src = 'https://cdn.tailwindcss.com';
                 document.head.appendChild(tailwindScript);
             }
         </script>
+        
+        <!-- JSON-LD Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Paridhaan Creations",
+            "alternateName": "Paridhaan",
+            "url": "https://handicraft-haven.preview.emergentagent.com",
+            "logo": "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png",
+            "description": "Shop authentic Indian handicrafts, pooja articles, traditional perfumes, and artificial jewellery. Handcrafted treasures by skilled artisans.",
+            "foundingDate": "2024",
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "Customer Service",
+                "availableLanguage": ["English", "Hindi"],
+                "areaServed": "IN"
+            },
+            "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "IN"
+            },
+            "sameAs": []
+        }
+        </script>
+        
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Paridhaan Creations",
+            "alternateName": "Paridhaan Handicrafts",
+            "url": "https://handicraft-haven.preview.emergentagent.com",
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {
+                    "@type": "EntryPoint",
+                    "urlTemplate": "https://handicraft-haven.preview.emergentagent.com/products?search={search_term_string}"
+                },
+                "query-input": "required name=search_term_string"
+            }
+        }
+        </script>
+        
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Store",
+            "name": "Paridhaan Creations",
+            "description": "Online store for traditional Indian handicrafts, pooja items, perfumes and jewellery",
+            "url": "https://handicraft-haven.preview.emergentagent.com",
+            "priceRange": "₹₹",
+            "paymentAccepted": "Cash on Delivery, Credit Card, Debit Card, UPI, Net Banking",
+            "currenciesAccepted": "INR",
+            "hasOfferCatalog": {
+                "@type": "OfferCatalog",
+                "name": "Paridhaan Creations Products",
+                "itemListElement": [
+                    {
+                        "@type": "OfferCatalog",
+                        "name": "Handicrafts",
+                        "itemListElement": {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Product",
+                                "name": "Traditional Indian Handicrafts"
+                            }
+                        }
+                    },
+                    {
+                        "@type": "OfferCatalog",
+                        "name": "Pooja Articles",
+                        "itemListElement": {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Product",
+                                "name": "Brass Pooja Items"
+                            }
+                        }
+                    },
+                    {
+                        "@type": "OfferCatalog",
+                        "name": "Perfumes & Attars",
+                        "itemListElement": {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Product",
+                                "name": "Traditional Indian Perfumes"
+                            }
+                        }
+                    },
+                    {
+                        "@type": "OfferCatalog",
+                        "name": "Jewellery",
+                        "itemListElement": {
+                            "@type": "Offer",
+                            "itemOffered": {
+                                "@type": "Product",
+                                "name": "Artificial & Traditional Jewellery"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+        </script>
+        
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://handicraft-haven.preview.emergentagent.com/"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Products",
+                    "item": "https://handicraft-haven.preview.emergentagent.com/products"
+                }
+            ]
+        }
+        </script>
     </head>
     <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
-        <div id="root"></div>
-        <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-        <a
-            id="emergent-badge"
-            target="_blank"
-            href="https://app.emergent.sh/?utm_source=emergent-badge"
-            style="
-                display: flex !important;
-                align-items: center !important;
-                position: fixed !important;
-                bottom: 20px;
-                right: 20px;
-                text-decoration: none;
-                padding: 6px 10px;
-                font-family: -apple-system, BlinkMacSystemFont,
-                    &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell,
-                    &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;,
-                    sans-serif !important;
-                font-size: 12px !important;
-                z-index: 9999 !important;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-                border-radius: 8px !important;
-                background-color: #ffffff !important;
-                border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            "
-        >
-            <div
-                style="display: flex; flex-direction: row; align-items: center"
-            >
-                <img
-                    style="width: 20px; height: 20px; margin-right: 8px"
-                    src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4"
-                />
-                <p
-                    style="
-                        color: #000000;
-                        font-family: -apple-system, BlinkMacSystemFont,
-                            &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu,
-                            Cantarell, &quot;Open Sans&quot;,
-                            &quot;Helvetica Neue&quot;, sans-serif !important;
-                        font-size: 12px !important;
-                        align-items: center;
-                        margin-bottom: 0;
-                    "
-                >
-                    Made with Emergent
-                </p>
+        <noscript>
+            <div style="padding: 20px; text-align: center; background: #f5f5f5;">
+                <h1>Paridhaan Creations - Traditional Indian Handicrafts</h1>
+                <p>Please enable JavaScript to view this website. Shop authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery.</p>
             </div>
+        </noscript>
+        <div id="root"></div>
+        <a
+            href="https://wa.me/919999999999?text=Hi%20Paridhaan%20Creations!%20I%20have%20a%20query."
+            style="position:fixed;bottom:20px;right:20px;background:#25D366;padding:12px;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.2);z-index:1000;display:none;"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Contact us on WhatsApp"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
         </a>
-        <script>
-            !(function (t, e) {
-                var o, n, p, r;
-                e.__SV ||
-                    ((window.posthog = e),
-                    (e._i = []),
-                    (e.init = function (i, s, a) {
-                        function g(t, e) {
-                            var o = e.split(".");
-                            2 == o.length && ((t = t[o[0]]), (e = o[1])),
-                                (t[e] = function () {
-                                    t.push(
-                                        [e].concat(
-                                            Array.prototype.slice.call(
-                                                arguments,
-                                                0,
-                                            ),
-                                        ),
-                                    );
-                                });
-                        }
-                        ((p = t.createElement("script")).type =
-                            "text/javascript"),
-                            (p.crossOrigin = "anonymous"),
-                            (p.async = !0),
-                            (p.src =
-                                s.api_host.replace(
-                                    ".i.posthog.com",
-                                    "-assets.i.posthog.com",
-                                ) + "/static/array.js"),
-                            (r =
-                                t.getElementsByTagName(
-                                    "script",
-                                )[0]).parentNode.insertBefore(p, r);
-                        var u = e;
-                        for (
-                            void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
-                                u.people = u.people || [],
-                                u.toString = function (t) {
-                                    var e = "posthog";
-                                    return (
-                                        "posthog" !== a && (e += "." + a),
-                                        t || (e += " (stub)"),
-                                        e
-                                    );
-                                },
-                                u.people.toString = function () {
-                                    return u.toString(1) + ".people (stub)";
-                                },
-                                o =
-                                    "init me ws ys ps bs capture je Di ks register register_once register_for_session unregister unregister_for_session Ps getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Es $s createPersonProfile Is opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing Ss debug xs getPageViewId captureTraceFeedback captureTraceMetric".split(
-                                        " ",
-                                    ),
-                                n = 0;
-                            n < o.length;
-                            n++
-                        )
-                            g(u, o[n]);
-                        e._i.push([i, s, a]);
-                    }),
-                    (e.__SV = 1));
-            })(document, window.posthog || []);
-            posthog.init("phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs", {
-                api_host: "https://us.i.posthog.com",
-                person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well,
-                session_recording: {
-                    recordCrossOriginIframes: true,
-                },
-            });
-        </script>
     </body>
 </html>
