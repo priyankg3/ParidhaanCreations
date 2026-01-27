@@ -239,6 +239,7 @@ export default function AdminDashboard() {
         images: productForm.images.filter(url => url),
         stock: parseInt(productForm.stock),
         featured: productForm.featured,
+        badge: productForm.badge || null,  // Product badge type
         // Advanced attributes
         length: productForm.length ? parseFloat(productForm.length) : null,
         breadth: productForm.breadth ? parseFloat(productForm.breadth) : null,
