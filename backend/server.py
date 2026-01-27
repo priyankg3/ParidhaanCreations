@@ -102,6 +102,7 @@ class Product(BaseModel):
     images: List[str]
     stock: int
     featured: bool = False
+    badge: Optional[str] = None  # new, hot, trending, limited, featured, bestseller, sale
     # Advanced attributes
     dimensions: Optional[ProductDimensions] = None  # L x B x H with unit
     weight: Optional[float] = None  # Weight in grams
