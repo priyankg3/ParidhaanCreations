@@ -484,18 +484,51 @@ async def get_product(product_id: str):
 @api_router.post("/products")
 async def create_product(product: ProductCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
-    product_obj = Product(**product.model_dump())
+    
+    # Build product data with dimensions
+    product_data = product.model_dump()
+    
+    # Create dimensions object if any dimension is provided
+    if product_data.get('length') or product_data.get('breadth') or product_data.get('height'):
+        product_data['dimensions'] = {
+            'length': product_data.pop('length', None),
+            'breadth': product_data.pop('breadth', None),
+            'height': product_data.pop('height', None)
+        }
+    else:
+        product_data.pop('length', None)
+        product_data.pop('breadth', None)
+        product_data.pop('height', None)
+        product_data['dimensions'] = None
+    
+    product_obj = Product(**product_data)
     doc = product_obj.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.products.insert_one(doc)
-    return product_obj
+    return {"message": "Product created", "product_id": product_obj.product_id}
 
 @api_router.put("/products/{product_id}")
 async def update_product(product_id: str, product: ProductCreate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
     await require_admin(authorization, session_token)
+    
+    # Build update data with dimensions
+    update_data = product.model_dump()
+    
+    # Create dimensions object if any dimension is provided
+    if update_data.get('length') or update_data.get('breadth') or update_data.get('height'):
+        update_data['dimensions'] = {
+            'length': update_data.pop('length', None),
+            'breadth': update_data.pop('breadth', None),
+            'height': update_data.pop('height', None)
+        }
+    else:
+        update_data.pop('length', None)
+        update_data.pop('breadth', None)
+        update_data.pop('height', None)
+    
     result = await db.products.update_one(
         {"product_id": product_id},
-        {"$set": product.model_dump()}
+        {"$set": update_data}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
