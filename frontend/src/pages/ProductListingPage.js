@@ -210,26 +210,30 @@ export default function ProductListingPage() {
       
       {/* Header Banner from DB or fallback to category banner */}
       {headerBanner ? (
-        <div className="relative h-80 overflow-hidden" data-testid={`header-banner-${selectedCategory}`}>
-          <img src={headerBanner.image} alt={headerBanner.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
+        <div className="relative h-64 md:h-80 overflow-hidden" data-testid={`header-banner-${selectedCategory}`}>
+          {headerBanner.link ? (
+            <a href={headerBanner.link} onClick={() => handleBannerClick(headerBanner)} className="block w-full h-full">
+              <img src={getImageUrl(headerBanner)} alt={headerBanner.title || 'Category banner'} className="w-full h-full object-cover" loading="lazy" />
+            </a>
+          ) : (
+            <img src={getImageUrl(headerBanner)} alt={headerBanner.title || 'Category banner'} className="w-full h-full object-cover" loading="lazy" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center pointer-events-none">
             <div className="text-center text-white">
-              <h1 className="text-5xl md:text-6xl font-heading font-bold mb-4">{headerBanner.title}</h1>
-              {headerBanner.link && (
-                <a href={headerBanner.link} className="mt-4 inline-block bg-secondary text-secondary-foreground px-6 py-2 font-medium hover:bg-secondary/90 transition-all">
-                  Shop Now
-                </a>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4">{headerBanner.title || categoryBanner?.title || 'Products'}</h1>
+              {headerBanner.cta_text && (
+                <p className="text-lg md:text-xl">{headerBanner.cta_text}</p>
               )}
             </div>
           </div>
         </div>
       ) : categoryBanner && (
-        <div className="relative h-80 overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
-          <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" />
+        <div className="relative h-64 md:h-80 overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
+          <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
             <div className="text-center text-white">
-              <h1 className="text-5xl md:text-6xl font-heading font-bold mb-4">{categoryBanner.title}</h1>
-              <p className="text-xl">{categoryBanner.description}</p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4">{categoryBanner.title}</h1>
+              <p className="text-lg md:text-xl">{categoryBanner.description}</p>
             </div>
           </div>
         </div>
