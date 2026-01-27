@@ -159,6 +159,21 @@ export default function ProductListingPage() {
     }
   };
 
+  const getImageUrl = (banner) => {
+    if (!banner) return '';
+    let url = banner.image_desktop || banner.image || '';
+    if (url && url.startsWith('/api/')) {
+      url = `${API}${url.replace('/api', '')}`;
+    }
+    return url;
+  };
+
+  const handleBannerClick = (banner) => {
+    if (banner?.banner_id) {
+      axios.post(`${API}/banners/${banner.banner_id}/click`).catch(() => {});
+    }
+  };
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("");
