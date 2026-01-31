@@ -43,7 +43,7 @@ export default function ProductListingPage() {
     maxPrice: 10000
   });
 
-  const categories = ["handicrafts", "pooja", "perfumes", "jewellery"];
+  const categories = ["handicrafts", "pooja", "artificial-jewellery"];
 
   const fetchProducts = useCallback(async () => {
     try {
