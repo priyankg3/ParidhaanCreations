@@ -10,6 +10,7 @@ axios.defaults.withCredentials = true;
 // Essential components loaded immediately
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import DynamicFavicon from "@/components/DynamicFavicon";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 
