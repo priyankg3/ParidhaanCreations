@@ -87,7 +87,7 @@ const SEO = ({
       "alternateName": "Paridhaan",
       "url": SEO_BASE_URL,
       "logo": SEO_DEFAULT_IMAGE,
-      "description": "Shop authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery.",
+      "description": "Shop authentic Indian handicrafts, pooja articles, and artificial jewellery.",
       "foundingDate": "2024",
       "areaServed": "IN",
       "contactPoint": {
