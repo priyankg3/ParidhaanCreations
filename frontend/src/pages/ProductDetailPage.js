@@ -209,12 +209,12 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
-            <div className="aspect-square mb-4 overflow-hidden bg-white border border-border/40 relative">
+            <div className="aspect-square mb-4 overflow-hidden bg-gray-50 border border-border/40 relative flex items-center justify-center">
               <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="max-w-full max-h-full object-contain"
                 data-testid="product-main-image"
               />
             </div>
@@ -224,12 +224,12 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square overflow-hidden border-2 transition-all ${
+                    className={`aspect-square overflow-hidden border-2 transition-all bg-gray-50 flex items-center justify-center ${
                       selectedImage === index ? "border-primary" : "border-border/40"
                     }`}
                     data-testid={`product-thumb-${index}`}
                   >
-                    <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`${product.name} ${index + 1}`} className="max-w-full max-h-full object-contain" />
                   </button>
                 ))}
               </div>
