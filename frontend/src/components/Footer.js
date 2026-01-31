@@ -46,8 +46,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link to="/products?category=handicrafts" className="text-sm text-gray-300 hover:text-white transition-colors">Handicrafts</Link></li>
               <li><Link to="/products?category=pooja" className="text-sm text-gray-300 hover:text-white transition-colors">Pooja Articles</Link></li>
-              <li><Link to="/products?category=perfumes" className="text-sm text-gray-300 hover:text-white transition-colors">Perfumes</Link></li>
-              <li><Link to="/products?category=jewellery" className="text-sm text-gray-300 hover:text-white transition-colors">Jewellery</Link></li>
+              <li><Link to="/products?category=artificial-jewellery" className="text-sm text-gray-300 hover:text-white transition-colors">Artificial Jewellery</Link></li>
             </ul>
           </nav>
 
