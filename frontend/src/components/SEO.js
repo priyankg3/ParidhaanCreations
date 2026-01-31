@@ -6,9 +6,9 @@ const SEO_BASE_URL = "https://artisanal-hub.preview.emergentagent.com";
 const SEO_DEFAULT_IMAGE = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
 
 const SEO = ({ 
-  title = "Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Jewellery",
-  description = "Shop authentic Indian handicrafts, brass pooja articles, traditional perfumes (attar), and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999.",
-  keywords = "paridhaan creations, indian handicrafts, pooja items online, brass pooja thali, laddu gopal dress, traditional jewellery, kundan jewellery, indian perfumes, attar, incense sticks, decorative items, handmade crafts india",
+  title = "Paridhaan Creations - Traditional Indian Handicrafts, Pooja Items & Artificial Jewellery",
+  description = "Shop authentic Indian handicrafts, brass pooja articles, and artificial jewellery at Paridhaan Creations. Handcrafted by skilled artisans. Free shipping on orders above ₹999.",
+  keywords = "paridhaan creations, indian handicrafts, pooja items online, brass pooja thali, laddu gopal dress, artificial jewellery, kundan jewellery, incense sticks, decorative items, handmade crafts india",
   image = SEO_DEFAULT_IMAGE,
   type = "website",
   product = null,
