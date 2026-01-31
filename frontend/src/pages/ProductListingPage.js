@@ -437,12 +437,12 @@ export default function ProductListingPage() {
                       className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden"
                       data-testid={`product-card-${product.product_id}`}
                     >
-                      <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
+                      <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative bg-gray-50 flex items-center justify-center">
                         <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                         <img
                           src={optimizeImageUrl(product.images[0], 300, 300)}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
                           decoding="async"
                           width="300"
