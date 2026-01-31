@@ -328,11 +328,60 @@ export default function ProductListingPage() {
                             className="w-4 h-4"
                             data-testid={`filter-category-${cat}`}
                           />
-                          <span className="text-sm capitalize">{cat}</span>
+                          <span className="text-sm capitalize">{cat.replace('-', ' ')}</span>
                         </label>
                       ))}
                     </div>
                   </div>
+
+                  {/* Laddu Gopal Size Filter - Only show for Pooja category */}
+                  {(selectedCategory === 'pooja' || !selectedCategory) && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                          <Ruler className="w-4 h-4" />
+                          Laddu Gopal Size
+                        </label>
+                        <button 
+                          onClick={() => setShowSizeGuide(true)}
+                          className="text-xs text-amber-600 hover:text-amber-800 underline"
+                        >
+                          Size Guide
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setLadduGopalSize("")}
+                          className={`px-3 py-1.5 text-sm rounded-full border transition-all ${
+                            ladduGopalSize === "" 
+                              ? "bg-amber-500 text-white border-amber-500" 
+                              : "bg-white text-amber-700 border-amber-300 hover:border-amber-400"
+                          }`}
+                        >
+                          All
+                        </button>
+                        {ladduGopalSizes.map(size => (
+                          <button
+                            key={size}
+                            onClick={() => setLadduGopalSize(size)}
+                            className={`w-10 h-10 text-sm rounded-full border font-semibold transition-all ${
+                              ladduGopalSize === size 
+                                ? "bg-amber-500 text-white border-amber-500" 
+                                : "bg-white text-amber-700 border-amber-300 hover:border-amber-400"
+                            }`}
+                            data-testid={`filter-laddu-size-${size}`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      {ladduGopalSize && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          Showing dresses for Size {ladduGopalSize} Laddu Gopal
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium mb-3">
