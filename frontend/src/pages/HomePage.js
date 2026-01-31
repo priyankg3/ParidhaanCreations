@@ -76,7 +76,11 @@ export default function HomePage() {
         axios.get(`${API}/categories`)
       ]);
 
-      setFeaturedProducts(productsRes.data.slice(0, 4));
+      // Sort featured products by created_at (newest first) and take first 8
+      const sortedFeatured = productsRes.data
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 8);
+      setFeaturedProducts(sortedFeatured);
       setHeroBanners(heroRes.data || []);
       setBelowHeroBanners(belowHeroRes.data || []);
       
