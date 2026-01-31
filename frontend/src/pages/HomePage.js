@@ -41,6 +41,7 @@ export default function HomePage() {
   const [showPopup, setShowPopup] = useState(false);
   const [categoriesData, setCategoriesData] = useState(defaultCategories);
   const [loading, setLoading] = useState(true);
+  const [featuredSlide, setFeaturedSlide] = useState(0);
 
   // Detect mobile viewport
   useEffect(() => {
