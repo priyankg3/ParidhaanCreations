@@ -2,11 +2,12 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
-import { Search, SlidersHorizontal, Heart, X } from "lucide-react";
+import { Search, SlidersHorizontal, Heart, X, Ruler } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 import { optimizeImageUrl } from "@/utils/imageUtils";
+import { LadduGopalSizeGuideModal, LadduGopalSizeBadge, SizeGuideButton } from "@/components/LadduGopalSizeGuide";
 
 const categoryBanners = {
   handicrafts: {
