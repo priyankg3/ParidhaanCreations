@@ -190,6 +190,7 @@ export default function ProductListingPage() {
     setSearchTerm("");
     setSelectedCategory("");
     setPriceRange([0, maxPrice]);
+    setLadduGopalSize("");
     setFilters({
       inStock: false,
       featured: false,
