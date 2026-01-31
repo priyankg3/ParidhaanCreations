@@ -507,7 +507,12 @@ async def logout(response: Response, authorization: Optional[str] = Header(None)
     return {"message": "Logged out successfully"}
 
 @api_router.get("/products")
-async def get_products(category: Optional[str] = None, search: Optional[str] = None, featured: Optional[bool] = None):
+async def get_products(
+    category: Optional[str] = None, 
+    search: Optional[str] = None, 
+    featured: Optional[bool] = None,
+    laddu_gopal_size: Optional[str] = None  # Filter by Laddu Gopal size
+):
     query = {}
     if category:
         query["category"] = category
@@ -515,6 +520,9 @@ async def get_products(category: Optional[str] = None, search: Optional[str] = N
         query["name"] = {"$regex": search, "$options": "i"}
     if featured is not None:
         query["featured"] = featured
+    if laddu_gopal_size:
+        # Filter products that fit this Laddu Gopal size
+        query["laddu_gopal_sizes"] = laddu_gopal_size
     
     products = await db.products.find(query, {"_id": 0}).to_list(1000)
     return products
