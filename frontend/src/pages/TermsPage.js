@@ -29,7 +29,6 @@ export default function TermsPage() {
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
               <li>Handicrafts and decorative items</li>
               <li>Pooja articles and spiritual items</li>
-              <li>Premium perfumes and attars</li>
               <li>Artificial jewellery and accessories</li>
             </ul>
           </section>
@@ -58,7 +57,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-heading font-bold mb-4">5. Returns & Refunds</h2>
             <div className="text-muted-foreground leading-relaxed space-y-3">
               <p><strong>Return Policy:</strong> We accept returns within 7 days of delivery for damaged or defective products.</p>
-              <p><strong>Non-Returnable Items:</strong> Perfumes, consumables, and customized products cannot be returned.</p>
+              <p><strong>Non-Returnable Items:</strong> Consumables and customized products cannot be returned.</p>
               <p><strong>Refund Process:</strong> Approved refunds will be processed within 7-10 business days to your original payment method.</p>
               <p><strong>Return Shipping:</strong> Return shipping costs are borne by the customer unless the product is damaged or defective.</p>
             </div>
