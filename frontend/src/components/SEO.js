@@ -217,7 +217,7 @@ const SEO = ({
         "@context": "https://schema.org",
         "@type": "Store",
         "name": SEO_SITE_NAME,
-        "description": "Online store for traditional Indian handicrafts, pooja items, perfumes and jewellery",
+        "description": "Online store for traditional Indian handicrafts, pooja items and artificial jewellery",
         "url": SEO_BASE_URL,
         "logo": SEO_DEFAULT_IMAGE,
         "priceRange": "₹₹",
@@ -233,8 +233,7 @@ const SEO = ({
           "itemListElement": [
             { "@type": "OfferCatalog", "name": "Handicrafts" },
             { "@type": "OfferCatalog", "name": "Pooja Articles" },
-            { "@type": "OfferCatalog", "name": "Perfumes & Attars" },
-            { "@type": "OfferCatalog", "name": "Jewellery" }
+            { "@type": "OfferCatalog", "name": "Artificial Jewellery" }
           ]
         }
       });
