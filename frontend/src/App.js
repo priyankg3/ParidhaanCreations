@@ -69,6 +69,7 @@ function AppRouter() {
   
   return (
     <div className="App">
+      <DynamicFavicon />
       <Navbar />
       <Suspense fallback={<PageLoader />}>
         <Routes>
