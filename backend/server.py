@@ -139,6 +139,8 @@ class ProductCreate(BaseModel):
     color: Optional[str] = None
     brand: Optional[str] = None
     tags: Optional[List[str]] = None
+    # Laddu Gopal specific
+    laddu_gopal_sizes: Optional[List[str]] = None  # Sizes this dress fits: ["0", "1", "2"] etc.
 
 class Category(BaseModel):
     model_config = ConfigDict(extra="ignore")
