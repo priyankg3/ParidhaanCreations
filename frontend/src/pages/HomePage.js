@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 import { optimizeImageUrl } from "@/utils/imageUtils";
+import { LadduGopalSizeSelector } from "@/components/LadduGopalSizeGuide";
 
 // Fallback hero images - Mobile optimized (500px, q=40) and Desktop (1200px)
 const fallbackHeroImages = [
