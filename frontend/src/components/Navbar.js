@@ -76,8 +76,7 @@ export default function Navbar() {
               <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-lg" role="menu">
                 <Link to="/products?category=handicrafts" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-handicrafts" role="menuitem">{t("category.handicrafts")}</Link>
                 <Link to="/products?category=pooja" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-pooja" role="menuitem">{t("category.pooja")}</Link>
-                <Link to="/products?category=perfumes" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-perfumes" role="menuitem">{t("category.perfumes")}</Link>
-                <Link to="/products?category=jewellery" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-jewellery" role="menuitem">{t("category.jewellery")}</Link>
+                <Link to="/products?category=artificial-jewellery" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-jewellery" role="menuitem">Artificial Jewellery</Link>
               </div>
             </div>
 
