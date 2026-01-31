@@ -113,6 +113,8 @@ class Product(BaseModel):
     color: Optional[str] = None  # Color
     brand: Optional[str] = None  # Brand name
     tags: Optional[List[str]] = None  # Tags for search
+    # Laddu Gopal specific
+    laddu_gopal_sizes: Optional[List[str]] = None  # Sizes this dress fits: ["0", "1", "2"] etc.
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
