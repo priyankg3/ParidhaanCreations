@@ -53,8 +53,12 @@ export default function AdminDashboard() {
     material: "",
     color: "",
     brand: "",
-    tags: ""
+    tags: "",
+    // Laddu Gopal specific
+    laddu_gopal_sizes: []  // ["0", "1", "2"] etc.
   });
+
+  const ladduGopalSizeOptions = ["0", "1", "2", "3", "4", "5", "6", "6+"];
 
   const [categoryForm, setCategoryForm] = useState({
     name: "",
