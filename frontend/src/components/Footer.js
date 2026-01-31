@@ -25,7 +25,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-sm text-gray-300 leading-relaxed">
-              {settings?.tagline || "Traditional Indian handicrafts, pooja items, perfumes, and artificial jewellery."}
+              {settings?.tagline || "Traditional & Handicraft Store"}
             </p>
           </div>
 
