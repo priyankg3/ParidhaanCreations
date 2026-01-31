@@ -192,21 +192,20 @@ export default function ProductListingPage() {
   const categoryKeywords = {
     handicrafts: "brass decorative items, wooden carvings, handmade crafts, indian handicrafts online",
     pooja: "pooja thali, laddu gopal dress, brass diya, incense holder, pooja samagri",
-    perfumes: "indian attar, oud perfume, natural perfumes, traditional fragrances",
-    jewellery: "kundan necklace, artificial jewellery, bridal jewellery, traditional bangles"
+    "artificial-jewellery": "kundan necklace, artificial jewellery, bridal jewellery, traditional bangles, imitation jewellery"
   };
 
   const seoTitle = selectedCategory 
     ? `${categoryBanners[selectedCategory]?.title || selectedCategory} - Buy Online at Paridhaan Creations`
-    : "Shop All Products - Handicrafts, Pooja Items, Perfumes & Jewellery | Paridhaan Creations";
+    : "Shop All Products - Handicrafts, Pooja Items & Artificial Jewellery | Paridhaan Creations";
   
   const seoDescription = selectedCategory
     ? `Buy authentic ${categoryBanners[selectedCategory]?.title || selectedCategory} online at Paridhaan Creations. ${categoryBanners[selectedCategory]?.description || ''}. Free shipping on orders above ₹999. COD available.`
-    : "Browse our complete collection of traditional Indian handicrafts, brass pooja articles, natural perfumes, and artificial jewellery. Handcrafted by skilled artisans.";
+    : "Browse our complete collection of traditional Indian handicrafts, brass pooja articles, and artificial jewellery. Handcrafted by skilled artisans.";
 
   const seoKeywords = selectedCategory 
     ? categoryKeywords[selectedCategory] || `${selectedCategory}, paridhaan creations`
-    : "indian handicrafts, pooja items, perfumes, jewellery, traditional items, paridhaan creations";
+    : "indian handicrafts, pooja items, artificial jewellery, traditional items, paridhaan creations";
 
   return (
     <div className="min-h-screen">
