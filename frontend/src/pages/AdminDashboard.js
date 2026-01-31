@@ -955,8 +955,7 @@ export default function AdminDashboard() {
                         <option value="">Select Category</option>
                         <option value="handicrafts">Handicrafts</option>
                         <option value="pooja">Pooja Items</option>
-                        <option value="perfumes">Perfumes</option>
-                        <option value="jewellery">Jewellery</option>
+                        <option value="artificial-jewellery">Artificial Jewellery</option>
                       </select>
                     </div>
 
