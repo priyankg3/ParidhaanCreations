@@ -978,6 +978,40 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Laddu Gopal Sizes - Only show for Pooja category */}
+                  {productForm.category === 'pooja' && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <label className="block text-sm font-medium mb-3 text-amber-800">
+                        🕉️ Laddu Gopal Sizes (Select all sizes this dress fits)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {ladduGopalSizeOptions.map(size => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => {
+                              const newSizes = productForm.laddu_gopal_sizes.includes(size)
+                                ? productForm.laddu_gopal_sizes.filter(s => s !== size)
+                                : [...productForm.laddu_gopal_sizes, size];
+                              setProductForm({...productForm, laddu_gopal_sizes: newSizes});
+                            }}
+                            className={`w-12 h-12 rounded-full border-2 font-bold transition-all ${
+                              productForm.laddu_gopal_sizes.includes(size)
+                                ? 'bg-amber-500 text-white border-amber-600'
+                                : 'bg-white text-amber-700 border-amber-300 hover:border-amber-400'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                      {productForm.laddu_gopal_sizes.length > 0 && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          Selected: Size {productForm.laddu_gopal_sizes.sort().join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium mb-2">Product Images</label>
                     
