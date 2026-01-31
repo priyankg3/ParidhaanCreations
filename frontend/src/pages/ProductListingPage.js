@@ -115,6 +115,13 @@ export default function ProductListingPage() {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
 
+    // Laddu Gopal size filter (frontend filtering for products that have this size)
+    if (ladduGopalSize && selectedCategory === 'pooja') {
+      filtered = filtered.filter(p => 
+        p.laddu_gopal_sizes && p.laddu_gopal_sizes.includes(ladduGopalSize)
+      );
+    }
+
     filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
     if (filters.inStock) {
@@ -143,7 +150,7 @@ export default function ProductListingPage() {
     }
 
     return filtered;
-  }, [products, searchTerm, selectedCategory, priceRange, sortBy, filters]);
+  }, [products, searchTerm, selectedCategory, priceRange, sortBy, filters, ladduGopalSize]);
 
   const addToCart = async (productId) => {
     try {
