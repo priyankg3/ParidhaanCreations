@@ -528,7 +528,12 @@ export default function ProductListingPage() {
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
                         <div className="flex items-center justify-between mb-4">
                           <p className="text-2xl font-bold text-accent">₹{product.price}</p>
-                          <p className="text-sm text-muted-foreground">{product.stock} in stock</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">{product.stock} in stock</p>
+                            {product.laddu_gopal_sizes && product.laddu_gopal_sizes.length > 0 && (
+                              <LadduGopalSizeBadge sizes={product.laddu_gopal_sizes} />
+                            )}
+                          </div>
                         </div>
                         <button
                           onClick={() => addToCart(product.product_id)}
