@@ -69,6 +69,11 @@ export default function ProductDetailPage() {
     }
   }, []);
 
+  // Scroll to top when product changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     fetchProduct();
     fetchReviews();
