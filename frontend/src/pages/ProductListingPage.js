@@ -38,6 +38,7 @@ export default function ProductListingPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [categoryBannersData, setCategoryBannersData] = useState({ header: null, side: null, footer: null });
   const [ladduGopalSize, setLadduGopalSize] = useState(searchParams.get("laddu_gopal_size") || "");
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [filters, setFilters] = useState({
     inStock: false,
     featured: false,
