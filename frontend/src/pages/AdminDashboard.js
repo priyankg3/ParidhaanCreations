@@ -256,7 +256,9 @@ export default function AdminDashboard() {
         material: productForm.material || null,
         color: productForm.color || null,
         brand: productForm.brand || null,
-        tags: productForm.tags ? productForm.tags.split(',').map(t => t.trim()).filter(t => t) : null
+        tags: productForm.tags ? productForm.tags.split(',').map(t => t.trim()).filter(t => t) : null,
+        // Laddu Gopal sizes
+        laddu_gopal_sizes: productForm.laddu_gopal_sizes.length > 0 ? productForm.laddu_gopal_sizes : null
       };
       
       await axios.post(`${API}/products`, productData, { withCredentials: true });
