@@ -347,6 +347,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Laddu Gopal Size Guide Section */}
+      <LadduGopalSizeSelector />
+
       {/* Featured Products with Slider */}
       {featuredProducts.length > 0 && (
         <section className="py-16 md:py-24 bg-gray-50" aria-labelledby="featured-heading">
