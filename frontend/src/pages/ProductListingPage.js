@@ -19,15 +19,10 @@ const categoryBanners = {
     title: "Sacred Pooja Collection",
     description: "Essential items for worship and spiritual practices"
   },
-  perfumes: {
-    image: "https://images.unsplash.com/photo-1768025719875-48ed072f3084?w=1400&h=300&fit=crop&q=60&fm=webp",
-    title: "Luxury Fragrances",
-    description: "Exquisite perfumes and traditional attars"
-  },
-  jewellery: {
+  "artificial-jewellery": {
     image: "https://images.unsplash.com/photo-1738754712726-d126c15e206b?w=1400&h=300&fit=crop&q=60&fm=webp",
-    title: "Traditional Jewellery",
-    description: "Elegant artificial jewellery for every occasion"
+    title: "Artificial Jewellery",
+    description: "Elegant artificial and traditional jewellery for every occasion"
   }
 };
 
