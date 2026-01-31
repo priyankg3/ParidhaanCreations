@@ -346,7 +346,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products with Slider */}
       {featuredProducts.length > 0 && (
         <section className="py-16 md:py-24 bg-gray-50" aria-labelledby="featured-heading">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -355,44 +355,83 @@ export default function HomePage() {
               <p className="text-base md:text-lg text-gray-600">Handpicked treasures for you</p>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-              {featuredProducts.map((product) => (
-                <article
-                  key={product.product_id}
-                  className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
-                  data-testid={`product-${product.product_id}`}
-                >
-                  <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative">
-                    <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
-                    <img
-                      src={optimizeImageUrl(product.images[0], isMobile ? 200 : 300, isMobile ? 200 : 300)}
-                      alt={`${product.name} - ₹${product.price}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      width={isMobile ? "200" : "300"}
-                      height={isMobile ? "200" : "300"}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </Link>
-                  <div className="p-4 md:p-6">
-                    <Link to={`/products/${product.product_id}`}>
-                      <h3 className="text-base md:text-xl font-heading font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                        {product.name}
-                      </h3>
+            {/* Products Grid with Navigation */}
+            <div className="relative">
+              {/* Navigation Arrows - show only if more than 4 products */}
+              {featuredProducts.length > 4 && (
+                <>
+                  <button
+                    onClick={() => setFeaturedSlide(Math.max(0, featuredSlide - 4))}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all ${featuredSlide === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={featuredSlide === 0}
+                    aria-label="Previous products"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={() => setFeaturedSlide(Math.min(featuredProducts.length - 4, featuredSlide + 4))}
+                    className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all ${featuredSlide >= featuredProducts.length - 4 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={featuredSlide >= featuredProducts.length - 4}
+                    aria-label="Next products"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                {featuredProducts.slice(featuredSlide, featuredSlide + (isMobile ? 4 : 4)).map((product) => (
+                  <article
+                    key={product.product_id}
+                    className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
+                    data-testid={`product-${product.product_id}`}
+                  >
+                    <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative bg-gray-50 flex items-center justify-center">
+                      <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
+                      <img
+                        src={optimizeImageUrl(product.images[0], isMobile ? 200 : 300, isMobile ? 200 : 300)}
+                        alt={`${product.name} - ₹${product.price}`}
+                        className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        width={isMobile ? "200" : "300"}
+                        height={isMobile ? "200" : "300"}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </Link>
-                    <p className="text-xl md:text-2xl font-bold text-primary mb-3 md:mb-4">₹{product.price}</p>
+                    <div className="p-4 md:p-6">
+                      <Link to={`/products/${product.product_id}`}>
+                        <h3 className="text-base md:text-xl font-heading font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      <p className="text-xl md:text-2xl font-bold text-primary mb-3 md:mb-4">₹{product.price}</p>
+                      <button
+                        onClick={() => addToCart(product.product_id)}
+                        className="w-full bg-primary text-white py-2 md:py-3 text-sm md:text-base font-medium hover:bg-primary/90 transition-all duration-300 rounded"
+                        data-testid={`add-to-cart-${product.product_id}`}
+                        aria-label={`Add ${product.name} to cart`}
+                        type="button"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              {/* Pagination Dots */}
+              {featuredProducts.length > 4 && (
+                <div className="flex justify-center mt-6 space-x-2">
+                  {Array.from({ length: Math.ceil(featuredProducts.length / 4) }).map((_, i) => (
                     <button
-                      onClick={() => addToCart(product.product_id)}
-                      className="w-full bg-primary text-white py-2 md:py-3 text-sm md:text-base font-medium hover:bg-primary/90 transition-all duration-300 rounded"
-                      data-testid={`add-to-cart-${product.product_id}`}
-                      aria-label={`Add ${product.name} to cart`}
-                      type="button"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </article>
-              ))}
+                      key={i}
+                      onClick={() => setFeaturedSlide(i * 4)}
+                      className={`w-2 h-2 rounded-full transition-all ${featuredSlide === i * 4 ? 'bg-primary w-6' : 'bg-gray-300'}`}
+                      aria-label={`Go to page ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
