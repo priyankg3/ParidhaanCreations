@@ -525,13 +525,13 @@ export default function ProductDetailPage() {
                 <Link
                   key={rec.product_id}
                   to={`/products/${rec.product_id}`}
-                  className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden"
+                  className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
                 >
-                  <div className="aspect-square overflow-hidden">
+                  <div className="aspect-square overflow-hidden bg-gray-50 flex items-center justify-center">
                     <img
                       src={rec.images[0]}
                       alt={rec.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-4">
