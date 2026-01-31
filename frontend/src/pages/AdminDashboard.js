@@ -528,7 +528,8 @@ export default function AdminDashboard() {
       material: "",
       color: "",
       brand: "",
-      tags: ""
+      tags: "",
+      laddu_gopal_sizes: []
     });
   };
 
