@@ -214,7 +214,7 @@ export default function HomePage() {
               {heroBanners[currentSlide]?.title || "Paridhaan Creations"}
             </h1>
             <p className="text-base md:text-xl text-white mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed">
-              {heroBanners[currentSlide]?.cta_text || "Discover authentic Indian handicrafts, pooja articles, perfumes, and traditional jewellery"}
+              {heroBanners[currentSlide]?.cta_text || "Discover authentic Indian handicrafts, pooja articles, and artificial jewellery"}
             </p>
             <Link
               to="/products"
