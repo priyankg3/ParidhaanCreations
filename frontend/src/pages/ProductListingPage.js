@@ -602,6 +602,16 @@ export default function ProductListingPage() {
           )}
         </div>
       </div>
+
+      {/* Laddu Gopal Size Guide Modal */}
+      <LadduGopalSizeGuideModal 
+        isOpen={showSizeGuide} 
+        onClose={() => setShowSizeGuide(false)}
+        onSelectSize={(size) => {
+          setLadduGopalSize(size);
+          setSelectedCategory('pooja');
+        }}
+      />
     </div>
   );
 }
