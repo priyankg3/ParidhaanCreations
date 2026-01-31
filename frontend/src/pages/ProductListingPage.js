@@ -36,6 +36,7 @@ export default function ProductListingPage() {
   const [sortBy, setSortBy] = useState("name");
   const [showFilters, setShowFilters] = useState(false);
   const [categoryBannersData, setCategoryBannersData] = useState({ header: null, side: null, footer: null });
+  const [ladduGopalSize, setLadduGopalSize] = useState(searchParams.get("laddu_gopal_size") || "");
   const [filters, setFilters] = useState({
     inStock: false,
     featured: false,
@@ -44,10 +45,16 @@ export default function ProductListingPage() {
   });
 
   const categories = ["handicrafts", "pooja", "artificial-jewellery"];
+  const ladduGopalSizes = ["0", "1", "2", "3", "4", "5", "6", "6+"];
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/products`);
+      let url = `${API}/products`;
+      const params = new URLSearchParams();
+      if (ladduGopalSize) params.append("laddu_gopal_size", ladduGopalSize);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await axios.get(url);
       setProducts(response.data);
       
       const prices = response.data.map(p => p.price);
@@ -59,7 +66,7 @@ export default function ProductListingPage() {
       console.error("Error fetching products:", error);
       toast.error("Failed to load products");
     }
-  }, []);
+  }, [ladduGopalSize]);
 
   const fetchCategoryBanners = useCallback(async (category) => {
     try {
