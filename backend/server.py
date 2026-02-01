@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Cookie, Response, Request, Header, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, Cookie, Response, Request, Header, UploadFile, File, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -27,6 +27,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from collections import Counter
 from PIL import Image as PILImage
+
+# Import Shiprocket service
+from shiprocket_service import ShiprocketService, ShiprocketAuth, get_status_label
 
 ROOT_DIR = Path(__file__).parent
 UPLOAD_DIR = ROOT_DIR / "uploads"
