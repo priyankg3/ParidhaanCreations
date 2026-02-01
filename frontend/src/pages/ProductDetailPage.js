@@ -214,13 +214,17 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
-            <div className="aspect-square mb-4 overflow-hidden bg-gray-50 border border-border/40 relative flex items-center justify-center">
+            <div className="aspect-square mb-4 overflow-hidden bg-gray-100 border border-border/40 relative">
               <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="max-w-full max-h-full object-contain"
+                className="w-full h-full object-contain"
                 data-testid="product-main-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/600x600?text=Image+Not+Available';
+                }}
               />
             </div>
             {product.images.length > 1 && (
@@ -229,12 +233,20 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square overflow-hidden border-2 transition-all bg-gray-50 flex items-center justify-center ${
+                    className={`aspect-square overflow-hidden border-2 transition-all bg-gray-100 ${
                       selectedImage === index ? "border-primary" : "border-border/40"
                     }`}
                     data-testid={`product-thumb-${index}`}
                   >
-                    <img src={img} alt={`${product.name} ${index + 1}`} className="max-w-full max-h-full object-contain" />
+                    <img 
+                      src={img} 
+                      alt={`${product.name} ${index + 1}`} 
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/150x150?text=No+Image';
+                      }}
+                    />
                   </button>
                 ))}
               </div>
