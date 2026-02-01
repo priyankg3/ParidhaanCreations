@@ -111,7 +111,9 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 - [ ] Live payments (production Razorpay keys)
 - [ ] Email/SMS notification system
 - [ ] Stock replenishment alerts
-- [ ] Migrate existing image components to use OptimizedImage.js for consistency
+- [x] ~~HSN codes for products~~ - DONE (Feb 1, 2026)
+- [x] ~~Bank details for invoice~~ - DONE (Feb 1, 2026)
+- [x] ~~GST breakdown on checkout page~~ - DONE (Feb 1, 2026)
 
 ## 3rd Party Integrations
 - **Razorpay** (Payments) - TEST MODE, needs user API keys for production
