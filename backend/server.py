@@ -512,6 +512,26 @@ class Review(BaseModel):
     comment: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Shiprocket Shipment Model
+class Shipment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    shipment_id: str = Field(default_factory=lambda: f"ship_{uuid.uuid4().hex[:12]}")
+    order_id: str
+    shiprocket_order_id: Optional[int] = None
+    shiprocket_shipment_id: Optional[int] = None
+    courier_id: Optional[int] = None
+    courier_name: Optional[str] = None
+    awb_number: Optional[str] = None
+    shipping_rate: Optional[float] = None
+    status: str = "pending"  # pending, processing, shipped, in_transit, delivered, cancelled, rto
+    label_url: Optional[str] = None
+    manifest_url: Optional[str] = None
+    tracking_url: Optional[str] = None
+    estimated_delivery: Optional[str] = None
+    tracking_history: List[Dict[str, Any]] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class ReviewCreate(BaseModel):
     product_id: str
     rating: int
