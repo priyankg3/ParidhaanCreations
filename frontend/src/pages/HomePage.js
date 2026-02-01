@@ -327,13 +327,11 @@ export default function HomePage() {
                 data-testid={`category-${category.slug}`}
                 aria-label={`Shop ${category.name} - Browse our ${category.name.toLowerCase()} collection`}
               >
-                <div className="aspect-square overflow-hidden bg-gray-100">
+                <div className="aspect-square overflow-hidden bg-white">
                   <img
-                    src={optimizeImageUrl(category.image, isMobile ? 200 : 400, isMobile ? 200 : 400)}
+                    src={category.image}
                     alt={`${category.name} collection - Traditional ${category.name.toLowerCase()} items`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    width={isMobile ? "200" : "400"}
-                    height={isMobile ? "200" : "400"}
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
