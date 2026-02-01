@@ -2973,6 +2973,205 @@ TWILIO_PHONE_NUMBER=+1234567890</pre>
             </div>
           </div>
         )}
+
+        {/* Shipping Tab - Shiprocket Integration */}
+        {activeTab === "shipping" && (
+          <div className="space-y-6">
+            {/* Shipping Overview */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-2 flex items-center gap-2">
+                <Truck className="w-6 h-6 text-primary" />
+                Shiprocket Shipping
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Manage shipments, assign couriers, and track deliveries through Shiprocket integration.
+              </p>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-yellow-700">{orders.filter(o => o.payment_status === 'paid' && !shipments.find(s => s.order_id === o.order_id)).length}</p>
+                  <p className="text-sm text-yellow-600">Ready to Ship</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-700">{shipments.filter(s => s.status === 'processing').length}</p>
+                  <p className="text-sm text-blue-600">Processing</p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-purple-700">{shipments.filter(s => ['shipped', 'in_transit'].includes(s.status)).length}</p>
+                  <p className="text-sm text-purple-600">In Transit</p>
+                </div>
+                <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                  <p className="text-2xl font-bold text-green-700">{shipments.filter(s => s.status === 'delivered').length}</p>
+                  <p className="text-sm text-green-600">Delivered</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Orders Ready for Shipping */}
+            <div className="bg-white border border-border/40 p-6">
+              <h3 className="text-lg font-semibold mb-4">Orders Ready to Ship</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Order ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Delivery Address</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Amount</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {orders
+                      .filter(o => o.payment_status === 'paid' && !shipments.find(s => s.order_id === o.order_id && s.shiprocket_order_id))
+                      .map(order => (
+                        <tr key={order.order_id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-mono text-sm">{order.order_id}</td>
+                          <td className="px-4 py-3">{order.shipping_address?.full_name}</td>
+                          <td className="px-4 py-3 text-sm">
+                            {order.shipping_address?.city}, {order.shipping_address?.state} - {order.shipping_address?.pincode}
+                          </td>
+                          <td className="px-4 py-3 font-medium">₹{order.total_amount?.toFixed(2)}</td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleCreateShipment(order.order_id)}
+                              disabled={shippingLoading}
+                              className="bg-primary text-primary-foreground px-4 py-2 text-sm hover:bg-primary/90 disabled:opacity-50"
+                            >
+                              {shippingLoading ? 'Processing...' : 'Create Shipment'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    {orders.filter(o => o.payment_status === 'paid' && !shipments.find(s => s.order_id === o.order_id && s.shiprocket_order_id)).length === 0 && (
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-muted-foreground">
+                          No orders ready for shipping
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Courier Selection Modal */}
+            {selectedOrderForShipping && availableCouriers.length > 0 && (
+              <div className="bg-white border-2 border-primary/50 p-6 rounded-lg shadow-lg">
+                <h3 className="text-lg font-semibold mb-4">Select Courier for Order: {selectedOrderForShipping}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {availableCouriers.map(courier => (
+                    <div 
+                      key={courier.courier_id}
+                      className="border border-border p-4 rounded-lg hover:border-primary cursor-pointer transition-all"
+                      onClick={() => handleAssignCourier(selectedOrderForShipping, courier.courier_id)}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{courier.courier_name}</h4>
+                        <span className="text-lg font-bold text-primary">₹{courier.rate}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Estimated: {courier.etd}</p>
+                      {courier.rating && (
+                        <p className="text-xs text-yellow-600">Rating: {courier.rating}/5</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {setSelectedOrderForShipping(null); setAvailableCouriers([]);}}
+                  className="mt-4 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Cancel Selection
+                </button>
+              </div>
+            )}
+
+            {/* Active Shipments */}
+            <div className="bg-white border border-border/40 p-6">
+              <h3 className="text-lg font-semibold mb-4">Active Shipments</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Order ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">AWB</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Courier</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Rate</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {shipments.map(shipment => (
+                      <tr key={shipment.shipment_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-mono text-sm">{shipment.order_id}</td>
+                        <td className="px-4 py-3">
+                          {shipment.awb_number ? (
+                            <span className="font-mono bg-blue-100 text-blue-700 px-2 py-1 text-sm">{shipment.awb_number}</span>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Pending</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">{shipment.courier_name || '-'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            shipment.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                            shipment.status === 'shipped' || shipment.status === 'in_transit' ? 'bg-blue-100 text-blue-700' :
+                            shipment.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {shipment.status?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {shipment.shipping_rate ? `₹${shipment.shipping_rate}` : '-'}
+                        </td>
+                        <td className="px-4 py-3 space-x-2">
+                          {shipment.label_url && (
+                            <a 
+                              href={shipment.label_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs bg-gray-100 px-2 py-1 hover:bg-gray-200"
+                            >
+                              Label
+                            </a>
+                          )}
+                          {shipment.tracking_url && (
+                            <a 
+                              href={shipment.tracking_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs bg-primary/10 text-primary px-2 py-1 hover:bg-primary/20"
+                            >
+                              Track
+                            </a>
+                          )}
+                          {shipment.status !== 'delivered' && shipment.status !== 'cancelled' && (
+                            <button
+                              onClick={() => handleCancelShipment(shipment.order_id)}
+                              className="text-xs bg-red-100 text-red-700 px-2 py-1 hover:bg-red-200"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {shipments.length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="px-4 py-8 text-center text-muted-foreground">
+                          No shipments yet. Create shipments from paid orders above.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
