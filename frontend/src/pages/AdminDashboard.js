@@ -1362,6 +1362,42 @@ export default function AdminDashboard() {
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                       />
                     </div>
+
+                    {/* GST & HSN Section */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                      <h5 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        GST & Tax Details
+                      </h5>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium mb-1 text-blue-700">GST Rate (%)</label>
+                          <select
+                            value={productForm.gst_rate}
+                            onChange={(e) => setProductForm({...productForm, gst_rate: e.target.value})}
+                            className="w-full px-3 py-2 border border-blue-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                          >
+                            <option value="">Use Category Default</option>
+                            <option value="0">0% (Exempt)</option>
+                            <option value="5">5%</option>
+                            <option value="12">12%</option>
+                            <option value="18">18%</option>
+                            <option value="28">28%</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1 text-blue-700">HSN Code</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 9503"
+                            value={productForm.hsn_code}
+                            onChange={(e) => setProductForm({...productForm, hsn_code: e.target.value})}
+                            className="w-full px-3 py-2 border border-blue-300 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2">Leave blank to use category's default GST rate</p>
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
