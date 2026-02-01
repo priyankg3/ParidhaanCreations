@@ -155,6 +155,9 @@ class Category(BaseModel):
     slug: str
     description: str
     image: str
+    # GST fields for category-level defaults
+    gst_rate: Optional[float] = None  # Default GST rate for this category
+    hsn_code: Optional[str] = None  # Default HSN code for this category
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CategoryCreate(BaseModel):
@@ -162,6 +165,8 @@ class CategoryCreate(BaseModel):
     slug: str
     description: str
     image: str
+    gst_rate: Optional[float] = None
+    hsn_code: Optional[str] = None
 
 class CartItem(BaseModel):
     product_id: str
