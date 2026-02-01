@@ -795,6 +795,47 @@ export default function CheckoutPage() {
                         <span>-₹{discount.toFixed(2)}</span>
                       </div>
                     )}
+                    
+                    {/* GST Breakdown Section */}
+                    {gstBreakdown && gstSettings?.gst_enabled && (
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground border-b pb-2">
+                          <span className="font-medium">GST Breakdown</span>
+                          <span className="text-primary">(Included in price)</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>Taxable Amount</span>
+                          <span>₹{gstBreakdown.taxableAmount}</span>
+                        </div>
+                        {gstBreakdown.isInterState ? (
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>IGST ({gstBreakdown.gstRate}%)</span>
+                            <span>₹{gstBreakdown.igst}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>CGST ({gstBreakdown.gstRate/2}%)</span>
+                              <span>₹{gstBreakdown.cgst}</span>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>SGST ({gstBreakdown.gstRate/2}%)</span>
+                              <span>₹{gstBreakdown.sgst}</span>
+                            </div>
+                          </>
+                        )}
+                        <div className="flex justify-between text-xs font-medium pt-1 border-t border-gray-200">
+                          <span>Total GST</span>
+                          <span>₹{gstBreakdown.totalGst}</span>
+                        </div>
+                        {gstSettings?.gstin && (
+                          <div className="text-xs text-center text-muted-foreground pt-1">
+                            GSTIN: {gstSettings.gstin}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between text-muted-foreground">
                       <span>Shipping</span>
                       <span className="text-green-600 font-medium">FREE</span>
