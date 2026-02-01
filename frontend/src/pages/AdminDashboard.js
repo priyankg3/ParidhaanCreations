@@ -31,6 +31,8 @@ export default function AdminDashboard() {
   const [showBannerForm, setShowBannerForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
   
   const [productForm, setProductForm] = useState({
     name: "",
