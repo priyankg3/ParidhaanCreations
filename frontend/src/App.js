@@ -33,7 +33,18 @@ const AuthCallback = lazy(() => import("@/components/AuthCallback"));
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 const WhatsAppButton = lazy(() => import("@/components/WhatsAppButton"));
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Smart backend URL detection - uses current origin if env var not set or for production
+const getBackendUrl = () => {
+  const envUrl = process.env.REACT_APP_BACKEND_URL;
+  // If env URL is set and we're in development/preview, use it
+  if (envUrl && (window.location.hostname === 'localhost' || window.location.hostname.includes('preview'))) {
+    return envUrl;
+  }
+  // For production or if env URL not set, use current origin
+  return window.location.origin;
+};
+
+const BACKEND_URL = getBackendUrl();
 export const API = `${BACKEND_URL}/api`;
 
 // Loading spinner component
