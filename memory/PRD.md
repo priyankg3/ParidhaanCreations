@@ -127,3 +127,25 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 - User prefers Hinglish communication
 - PageSpeed scores are primary focus right now
 - Email/SMS notifications are MOCKED/inactive
+
+## Session Log (Feb 1, 2026)
+### Image Issue Investigation
+- **Status:** RESOLVED
+- **Finding:** Images were working correctly after fork. Code already had `object-cover` (not `object-contain`).
+- **Preventive Measure:** Created `/app/frontend/src/components/OptimizedImage.js` - a centralized image component that:
+  - Always uses `object-cover` for proper display
+  - Handles error states with fallback images
+  - Provides lazy loading and priority loading options
+  - Exports specialized components: ProductImage, CategoryImage, BannerImage, ThumbnailImage
+
+### Verified Working Features
+- ✅ Hero banner carousel
+- ✅ Category images (Handicrafts, Pooja Articles, Artificial Jewellery)
+- ✅ Product listing images with badges (FEATURED, BESTSELLER)
+- ✅ Product detail page images
+- ✅ Laddu Gopal Size Guide filter UI
+- ✅ Product edit functionality in admin
+
+### Category Updates (Previous Session)
+- "Jewellery" → "Artificial Jewellery" (slug: artificial-jewellery)
+- "Perfumes" category REMOVED
