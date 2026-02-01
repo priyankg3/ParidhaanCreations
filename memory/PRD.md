@@ -27,9 +27,18 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 │   │   ├── utils/
 │   │   │   └── imageUtils.js  # Image optimization utility
 │   │   ├── components/
+│   │   │   ├── OptimizedImage.js  # Centralized image component (Feb 1, 2026)
+│   │   │   ├── ProductBadge.js    # Product badge display
+│   │   │   ├── LadduGopalSizeGuide.js  # Size guide modal
+│   │   │   ├── DynamicFavicon.js  # Dynamic favicon handler
+│   │   │   └── ...
 │   │   ├── contexts/
 │   │   │   └── SiteSettingsContext.js
 │   │   ├── pages/
+│   │   │   ├── HomePage.js        # Hero, categories, featured products
+│   │   │   ├── ProductListingPage.js  # Filters, Laddu Gopal size filter
+│   │   │   ├── ProductDetailPage.js   # Product view, reviews
+│   │   │   └── AdminDashboard.js  # Admin panel (needs refactoring)
 │   │   └── App.js      # Route-based code splitting
 │   └── craco.config.js
 └── memory/
