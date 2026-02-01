@@ -317,7 +317,10 @@ export default function AdminDashboard() {
         brand: productForm.brand || null,
         tags: productForm.tags ? productForm.tags.split(',').map(t => t.trim()).filter(t => t) : null,
         // Laddu Gopal sizes
-        laddu_gopal_sizes: productForm.laddu_gopal_sizes.length > 0 ? productForm.laddu_gopal_sizes : null
+        laddu_gopal_sizes: productForm.laddu_gopal_sizes.length > 0 ? productForm.laddu_gopal_sizes : null,
+        // GST fields
+        gst_rate: productForm.gst_rate ? parseFloat(productForm.gst_rate) : null,
+        hsn_code: productForm.hsn_code || null
       };
       
       await axios.post(`${API}/products`, productData, { withCredentials: true });
