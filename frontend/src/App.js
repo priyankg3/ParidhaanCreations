@@ -27,6 +27,7 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const TermsPage = lazy(() => import("@/pages/TermsPage"));
 const SupportPage = lazy(() => import("@/pages/SupportPage"));
+const TrackingPage = lazy(() => import("@/pages/TrackingPage"));
 
 // Lazy load non-critical components
 const AuthCallback = lazy(() => import("@/components/AuthCallback"));
