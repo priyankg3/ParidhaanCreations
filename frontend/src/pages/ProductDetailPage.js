@@ -539,11 +539,15 @@ export default function ProductDetailPage() {
                   to={`/products/${rec.product_id}`}
                   className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
                 >
-                  <div className="aspect-square overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <div className="aspect-square overflow-hidden bg-gray-100">
                     <img
                       src={rec.images[0]}
                       alt={rec.name}
-                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                      }}
                     />
                   </div>
                   <div className="p-4">
