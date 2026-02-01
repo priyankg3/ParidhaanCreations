@@ -144,6 +144,9 @@ class ProductCreate(BaseModel):
     tags: Optional[List[str]] = None
     # Laddu Gopal specific
     laddu_gopal_sizes: Optional[List[str]] = None  # Sizes this dress fits: ["0", "1", "2"] etc.
+    # GST fields
+    gst_rate: Optional[float] = None  # GST rate in percentage (5, 12, 18, 28)
+    hsn_code: Optional[str] = None  # HSN/SAC code for GST
 
 class Category(BaseModel):
     model_config = ConfigDict(extra="ignore")
