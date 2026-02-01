@@ -1399,7 +1399,7 @@ export default function AdminDashboard() {
                           />
                         </div>
                       </div>
-                      <p className="text-xs text-blue-600 mt-2">Leave blank to use category's default GST rate</p>
+                      <p className="text-xs text-blue-600 mt-2">Leave blank to use category default GST rate</p>
                     </div>
                   </div>
 
