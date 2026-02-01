@@ -42,15 +42,27 @@ export default function CheckoutPage() {
 
   const fetchData = async () => {
     try {
-      const [cartRes, userRes, welcomeRes, bannerRes] = await Promise.all([
+      const [cartRes, userRes, welcomeRes, bannerRes, gstRes, statesRes] = await Promise.all([
         axios.get(`${API}/cart`, { withCredentials: true }),
         axios.get(`${API}/auth/me`, { withCredentials: true }).catch(() => null),
         axios.get(`${API}/user/first-time-buyer`, { withCredentials: true }).catch(() => null),
-        axios.get(`${API}/banners?placement=checkout_page&status=active`).catch(() => ({ data: [] }))
+        axios.get(`${API}/banners?placement=checkout_page&status=active`).catch(() => ({ data: [] })),
+        axios.get(`${API}/gst-settings`).catch(() => null),
+        axios.get(`${API}/indian-states`).catch(() => ({ data: [] }))
       ]);
 
       setCart(cartRes.data);
       setUser(userRes?.data);
+      
+      // Set GST settings
+      if (gstRes?.data) {
+        setGstSettings(gstRes.data);
+      }
+      
+      // Set Indian states
+      if (statesRes?.data) {
+        setIndianStates(statesRes.data);
+      }
       
       // Check for first-time buyer welcome offer
       if (welcomeRes?.data?.is_first_time) {
