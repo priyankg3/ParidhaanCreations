@@ -109,6 +109,73 @@ export default function CheckoutPage() {
   const discount = appliedCoupon ? appliedCoupon.discount : 0;
   const total = Math.max(0, subtotal - discount);
 
+  // Calculate GST breakdown when state changes
+  useEffect(() => {
+    if (gstSettings && shippingAddress.state && subtotal > 0) {
+      calculateGstBreakdown();
+    }
+  }, [shippingAddress.state, subtotal, discount, gstSettings, products]);
+
+  const calculateGstBreakdown = () => {
+    if (!gstSettings || !gstSettings.gst_enabled) {
+      setGstBreakdown(null);
+      return;
+    }
+
+    const businessStateCode = gstSettings.business_state_code || "08";
+    const customerState = indianStates.find(s => s.name === shippingAddress.state);
+    const customerStateCode = customerState?.code || "";
+    const isInterState = businessStateCode !== customerStateCode && customerStateCode !== "";
+
+    let totalTaxable = 0;
+    let totalCgst = 0;
+    let totalSgst = 0;
+    let totalIgst = 0;
+
+    cart.items.forEach(item => {
+      const product = products[item.product_id];
+      if (!product) return;
+
+      const gstRate = product.gst_rate || gstSettings.default_gst_rate || 18;
+      const itemTotal = product.price * item.quantity;
+      
+      // If prices include GST (MRP style)
+      let taxableAmount;
+      if (gstSettings.prices_include_gst) {
+        taxableAmount = itemTotal / (1 + gstRate / 100);
+      } else {
+        taxableAmount = itemTotal;
+      }
+
+      if (isInterState) {
+        totalIgst += taxableAmount * gstRate / 100;
+      } else {
+        totalCgst += taxableAmount * (gstRate / 2) / 100;
+        totalSgst += taxableAmount * (gstRate / 2) / 100;
+      }
+      totalTaxable += taxableAmount;
+    });
+
+    // Apply discount proportionally to taxable amount
+    if (discount > 0) {
+      const discountRatio = discount / subtotal;
+      totalTaxable = totalTaxable * (1 - discountRatio);
+      totalCgst = totalCgst * (1 - discountRatio);
+      totalSgst = totalSgst * (1 - discountRatio);
+      totalIgst = totalIgst * (1 - discountRatio);
+    }
+
+    setGstBreakdown({
+      isInterState,
+      taxableAmount: totalTaxable.toFixed(2),
+      cgst: totalCgst.toFixed(2),
+      sgst: totalSgst.toFixed(2),
+      igst: totalIgst.toFixed(2),
+      totalGst: (totalCgst + totalSgst + totalIgst).toFixed(2),
+      gstRate: gstSettings.default_gst_rate || 18
+    });
+  };
+
   const handleApplyCoupon = async (codeToApply = null) => {
     const code = codeToApply || couponCode;
     if (!code.trim()) {
