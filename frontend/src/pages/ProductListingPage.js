@@ -500,14 +500,14 @@ export default function ProductListingPage() {
                       <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative bg-gray-50">
                         <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                         <img
-                          src={product.images?.[0] || 'https://via.placeholder.com/300x300?text=No+Image'}
+                          src={product.images?.[0] || 'https://placehold.co/300x300?text=No+Image'}
                           alt={product.name}
                           className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                            e.target.src = 'https://placehold.co/300x300?text=No+Image';
                           }}
                         />
                         <button

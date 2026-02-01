@@ -22,7 +22,7 @@ const FALLBACK_IMAGES = {
   product: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop&q=50&fm=webp',
   category: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop&q=50&fm=webp',
   banner: 'https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=1200&h=600&fit=crop&q=60&fm=webp',
-  default: 'https://via.placeholder.com/400x400?text=Image+Not+Available'
+  default: 'https://placehold.co/400x400?text=Image+Not+Available'
 };
 
 const ASPECT_RATIOS = {
