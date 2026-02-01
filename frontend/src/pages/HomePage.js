@@ -392,12 +392,12 @@ export default function HomePage() {
                     className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
                     data-testid={`product-${product.product_id}`}
                   >
-                    <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative bg-white">
+                    <Link to={`/products/${product.product_id}`} className="block aspect-square overflow-hidden relative bg-gray-50">
                       <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
                       <img
                         src={product.images?.[0] || 'https://via.placeholder.com/300x300?text=No+Image'}
                         alt={`${product.name} - ₹${product.price}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
