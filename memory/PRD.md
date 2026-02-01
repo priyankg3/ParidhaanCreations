@@ -79,23 +79,30 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 ## Pending Issues
 
 ### P0 - Critical
+- [x] ~~Image display issues~~ - RESOLVED (Feb 1, 2026) - Created OptimizedImage component for permanent fix
 - [ ] Improve PageSpeed Performance to 90+ (currently ~62)
 - [ ] Improve Best Practices to 100 (currently 92)
 
 ### P1 - High
-- [ ] Site Logo Management final verification
-- [ ] Advanced Product Attributes verification
+- [x] Site Logo Management - COMPLETED
+- [x] Advanced Product Attributes (Badges) - COMPLETED
+- [x] Laddu Gopal Size Guide feature - COMPLETED
+- [x] Admin Product Edit functionality - COMPLETED
+- [ ] Dynamic Favicon - Needs user verification (upload favicon in admin)
+- [ ] Laddu Gopal size filter - Production data update needed via Edit feature
 
 ### P2 - Technical Debt
 - [ ] Backend `server.py` refactoring (monolith breakdown)
 - [ ] Frontend `AdminDashboard.js` refactoring (2100+ lines)
 - [ ] N+1 Query Pattern in `/admin/customer-insights`
+- [x] OptimizedImage.js component created for centralized image handling
 
 ## Future/Backlog Tasks
 - [ ] Abandoned Cart Recovery system
 - [ ] Live payments (production Razorpay keys)
 - [ ] Email/SMS notification system
 - [ ] Stock replenishment alerts
+- [ ] Migrate existing image components to use OptimizedImage.js for consistency
 
 ## 3rd Party Integrations
 - **Razorpay** (Payments) - TEST MODE, needs user API keys for production
