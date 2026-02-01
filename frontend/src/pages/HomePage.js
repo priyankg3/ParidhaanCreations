@@ -405,9 +405,6 @@ export default function HomePage() {
                           e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
                         }}
                       />
-                        loading="lazy"
-                        decoding="async"
-                      />
                     </Link>
                     <div className="p-4 md:p-6">
                       <Link to={`/products/${product.product_id}`}>
