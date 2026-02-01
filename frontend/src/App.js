@@ -104,6 +104,7 @@ function AppRouter() {
               <ProtectedRoute><MyOrdersPage /></ProtectedRoute>
             </Suspense>
           } />
+          <Route path="/track/:orderId" element={<TrackingPage />} />
           <Route path="/admin" element={
             <Suspense fallback={<SmallLoader />}>
               <ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>
