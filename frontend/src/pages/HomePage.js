@@ -327,7 +327,7 @@ export default function HomePage() {
                 data-testid={`category-${category.slug}`}
                 aria-label={`Shop ${category.name} - Browse our ${category.name.toLowerCase()} collection`}
               >
-                <div className="aspect-square overflow-hidden">
+                <div className="aspect-square overflow-hidden bg-gray-100">
                   <img
                     src={optimizeImageUrl(category.image, isMobile ? 200 : 400, isMobile ? 200 : 400)}
                     alt={`${category.name} collection - Traditional ${category.name.toLowerCase()} items`}
@@ -336,6 +336,10 @@ export default function HomePage() {
                     height={isMobile ? "200" : "400"}
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/400x400?text=' + category.name;
+                    }}
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex items-end">
