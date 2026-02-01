@@ -115,6 +115,32 @@ export default function AdminDashboard() {
     active: true
   });
 
+  // GST Settings State
+  const [gstSettings, setGstSettings] = useState(null);
+  const [showGstForm, setShowGstForm] = useState(false);
+  const [gstForm, setGstForm] = useState({
+    business_name: "",
+    gstin: "",
+    pan: "",
+    business_address: "",
+    business_state: "",
+    business_state_code: "",
+    business_email: "",
+    business_phone: "",
+    default_gst_rate: 18,
+    gst_enabled: true,
+    prices_include_gst: true,
+    invoice_prefix: "PC",
+    invoice_footer_text: "",
+    terms_and_conditions: "",
+    bank_name: "",
+    bank_account_number: "",
+    bank_ifsc: "",
+    bank_branch: "",
+    authorized_signatory: ""
+  });
+  const [indianStates, setIndianStates] = useState([]);
+
   const fetchData = async () => {
     try {
       if (activeTab === "analytics") {
