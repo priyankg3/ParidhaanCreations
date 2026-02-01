@@ -804,7 +804,7 @@ export default function AdminDashboard() {
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="admin-title">Admin Dashboard</h1>
 
         <div className="flex space-x-4 mb-8 overflow-x-auto">
-          {["analytics", "insights", "products", "categories", "orders", "support", "banners", "coupons", "settings"].map((tab) => (
+          {["analytics", "insights", "products", "categories", "orders", "support", "banners", "coupons", "gst", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -815,7 +815,7 @@ export default function AdminDashboard() {
               }`}
               data-testid={`tab-${tab}`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "gst" ? "GST & Invoice" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
