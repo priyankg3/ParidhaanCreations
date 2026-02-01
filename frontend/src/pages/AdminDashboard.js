@@ -1365,18 +1365,164 @@ export default function AdminDashboard() {
                         </select>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleDeleteProduct(product.product_id)}
-                          className="text-accent hover:text-accent/80 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => handleEditProduct(product)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            title="Edit Product"
+                          >
+                            <Edit className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.product_id)}
+                            className="text-accent hover:text-accent/80 transition-colors"
+                            title="Delete Product"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {/* Edit Product Modal */}
+            {showEditProductModal && editingProduct && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="p-6 border-b">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold">Edit Product</h3>
+                      <button onClick={() => setShowEditProductModal(false)} className="text-gray-500 hover:text-gray-700">
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                  </div>
+                  <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Name</label>
+                        <input
+                          type="text"
+                          value={editingProduct.name}
+                          onChange={(e) => setEditingProduct({...editingProduct, name: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Price (₹)</label>
+                        <input
+                          type="number"
+                          value={editingProduct.price}
+                          onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Description</label>
+                      <textarea
+                        value={editingProduct.description}
+                        onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
+                        rows={3}
+                        className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Category</label>
+                        <select
+                          value={editingProduct.category}
+                          onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="handicrafts">Handicrafts</option>
+                          <option value="pooja">Pooja Items</option>
+                          <option value="artificial-jewellery">Artificial Jewellery</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Stock</label>
+                        <input
+                          type="number"
+                          value={editingProduct.stock}
+                          onChange={(e) => setEditingProduct({...editingProduct, stock: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Laddu Gopal Sizes - Only for Pooja category */}
+                    {editingProduct.category === 'pooja' && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <label className="block text-sm font-medium mb-3 text-amber-800">
+                          🕉️ Laddu Gopal Sizes (Select all sizes this dress fits)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {ladduGopalSizeOptions.map(size => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => {
+                                const currentSizes = editingProduct.laddu_gopal_sizes || [];
+                                const newSizes = currentSizes.includes(size)
+                                  ? currentSizes.filter(s => s !== size)
+                                  : [...currentSizes, size];
+                                setEditingProduct({...editingProduct, laddu_gopal_sizes: newSizes});
+                              }}
+                              className={`w-12 h-12 rounded-full border-2 font-bold transition-all ${
+                                (editingProduct.laddu_gopal_sizes || []).includes(size)
+                                  ? 'bg-amber-500 text-white border-amber-600'
+                                  : 'bg-white text-amber-700 border-amber-300 hover:border-amber-400'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                        </div>
+                        {editingProduct.laddu_gopal_sizes?.length > 0 && (
+                          <p className="text-xs text-amber-600 mt-2">
+                            Selected: Size {editingProduct.laddu_gopal_sizes.sort().join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={editingProduct.featured}
+                          onChange={(e) => setEditingProduct({...editingProduct, featured: e.target.checked})}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Featured Product</span>
+                      </label>
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => setShowEditProductModal(false)}
+                        className="px-4 py-2 border rounded hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-primary text-white rounded hover:bg-primary/90"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
