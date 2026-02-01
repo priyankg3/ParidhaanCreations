@@ -186,6 +186,24 @@ class OrderItem(BaseModel):
     product_name: str
     quantity: int
     price: float
+    # GST details per item
+    hsn_code: Optional[str] = None
+    gst_rate: Optional[float] = None
+    taxable_amount: Optional[float] = None
+    cgst: Optional[float] = None
+    sgst: Optional[float] = None
+    igst: Optional[float] = None
+
+class GSTDetails(BaseModel):
+    is_inter_state: bool = False  # True = IGST, False = CGST+SGST
+    taxable_amount: float = 0
+    cgst_rate: float = 0
+    cgst_amount: float = 0
+    sgst_rate: float = 0
+    sgst_amount: float = 0
+    igst_rate: float = 0
+    igst_amount: float = 0
+    total_gst: float = 0
 
 class ShippingAddress(BaseModel):
     full_name: str
@@ -195,6 +213,7 @@ class ShippingAddress(BaseModel):
     city: str
     state: str
     pincode: str
+    gstin: Optional[str] = None  # Customer GSTIN for B2B
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -209,6 +228,11 @@ class Order(BaseModel):
     shipping_address: ShippingAddress
     coupon_code: Optional[str] = None
     discount_amount: float = 0
+    # GST & Invoice fields
+    gst_details: Optional[GSTDetails] = None
+    invoice_number: Optional[str] = None
+    invoice_generated_at: Optional[datetime] = None
+    invoice_pdf_path: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class OrderCreate(BaseModel):
