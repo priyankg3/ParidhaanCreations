@@ -86,6 +86,12 @@ export default function AdminDashboard() {
   const [bannerUploading, setBannerUploading] = useState(false);
   const bannerFileInputRef = useRef(null);
 
+  // Shipping state
+  const [shipments, setShipments] = useState([]);
+  const [selectedOrderForShipping, setSelectedOrderForShipping] = useState(null);
+  const [availableCouriers, setAvailableCouriers] = useState([]);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
   // Banner size recommendations
   const bannerSizeRecommendations = {
     hero: { size: "1920 x 600", priority: "High", placement: "Homepage Hero", needsCategory: false },
