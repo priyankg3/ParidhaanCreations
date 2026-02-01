@@ -249,6 +249,9 @@ export default function AdminDashboard() {
           bank_branch: gstRes.data.bank_branch || "",
           authorized_signatory: gstRes.data.authorized_signatory || ""
         });
+      } else if (activeTab === "shipping") {
+        const shipmentsRes = await axios.get(`${API}/admin/shipments`, { withCredentials: true });
+        setShipments(shipmentsRes.data.shipments || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
