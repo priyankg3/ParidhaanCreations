@@ -539,11 +539,11 @@ export default function ProductDetailPage() {
                   to={`/products/${rec.product_id}`}
                   className="group bg-white border border-border/40 hover:border-secondary/50 transition-all duration-500 hover:shadow-xl overflow-hidden rounded-lg"
                 >
-                  <div className="aspect-square overflow-hidden bg-white">
+                  <div className="aspect-square overflow-hidden bg-gray-50">
                     <img
                       src={rec.images?.[0] || 'https://via.placeholder.com/300x300?text=No+Image'}
                       alt={rec.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
