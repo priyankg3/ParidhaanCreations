@@ -138,13 +138,43 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
   - Provides lazy loading and priority loading options
   - Exports specialized components: ProductImage, CategoryImage, BannerImage, ThumbnailImage
 
+### Image Display Fix
+- **Status:** FIXED
+- Changed from `object-cover` to `object-contain` with padding for product images
+- This ensures circular/round product images (like Laddu Gopal dresses) display fully without cropping
+- Updated: ProductListingPage.js, HomePage.js, ProductDetailPage.js
+- Updated fallback images from `via.placeholder.com` to `placehold.co`
+
+### GST & Invoice System (NEW)
+- **Status:** IMPLEMENTED
+- Full GST compliance system for Indian e-commerce
+- Features:
+  - Business GST configuration (GSTIN: 08BFVPG3792N1ZH, State: Rajasthan)
+  - Category-wise and product-wise GST rates (0%, 5%, 12%, 18%, 28%)
+  - HSN code support
+  - Automatic CGST/SGST (intra-state) or IGST (inter-state) calculation
+  - Professional PDF invoice generation with:
+    - Tax invoice format
+    - Seller & buyer details with GSTIN
+    - Itemized GST breakdown
+    - Amount in words (Indian format - Lakhs, Crores)
+    - Bank details section
+    - QR code for verification
+  - Admin dashboard GST Settings tab
+  - Invoice number sequence (PC-2024-0001 format)
+
+### Products Added
+- 4 new Laddu Gopal Size 1 Dress products added to Pooja category
+
 ### Verified Working Features
 - ✅ Hero banner carousel
 - ✅ Category images (Handicrafts, Pooja Articles, Artificial Jewellery)
-- ✅ Product listing images with badges (FEATURED, BESTSELLER)
+- ✅ Product listing images with badges (FEATURED, BESTSELLER, NEW ARRIVAL)
 - ✅ Product detail page images
 - ✅ Laddu Gopal Size Guide filter UI
 - ✅ Product edit functionality in admin
+- ✅ GST Settings API
+- ✅ Indian States API
 
 ### Category Updates (Previous Session)
 - "Jewellery" → "Artificial Jewellery" (slug: artificial-jewellery)
