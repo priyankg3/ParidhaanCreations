@@ -519,26 +519,29 @@ export default function ProductListingPage() {
                           <Heart className="w-5 h-5 hover:text-accent" />
                         </button>
                       </Link>
-                      <div className="p-6">
+                      <div className="p-5">
                         <Link to={`/products/${product.product_id}`}>
-                          <h3 className="text-xl font-heading font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="text-lg font-heading font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
                             {product.name}
                           </h3>
                         </Link>
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
+                        
+                        {/* Price */}
+                        <p className="text-2xl font-bold text-accent mb-2">₹{product.price}</p>
+                        
+                        {/* Stock & Size Info */}
                         <div className="flex items-center justify-between mb-4">
-                          <p className="text-2xl font-bold text-accent">₹{product.price}</p>
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">{product.stock} in stock</p>
-                            {product.laddu_gopal_sizes && product.laddu_gopal_sizes.length > 0 && (
-                              <LadduGopalSizeBadge sizes={product.laddu_gopal_sizes} />
-                            )}
-                          </div>
+                          <p className="text-sm text-muted-foreground">{product.stock} in stock</p>
+                          {product.laddu_gopal_sizes && product.laddu_gopal_sizes.length > 0 && (
+                            <LadduGopalSizeBadge sizes={product.laddu_gopal_sizes} />
+                          )}
                         </div>
+                        
                         <button
                           onClick={() => addToCart(product.product_id)}
                           disabled={product.stock === 0}
-                          className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full bg-primary text-primary-foreground py-3 font-medium hover:bg-primary/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded"
                           data-testid={`add-cart-${product.product_id}`}
                         >
                           {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
