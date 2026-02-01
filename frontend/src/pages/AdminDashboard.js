@@ -670,7 +670,9 @@ export default function AdminDashboard() {
       color: "",
       brand: "",
       tags: "",
-      laddu_gopal_sizes: []
+      laddu_gopal_sizes: [],
+      gst_rate: "",
+      hsn_code: ""
     });
   };
 
