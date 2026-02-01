@@ -214,16 +214,16 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
-            <div className="aspect-square mb-4 overflow-hidden bg-white border border-border/40 relative">
+            <div className="aspect-square mb-4 overflow-hidden bg-gray-50 border border-border/40 relative">
               <ProductBadge type={product.stock === 0 ? 'out-of-stock' : product.badge || (product.featured ? 'featured' : null)} />
               <img
-                src={product.images?.[selectedImage] || 'https://via.placeholder.com/600x600?text=No+Image'}
+                src={product.images?.[selectedImage] || 'https://placehold.co/600x600/f3f4f6/9ca3af?text=No+Image'}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-2"
                 data-testid="product-main-image"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://via.placeholder.com/600x600?text=Image+Not+Available';
+                  e.target.src = 'https://placehold.co/600x600/f3f4f6/9ca3af?text=Image+Not+Available';
                 }}
               />
             </div>
@@ -233,7 +233,7 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square overflow-hidden border-2 transition-all bg-white ${
+                    className={`aspect-square overflow-hidden border-2 transition-all bg-gray-50 ${
                       selectedImage === index ? "border-primary" : "border-border/40"
                     }`}
                     data-testid={`product-thumb-${index}`}
@@ -241,10 +241,10 @@ export default function ProductDetailPage() {
                     <img 
                       src={img} 
                       alt={`${product.name} ${index + 1}`} 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain p-1"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/150x150?text=No+Image';
+                        e.target.src = 'https://placehold.co/150x150/f3f4f6/9ca3af?text=No+Image';
                       }}
                     />
                   </button>
