@@ -697,6 +697,55 @@ export default function AdminDashboard() {
     });
   };
 
+  // Shipping Functions
+  const handleCreateShipment = async (orderId) => {
+    setShippingLoading(true);
+    try {
+      const response = await axios.post(`${API}/shiprocket/create-shipment/${orderId}`, {}, { withCredentials: true });
+      toast.success("Shipment created in Shiprocket!");
+      setSelectedOrderForShipping(orderId);
+      
+      // Get available couriers
+      const order = orders.find(o => o.order_id === orderId);
+      if (order?.shipping_address?.pincode) {
+        const couriersRes = await axios.get(`${API}/shiprocket/couriers?delivery_pincode=${order.shipping_address.pincode}`, { withCredentials: true });
+        setAvailableCouriers(couriersRes.data.couriers || []);
+      }
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to create shipment");
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  const handleAssignCourier = async (orderId, courierId) => {
+    setShippingLoading(true);
+    try {
+      const response = await axios.post(`${API}/shiprocket/assign-courier/${orderId}?courier_id=${courierId}`, {}, { withCredentials: true });
+      toast.success(`AWB Generated: ${response.data.awb_number}`);
+      setSelectedOrderForShipping(null);
+      setAvailableCouriers([]);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to assign courier");
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  const handleCancelShipment = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this shipment?")) return;
+    
+    try {
+      await axios.post(`${API}/shiprocket/cancel/${orderId}`, {}, { withCredentials: true });
+      toast.success("Shipment cancelled");
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to cancel shipment");
+    }
+  };
+
   const resetBannerForm = () => {
     setBannerForm({
       title: "",
