@@ -407,6 +407,98 @@ class SiteSettingsUpdate(BaseModel):
     social_facebook: Optional[str] = None
     social_twitter: Optional[str] = None
 
+# GST Settings Model
+class GSTSettings(BaseModel):
+    """Business GST configuration"""
+    model_config = ConfigDict(extra="ignore")
+    setting_id: str = "gst_settings"  # Single document
+    # Business Details
+    business_name: str = "Paridhaan Creations"
+    gstin: str = "08BFVPG3792N1ZH"
+    pan: Optional[str] = None
+    business_address: str = "Terra City 1, Tijara, 301411"
+    business_state: str = "Rajasthan"
+    business_state_code: str = "08"
+    business_email: Optional[str] = None
+    business_phone: Optional[str] = None
+    # GST Configuration
+    default_gst_rate: float = 18.0  # Default GST rate
+    gst_enabled: bool = True
+    prices_include_gst: bool = True  # True = MRP style (inclusive)
+    # Invoice Settings
+    invoice_prefix: str = "PC"  # Invoice prefix like PC-2024-0001
+    invoice_footer_text: Optional[str] = "Thank you for shopping with Paridhaan Creations!"
+    terms_and_conditions: Optional[str] = None
+    # Bank Details for Invoice
+    bank_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_branch: Optional[str] = None
+    # Digital Signature
+    signature_image: Optional[str] = None
+    authorized_signatory: Optional[str] = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class GSTSettingsUpdate(BaseModel):
+    business_name: Optional[str] = None
+    gstin: Optional[str] = None
+    pan: Optional[str] = None
+    business_address: Optional[str] = None
+    business_state: Optional[str] = None
+    business_state_code: Optional[str] = None
+    business_email: Optional[str] = None
+    business_phone: Optional[str] = None
+    default_gst_rate: Optional[float] = None
+    gst_enabled: Optional[bool] = None
+    prices_include_gst: Optional[bool] = None
+    invoice_prefix: Optional[str] = None
+    invoice_footer_text: Optional[str] = None
+    terms_and_conditions: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_branch: Optional[str] = None
+    signature_image: Optional[str] = None
+    authorized_signatory: Optional[str] = None
+
+# Invoice Model
+class Invoice(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    invoice_id: str = Field(default_factory=lambda: f"inv_{uuid.uuid4().hex[:12]}")
+    invoice_number: str  # Formatted like PC-2024-0001
+    order_id: str
+    # Seller Details
+    seller_name: str
+    seller_gstin: str
+    seller_address: str
+    seller_state: str
+    seller_state_code: str
+    # Buyer Details
+    buyer_name: str
+    buyer_address: str
+    buyer_state: str
+    buyer_gstin: Optional[str] = None
+    buyer_phone: Optional[str] = None
+    buyer_email: Optional[str] = None
+    # Invoice Items
+    items: List[Dict[str, Any]]  # Product details with GST breakdown
+    # Amounts
+    subtotal: float
+    discount: float = 0
+    taxable_amount: float
+    cgst_amount: float = 0
+    sgst_amount: float = 0
+    igst_amount: float = 0
+    total_gst: float
+    grand_total: float
+    amount_in_words: str
+    # Status
+    is_inter_state: bool = False
+    pdf_path: Optional[str] = None
+    qr_code_data: Optional[str] = None
+    emailed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class Review(BaseModel):
     model_config = ConfigDict(extra="ignore")
     review_id: str = Field(default_factory=lambda: f"review_{uuid.uuid4().hex[:12]}")
