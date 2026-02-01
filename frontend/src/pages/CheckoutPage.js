@@ -32,6 +32,9 @@ export default function CheckoutPage() {
 
   const [welcomeOffer, setWelcomeOffer] = useState(null);
   const [checkoutBanner, setCheckoutBanner] = useState(null);
+  const [gstSettings, setGstSettings] = useState(null);
+  const [gstBreakdown, setGstBreakdown] = useState(null);
+  const [indianStates, setIndianStates] = useState([]);
 
   useEffect(() => {
     fetchData();
