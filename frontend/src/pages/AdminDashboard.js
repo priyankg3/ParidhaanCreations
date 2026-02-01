@@ -212,6 +212,34 @@ export default function AdminDashboard() {
       } else if (activeTab === "settings") {
         const response = await axios.get(`${API}/settings`);
         setSiteSettings(response.data);
+      } else if (activeTab === "gst") {
+        const [gstRes, statesRes] = await Promise.all([
+          axios.get(`${API}/gst-settings`),
+          axios.get(`${API}/indian-states`)
+        ]);
+        setGstSettings(gstRes.data);
+        setIndianStates(statesRes.data);
+        setGstForm({
+          business_name: gstRes.data.business_name || "",
+          gstin: gstRes.data.gstin || "",
+          pan: gstRes.data.pan || "",
+          business_address: gstRes.data.business_address || "",
+          business_state: gstRes.data.business_state || "",
+          business_state_code: gstRes.data.business_state_code || "",
+          business_email: gstRes.data.business_email || "",
+          business_phone: gstRes.data.business_phone || "",
+          default_gst_rate: gstRes.data.default_gst_rate || 18,
+          gst_enabled: gstRes.data.gst_enabled !== false,
+          prices_include_gst: gstRes.data.prices_include_gst !== false,
+          invoice_prefix: gstRes.data.invoice_prefix || "PC",
+          invoice_footer_text: gstRes.data.invoice_footer_text || "",
+          terms_and_conditions: gstRes.data.terms_and_conditions || "",
+          bank_name: gstRes.data.bank_name || "",
+          bank_account_number: gstRes.data.bank_account_number || "",
+          bank_ifsc: gstRes.data.bank_ifsc || "",
+          bank_branch: gstRes.data.bank_branch || "",
+          authorized_signatory: gstRes.data.authorized_signatory || ""
+        });
       }
     } catch (error) {
       console.error("Error fetching data:", error);
