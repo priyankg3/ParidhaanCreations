@@ -2476,6 +2476,401 @@ TWILIO_PHONE_NUMBER=+1234567890</pre>
             </div>
           </div>
         )}
+
+        {/* GST & Invoice Settings Tab */}
+        {activeTab === "gst" && (
+          <div className="space-y-6">
+            {/* Business GST Details */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+                <DollarSign className="w-6 h-6 text-primary" />
+                GST Settings
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Configure your business GST details for tax compliance and invoice generation.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Business Details */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Business Details</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Business Name *</label>
+                    <input
+                      type="text"
+                      value={gstForm.business_name}
+                      onChange={(e) => setGstForm({...gstForm, business_name: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Paridhaan Creations"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">GSTIN *</label>
+                    <input
+                      type="text"
+                      value={gstForm.gstin}
+                      onChange={(e) => setGstForm({...gstForm, gstin: e.target.value.toUpperCase()})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                      placeholder="08BFVPG3792N1ZH"
+                      maxLength={15}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">15-character GST Identification Number</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">PAN</label>
+                    <input
+                      type="text"
+                      value={gstForm.pan}
+                      onChange={(e) => setGstForm({...gstForm, pan: e.target.value.toUpperCase()})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+                      placeholder="BFVPG3792N"
+                      maxLength={10}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Business Address *</label>
+                    <textarea
+                      value={gstForm.business_address}
+                      onChange={(e) => setGstForm({...gstForm, business_address: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      rows={2}
+                      placeholder="Terra City 1, Tijara, 301411"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">State *</label>
+                      <select
+                        value={gstForm.business_state}
+                        onChange={(e) => {
+                          const state = indianStates.find(s => s.name === e.target.value);
+                          setGstForm({
+                            ...gstForm, 
+                            business_state: e.target.value,
+                            business_state_code: state?.code || ""
+                          });
+                        }}
+                        className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">Select State</option>
+                        {indianStates.map(state => (
+                          <option key={state.code} value={state.name}>{state.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">State Code</label>
+                      <input
+                        type="text"
+                        value={gstForm.business_state_code}
+                        onChange={(e) => setGstForm({...gstForm, business_state_code: e.target.value})}
+                        className="w-full border border-border px-4 py-2 bg-gray-50"
+                        readOnly
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Business Email</label>
+                      <input
+                        type="email"
+                        value={gstForm.business_email}
+                        onChange={(e) => setGstForm({...gstForm, business_email: e.target.value})}
+                        className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="contact@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Business Phone</label>
+                      <input
+                        type="tel"
+                        value={gstForm.business_phone}
+                        onChange={(e) => setGstForm({...gstForm, business_phone: e.target.value})}
+                        className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="+91 9876543210"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* GST Configuration */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">GST Configuration</h3>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Default GST Rate (%)</label>
+                    <select
+                      value={gstForm.default_gst_rate}
+                      onChange={(e) => setGstForm({...gstForm, default_gst_rate: parseFloat(e.target.value)})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value={0}>0% (Exempt)</option>
+                      <option value={5}>5%</option>
+                      <option value={12}>12%</option>
+                      <option value={18}>18%</option>
+                      <option value={28}>28%</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">Applied to products without specific GST rate</p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 border border-border">
+                    <div>
+                      <p className="font-medium">GST Enabled</p>
+                      <p className="text-sm text-muted-foreground">Show GST breakdown on invoices</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={gstForm.gst_enabled}
+                        onChange={(e) => setGstForm({...gstForm, gst_enabled: e.target.checked})}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gray-50 border border-border">
+                    <div>
+                      <p className="font-medium">Prices Include GST</p>
+                      <p className="text-sm text-muted-foreground">Product prices are MRP (inclusive of GST)</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={gstForm.prices_include_gst}
+                        onChange={(e) => setGstForm({...gstForm, prices_include_gst: e.target.checked})}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                  </div>
+
+                  <h3 className="text-lg font-semibold border-b pb-2 mt-6">Invoice Settings</h3>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Invoice Prefix</label>
+                    <input
+                      type="text"
+                      value={gstForm.invoice_prefix}
+                      onChange={(e) => setGstForm({...gstForm, invoice_prefix: e.target.value.toUpperCase()})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="PC"
+                      maxLength={5}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Invoice number format: PC-2024-0001</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Authorized Signatory</label>
+                    <input
+                      type="text"
+                      value={gstForm.authorized_signatory}
+                      onChange={(e) => setGstForm({...gstForm, authorized_signatory: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Paridhaan Creations"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Invoice Footer Text</label>
+                    <textarea
+                      value={gstForm.invoice_footer_text}
+                      onChange={(e) => setGstForm({...gstForm, invoice_footer_text: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      rows={2}
+                      placeholder="Thank you for shopping with us!"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bank Details */}
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4">Bank Details (for Invoice)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Bank Name</label>
+                    <input
+                      type="text"
+                      value={gstForm.bank_name}
+                      onChange={(e) => setGstForm({...gstForm, bank_name: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="State Bank of India"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Account Number</label>
+                    <input
+                      type="text"
+                      value={gstForm.bank_account_number}
+                      onChange={(e) => setGstForm({...gstForm, bank_account_number: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="1234567890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">IFSC Code</label>
+                    <input
+                      type="text"
+                      value={gstForm.bank_ifsc}
+                      onChange={(e) => setGstForm({...gstForm, bank_ifsc: e.target.value.toUpperCase()})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="SBIN0001234"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Branch</label>
+                    <input
+                      type="text"
+                      value={gstForm.bank_branch}
+                      onChange={(e) => setGstForm({...gstForm, bank_branch: e.target.value})}
+                      className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Main Branch"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4">Terms & Conditions</h3>
+                <textarea
+                  value={gstForm.terms_and_conditions}
+                  onChange={(e) => setGstForm({...gstForm, terms_and_conditions: e.target.value})}
+                  className="w-full border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  rows={3}
+                  placeholder="1. Goods once sold will not be taken back.&#10;2. No warranty on decorative items."
+                />
+              </div>
+
+              <button
+                onClick={handleSaveGstSettings}
+                className="mt-6 bg-primary text-primary-foreground px-8 py-3 font-medium hover:bg-primary/90 transition-colors"
+              >
+                Save GST Settings
+              </button>
+            </div>
+
+            {/* Category GST Rates */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6">Category GST Rates</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Set default GST rates for each category. Products without individual GST rates will use these.
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Category</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">GST Rate (%)</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">HSN Code</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {categories.map(category => (
+                      <tr key={category.category_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium">{category.name}</td>
+                        <td className="px-4 py-3">
+                          <select
+                            defaultValue={category.gst_rate || ""}
+                            onChange={(e) => {
+                              const newRate = e.target.value ? parseFloat(e.target.value) : null;
+                              handleUpdateCategoryGst(category.category_id, newRate, category.hsn_code || "");
+                            }}
+                            className="border border-border px-3 py-1 text-sm"
+                          >
+                            <option value="">Use Default</option>
+                            <option value="0">0%</option>
+                            <option value="5">5%</option>
+                            <option value="12">12%</option>
+                            <option value="18">18%</option>
+                            <option value="28">28%</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="text"
+                            defaultValue={category.hsn_code || ""}
+                            onBlur={(e) => handleUpdateCategoryGst(category.category_id, category.gst_rate, e.target.value)}
+                            className="border border-border px-3 py-1 text-sm w-24"
+                            placeholder="HSN Code"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 ${category.gst_rate ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {category.gst_rate ? `${category.gst_rate}% Set` : 'Using Default'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Recent Invoices */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6">Generate Invoices</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Generate GST-compliant tax invoices for confirmed/paid orders.
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Order ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Customer</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Amount</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Invoice</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {orders.filter(o => o.payment_status === 'paid' || ['confirmed', 'processing', 'shipped', 'delivered'].includes(o.status)).slice(0, 10).map(order => (
+                      <tr key={order.order_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-mono text-sm">{order.order_id}</td>
+                        <td className="px-4 py-3">{order.shipping_address?.full_name}</td>
+                        <td className="px-4 py-3 font-medium">₹{order.total_amount.toFixed(2)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 ${
+                            order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {order.invoice_number ? (
+                            <span className="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-1">{order.invoice_number}</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Not Generated</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => handleGenerateInvoice(order.order_id)}
+                            className="text-sm bg-primary text-primary-foreground px-3 py-1 hover:bg-primary/90"
+                          >
+                            {order.invoice_number ? 'Download PDF' : 'Generate Invoice'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
