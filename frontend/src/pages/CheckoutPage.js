@@ -110,13 +110,7 @@ export default function CheckoutPage() {
   const total = Math.max(0, subtotal - discount);
 
   // Calculate GST breakdown when state changes
-  useEffect(() => {
-    if (gstSettings && shippingAddress.state && subtotal > 0) {
-      calculateGstBreakdown();
-    }
-  }, [shippingAddress.state, subtotal, discount, gstSettings, products]);
-
-  const calculateGstBreakdown = () => {
+  const calculateGstBreakdown = useCallback(() => {
     if (!gstSettings || !gstSettings.gst_enabled) {
       setGstBreakdown(null);
       return;
@@ -174,7 +168,13 @@ export default function CheckoutPage() {
       totalGst: (totalCgst + totalSgst + totalIgst).toFixed(2),
       gstRate: gstSettings.default_gst_rate || 18
     });
-  };
+  }, [gstSettings, shippingAddress.state, indianStates, cart.items, products, discount, subtotal]);
+
+  useEffect(() => {
+    if (gstSettings && shippingAddress.state && subtotal > 0) {
+      calculateGstBreakdown();
+    }
+  }, [shippingAddress.state, subtotal, discount, gstSettings, products, calculateGstBreakdown]);
 
   const handleApplyCoupon = async (codeToApply = null) => {
     const code = codeToApply || couponCode;
