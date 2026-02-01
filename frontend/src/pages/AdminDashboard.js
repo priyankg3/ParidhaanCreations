@@ -57,7 +57,10 @@ export default function AdminDashboard() {
     brand: "",
     tags: "",
     // Laddu Gopal specific
-    laddu_gopal_sizes: []  // ["0", "1", "2"] etc.
+    laddu_gopal_sizes: [],  // ["0", "1", "2"] etc.
+    // GST fields
+    gst_rate: "",
+    hsn_code: ""
   });
 
   const ladduGopalSizeOptions = ["0", "1", "2", "3", "4", "5", "6", "6+"];
