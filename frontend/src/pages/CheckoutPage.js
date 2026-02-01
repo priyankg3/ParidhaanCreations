@@ -572,15 +572,18 @@ export default function CheckoutPage() {
 
                       <div>
                         <label className="block text-sm font-medium mb-2">State *</label>
-                        <input
-                          type="text"
+                        <select
                           required
                           value={shippingAddress.state}
                           onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
                           className="w-full px-4 py-3 border border-input bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
-                          placeholder="State"
                           data-testid="state-input"
-                        />
+                        >
+                          <option value="">Select State</option>
+                          {indianStates.map(state => (
+                            <option key={state.code} value={state.name}>{state.name}</option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
