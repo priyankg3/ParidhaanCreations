@@ -2291,6 +2291,589 @@ async def delete_uploaded_file(filename: str, authorization: Optional[str] = Hea
     
     return {"success": True, "message": "File deleted successfully"}
 
+# ==================== GST & INVOICE APIs ====================
+
+# Indian states with codes for GST
+INDIAN_STATES = {
+    "01": "Jammu & Kashmir", "02": "Himachal Pradesh", "03": "Punjab", "04": "Chandigarh",
+    "05": "Uttarakhand", "06": "Haryana", "07": "Delhi", "08": "Rajasthan", "09": "Uttar Pradesh",
+    "10": "Bihar", "11": "Sikkim", "12": "Arunachal Pradesh", "13": "Nagaland", "14": "Manipur",
+    "15": "Mizoram", "16": "Tripura", "17": "Meghalaya", "18": "Assam", "19": "West Bengal",
+    "20": "Jharkhand", "21": "Odisha", "22": "Chhattisgarh", "23": "Madhya Pradesh",
+    "24": "Gujarat", "25": "Daman & Diu", "26": "Dadra & Nagar Haveli", "27": "Maharashtra",
+    "28": "Andhra Pradesh (Old)", "29": "Karnataka", "30": "Goa", "31": "Lakshadweep",
+    "32": "Kerala", "33": "Tamil Nadu", "34": "Puducherry", "35": "Andaman & Nicobar",
+    "36": "Telangana", "37": "Andhra Pradesh"
+}
+
+def get_state_code(state_name: str) -> str:
+    """Get state code from state name"""
+    state_lower = state_name.lower().strip()
+    for code, name in INDIAN_STATES.items():
+        if name.lower() == state_lower or state_lower in name.lower():
+            return code
+    return "08"  # Default to Rajasthan
+
+def number_to_words(num: float) -> str:
+    """Convert number to words in Indian format"""
+    ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+            'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+    tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+    
+    def words(n):
+        if n < 20:
+            return ones[n]
+        elif n < 100:
+            return tens[n // 10] + ('' if n % 10 == 0 else ' ' + ones[n % 10])
+        elif n < 1000:
+            return ones[n // 100] + ' Hundred' + ('' if n % 100 == 0 else ' and ' + words(n % 100))
+        elif n < 100000:
+            return words(n // 1000) + ' Thousand' + ('' if n % 1000 == 0 else ' ' + words(n % 1000))
+        elif n < 10000000:
+            return words(n // 100000) + ' Lakh' + ('' if n % 100000 == 0 else ' ' + words(n % 100000))
+        else:
+            return words(n // 10000000) + ' Crore' + ('' if n % 10000000 == 0 else ' ' + words(n % 10000000))
+    
+    rupees = int(num)
+    paise = round((num - rupees) * 100)
+    
+    result = 'Rupees ' + words(rupees)
+    if paise > 0:
+        result += ' and ' + words(paise) + ' Paise'
+    result += ' Only'
+    return result
+
+async def generate_invoice_number() -> str:
+    """Generate unique invoice number like PC-2024-0001"""
+    gst_settings = await db.gst_settings.find_one({"setting_id": "gst_settings"}, {"_id": 0})
+    prefix = gst_settings.get("invoice_prefix", "PC") if gst_settings else "PC"
+    year = datetime.now().year
+    
+    # Get last invoice number for this year
+    last_invoice = await db.invoices.find_one(
+        {"invoice_number": {"$regex": f"^{prefix}-{year}-"}},
+        sort=[("created_at", -1)]
+    )
+    
+    if last_invoice:
+        last_num = int(last_invoice["invoice_number"].split("-")[-1])
+        new_num = last_num + 1
+    else:
+        new_num = 1
+    
+    return f"{prefix}-{year}-{new_num:04d}"
+
+async def calculate_gst(items: List[Dict], customer_state: str, gst_settings: Dict) -> Dict:
+    """Calculate GST breakdown for order items"""
+    business_state_code = gst_settings.get("business_state_code", "08")
+    customer_state_code = get_state_code(customer_state)
+    is_inter_state = business_state_code != customer_state_code
+    
+    total_taxable = 0
+    total_cgst = 0
+    total_sgst = 0
+    total_igst = 0
+    item_details = []
+    
+    for item in items:
+        # Get product GST rate
+        product = await db.products.find_one({"product_id": item["product_id"]}, {"_id": 0})
+        if not product:
+            continue
+            
+        # Priority: Product GST > Category GST > Default GST
+        gst_rate = product.get("gst_rate")
+        hsn_code = product.get("hsn_code", "")
+        
+        if gst_rate is None:
+            category = await db.categories.find_one({"slug": product["category"]}, {"_id": 0})
+            if category:
+                gst_rate = category.get("gst_rate")
+                if not hsn_code:
+                    hsn_code = category.get("hsn_code", "")
+        
+        if gst_rate is None:
+            gst_rate = gst_settings.get("default_gst_rate", 18.0)
+        
+        # Calculate taxable amount (price is inclusive of GST)
+        item_total = item["price"] * item["quantity"]
+        if gst_settings.get("prices_include_gst", True):
+            taxable_amount = item_total / (1 + gst_rate / 100)
+        else:
+            taxable_amount = item_total
+        
+        # Calculate GST
+        if is_inter_state:
+            igst = taxable_amount * gst_rate / 100
+            cgst = 0
+            sgst = 0
+        else:
+            cgst = taxable_amount * (gst_rate / 2) / 100
+            sgst = taxable_amount * (gst_rate / 2) / 100
+            igst = 0
+        
+        total_taxable += taxable_amount
+        total_cgst += cgst
+        total_sgst += sgst
+        total_igst += igst
+        
+        item_details.append({
+            "product_id": item["product_id"],
+            "product_name": item.get("product_name", product["name"]),
+            "hsn_code": hsn_code,
+            "quantity": item["quantity"],
+            "unit_price": item["price"],
+            "taxable_amount": round(taxable_amount, 2),
+            "gst_rate": gst_rate,
+            "cgst": round(cgst, 2),
+            "sgst": round(sgst, 2),
+            "igst": round(igst, 2),
+            "total": round(item_total, 2)
+        })
+    
+    return {
+        "is_inter_state": is_inter_state,
+        "items": item_details,
+        "taxable_amount": round(total_taxable, 2),
+        "cgst_amount": round(total_cgst, 2),
+        "sgst_amount": round(total_sgst, 2),
+        "igst_amount": round(total_igst, 2),
+        "total_gst": round(total_cgst + total_sgst + total_igst, 2)
+    }
+
+# GST Settings APIs
+@api_router.get("/gst-settings")
+async def get_gst_settings():
+    """Get GST settings (public - for checkout display)"""
+    settings = await db.gst_settings.find_one({"setting_id": "gst_settings"}, {"_id": 0})
+    if not settings:
+        # Return default settings
+        settings = {
+            "setting_id": "gst_settings",
+            "business_name": "Paridhaan Creations",
+            "gstin": "08BFVPG3792N1ZH",
+            "business_address": "Terra City 1, Tijara, 301411",
+            "business_state": "Rajasthan",
+            "business_state_code": "08",
+            "default_gst_rate": 18.0,
+            "gst_enabled": True,
+            "prices_include_gst": True
+        }
+        await db.gst_settings.insert_one(settings)
+    return settings
+
+@api_router.put("/admin/gst-settings")
+async def update_gst_settings(updates: GSTSettingsUpdate, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Update GST settings (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    update_dict = {k: v for k, v in updates.model_dump().items() if v is not None}
+    update_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.gst_settings.update_one(
+        {"setting_id": "gst_settings"},
+        {"$set": update_dict},
+        upsert=True
+    )
+    
+    settings = await db.gst_settings.find_one({"setting_id": "gst_settings"}, {"_id": 0})
+    return settings
+
+@api_router.get("/indian-states")
+async def get_indian_states():
+    """Get list of Indian states with codes"""
+    return [{"code": code, "name": name} for code, name in INDIAN_STATES.items()]
+
+# Invoice Generation API
+@api_router.get("/orders/{order_id}/invoice")
+async def get_or_generate_invoice(order_id: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Get or generate invoice for an order"""
+    # Check if invoice already exists
+    existing_invoice = await db.invoices.find_one({"order_id": order_id}, {"_id": 0})
+    if existing_invoice:
+        return existing_invoice
+    
+    # Get order
+    order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Only generate invoice for paid/confirmed orders
+    if order["payment_status"] not in ["paid", "completed"] and order["status"] not in ["confirmed", "processing", "shipped", "delivered"]:
+        raise HTTPException(status_code=400, detail="Invoice can only be generated for confirmed/paid orders")
+    
+    # Get GST settings
+    gst_settings = await db.gst_settings.find_one({"setting_id": "gst_settings"}, {"_id": 0})
+    if not gst_settings:
+        gst_settings = {
+            "business_name": "Paridhaan Creations",
+            "gstin": "08BFVPG3792N1ZH",
+            "business_address": "Terra City 1, Tijara, 301411",
+            "business_state": "Rajasthan",
+            "business_state_code": "08",
+            "default_gst_rate": 18.0,
+            "prices_include_gst": True,
+            "invoice_prefix": "PC"
+        }
+    
+    # Calculate GST
+    customer_state = order["shipping_address"]["state"]
+    gst_calc = await calculate_gst(order["items"], customer_state, gst_settings)
+    
+    # Generate invoice number
+    invoice_number = await generate_invoice_number()
+    
+    # Calculate totals
+    subtotal = sum(item["price"] * item["quantity"] for item in order["items"])
+    discount = order.get("discount_amount", 0)
+    taxable_amount = gst_calc["taxable_amount"]
+    grand_total = order["total_amount"]
+    
+    # Create invoice
+    invoice = {
+        "invoice_id": f"inv_{uuid.uuid4().hex[:12]}",
+        "invoice_number": invoice_number,
+        "order_id": order_id,
+        # Seller Details
+        "seller_name": gst_settings.get("business_name", "Paridhaan Creations"),
+        "seller_gstin": gst_settings.get("gstin", ""),
+        "seller_address": gst_settings.get("business_address", ""),
+        "seller_state": gst_settings.get("business_state", "Rajasthan"),
+        "seller_state_code": gst_settings.get("business_state_code", "08"),
+        "seller_phone": gst_settings.get("business_phone", ""),
+        "seller_email": gst_settings.get("business_email", ""),
+        # Buyer Details
+        "buyer_name": order["shipping_address"]["full_name"],
+        "buyer_address": f"{order['shipping_address']['address_line1']}, {order['shipping_address'].get('address_line2', '')} {order['shipping_address']['city']}, {order['shipping_address']['state']} - {order['shipping_address']['pincode']}".replace(", ,", ","),
+        "buyer_state": customer_state,
+        "buyer_state_code": get_state_code(customer_state),
+        "buyer_gstin": order["shipping_address"].get("gstin"),
+        "buyer_phone": order["shipping_address"]["phone"],
+        "buyer_email": order.get("guest_email"),
+        # Invoice Items with GST
+        "items": gst_calc["items"],
+        # Amounts
+        "subtotal": round(subtotal, 2),
+        "discount": round(discount, 2),
+        "taxable_amount": round(taxable_amount, 2),
+        "cgst_amount": gst_calc["cgst_amount"],
+        "sgst_amount": gst_calc["sgst_amount"],
+        "igst_amount": gst_calc["igst_amount"],
+        "total_gst": gst_calc["total_gst"],
+        "grand_total": round(grand_total, 2),
+        "amount_in_words": number_to_words(grand_total),
+        # Status
+        "is_inter_state": gst_calc["is_inter_state"],
+        "payment_method": order["payment_method"],
+        "payment_status": order["payment_status"],
+        # Bank Details
+        "bank_name": gst_settings.get("bank_name"),
+        "bank_account_number": gst_settings.get("bank_account_number"),
+        "bank_ifsc": gst_settings.get("bank_ifsc"),
+        # Footer
+        "invoice_footer_text": gst_settings.get("invoice_footer_text", "Thank you for shopping with us!"),
+        "terms_and_conditions": gst_settings.get("terms_and_conditions"),
+        "authorized_signatory": gst_settings.get("authorized_signatory"),
+        # Timestamps
+        "invoice_date": datetime.now(timezone.utc).isoformat(),
+        "order_date": order["created_at"].isoformat() if isinstance(order["created_at"], datetime) else order["created_at"],
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    # Generate QR code data (for UPI/verification)
+    qr_data = f"Invoice: {invoice_number}|Amount: {grand_total}|GSTIN: {gst_settings.get('gstin', '')}"
+    invoice["qr_code_data"] = qr_data
+    
+    # Save invoice
+    await db.invoices.insert_one(invoice)
+    
+    # Update order with invoice number
+    await db.orders.update_one(
+        {"order_id": order_id},
+        {"$set": {
+            "invoice_number": invoice_number,
+            "invoice_generated_at": datetime.now(timezone.utc),
+            "gst_details": {
+                "is_inter_state": gst_calc["is_inter_state"],
+                "taxable_amount": taxable_amount,
+                "cgst_amount": gst_calc["cgst_amount"],
+                "sgst_amount": gst_calc["sgst_amount"],
+                "igst_amount": gst_calc["igst_amount"],
+                "total_gst": gst_calc["total_gst"]
+            }
+        }}
+    )
+    
+    # Remove _id before returning
+    invoice.pop("_id", None)
+    return invoice
+
+@api_router.get("/orders/{order_id}/invoice/pdf")
+async def generate_invoice_pdf(order_id: str):
+    """Generate and download invoice PDF"""
+    # Get invoice
+    invoice = await db.invoices.find_one({"order_id": order_id}, {"_id": 0})
+    if not invoice:
+        # Try to generate invoice first
+        invoice = await get_or_generate_invoice(order_id, None, None)
+    
+    # Generate PDF
+    pdf_filename = f"invoice_{invoice['invoice_number'].replace('-', '_')}.pdf"
+    pdf_path = UPLOAD_DIR / pdf_filename
+    
+    # Create PDF
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=20, alignment=TA_CENTER, spaceAfter=20, textColor=colors.HexColor('#8B4513'))
+    header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=10, alignment=TA_CENTER, textColor=colors.grey)
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=9)
+    bold_style = ParagraphStyle('Bold', parent=styles['Normal'], fontSize=9, fontName='Helvetica-Bold')
+    right_style = ParagraphStyle('Right', parent=styles['Normal'], fontSize=9, alignment=TA_RIGHT)
+    
+    # Header - Tax Invoice
+    elements.append(Paragraph("TAX INVOICE", title_style))
+    elements.append(Spacer(1, 10))
+    
+    # Invoice details row
+    invoice_info = [
+        [Paragraph(f"<b>Invoice No:</b> {invoice['invoice_number']}", normal_style),
+         Paragraph(f"<b>Invoice Date:</b> {invoice['invoice_date'][:10]}", right_style)],
+        [Paragraph(f"<b>Order ID:</b> {invoice['order_id']}", normal_style),
+         Paragraph(f"<b>Order Date:</b> {invoice['order_date'][:10]}", right_style)]
+    ]
+    invoice_table = Table(invoice_info, colWidths=[280, 250])
+    invoice_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    elements.append(invoice_table)
+    elements.append(Spacer(1, 15))
+    
+    # Seller and Buyer Details
+    seller_buyer_data = [
+        [Paragraph("<b>SELLER DETAILS</b>", bold_style), Paragraph("<b>BUYER DETAILS</b>", bold_style)],
+        [Paragraph(f"<b>{invoice['seller_name']}</b>", normal_style), 
+         Paragraph(f"<b>{invoice['buyer_name']}</b>", normal_style)],
+        [Paragraph(f"GSTIN: {invoice['seller_gstin']}", normal_style),
+         Paragraph(f"GSTIN: {invoice.get('buyer_gstin') or 'N/A'}", normal_style)],
+        [Paragraph(f"{invoice['seller_address']}", normal_style),
+         Paragraph(f"{invoice['buyer_address']}", normal_style)],
+        [Paragraph(f"State: {invoice['seller_state']} ({invoice['seller_state_code']})", normal_style),
+         Paragraph(f"State: {invoice['buyer_state']} ({invoice['buyer_state_code']})", normal_style)],
+        [Paragraph(f"Phone: {invoice.get('seller_phone') or ''}", normal_style),
+         Paragraph(f"Phone: {invoice.get('buyer_phone') or ''}", normal_style)],
+    ]
+    
+    seller_buyer_table = Table(seller_buyer_data, colWidths=[265, 265])
+    seller_buyer_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f5f5f5')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('PADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(seller_buyer_table)
+    elements.append(Spacer(1, 15))
+    
+    # Items table header
+    is_inter_state = invoice.get("is_inter_state", False)
+    if is_inter_state:
+        items_header = ['S.No', 'Item Description', 'HSN', 'Qty', 'Rate', 'Taxable', 'IGST%', 'IGST', 'Total']
+        col_widths = [30, 130, 50, 35, 50, 55, 40, 45, 55]
+    else:
+        items_header = ['S.No', 'Item Description', 'HSN', 'Qty', 'Rate', 'Taxable', 'CGST%', 'CGST', 'SGST', 'Total']
+        col_widths = [25, 115, 45, 30, 45, 50, 35, 40, 40, 50]
+    
+    items_data = [items_header]
+    
+    for idx, item in enumerate(invoice['items'], 1):
+        if is_inter_state:
+            row = [
+                str(idx),
+                item['product_name'][:30],
+                item.get('hsn_code', ''),
+                str(item['quantity']),
+                f"₹{item['unit_price']:.2f}",
+                f"₹{item['taxable_amount']:.2f}",
+                f"{item['gst_rate']}%",
+                f"₹{item['igst']:.2f}",
+                f"₹{item['total']:.2f}"
+            ]
+        else:
+            row = [
+                str(idx),
+                item['product_name'][:25],
+                item.get('hsn_code', ''),
+                str(item['quantity']),
+                f"₹{item['unit_price']:.2f}",
+                f"₹{item['taxable_amount']:.2f}",
+                f"{item['gst_rate']/2}%",
+                f"₹{item['cgst']:.2f}",
+                f"₹{item['sgst']:.2f}",
+                f"₹{item['total']:.2f}"
+            ]
+        items_data.append(row)
+    
+    items_table = Table(items_data, colWidths=col_widths)
+    items_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1, colors.black),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8B4513')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('PADDING', (0, 0), (-1, -1), 5),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 15))
+    
+    # Summary table
+    summary_data = [
+        ['Subtotal:', f"₹{invoice['subtotal']:.2f}"],
+    ]
+    if invoice.get('discount', 0) > 0:
+        summary_data.append(['Discount:', f"-₹{invoice['discount']:.2f}"])
+    summary_data.append(['Taxable Amount:', f"₹{invoice['taxable_amount']:.2f}"])
+    
+    if is_inter_state:
+        summary_data.append([f"IGST:", f"₹{invoice['igst_amount']:.2f}"])
+    else:
+        summary_data.append([f"CGST:", f"₹{invoice['cgst_amount']:.2f}"])
+        summary_data.append([f"SGST:", f"₹{invoice['sgst_amount']:.2f}"])
+    
+    summary_data.append(['Total GST:', f"₹{invoice['total_gst']:.2f}"])
+    summary_data.append(['', ''])
+    summary_data.append([Paragraph('<b>GRAND TOTAL:</b>', bold_style), Paragraph(f"<b>₹{invoice['grand_total']:.2f}</b>", bold_style)])
+    
+    summary_table = Table(summary_data, colWidths=[380, 150])
+    summary_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('PADDING', (0, 0), (-1, -1), 5),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 10))
+    
+    # Amount in words
+    elements.append(Paragraph(f"<b>Amount in Words:</b> {invoice['amount_in_words']}", normal_style))
+    elements.append(Spacer(1, 20))
+    
+    # Bank Details & Signature
+    if invoice.get('bank_name'):
+        bank_data = [
+            [Paragraph("<b>Bank Details:</b>", bold_style), '', Paragraph("<b>For Paridhaan Creations</b>", bold_style)],
+            [f"Bank: {invoice.get('bank_name', '')}", '', ''],
+            [f"A/C No: {invoice.get('bank_account_number', '')}", '', ''],
+            [f"IFSC: {invoice.get('bank_ifsc', '')}", '', ''],
+            ['', '', Paragraph("<b>Authorized Signatory</b>", normal_style)],
+        ]
+    else:
+        bank_data = [
+            ['', '', Paragraph("<b>For Paridhaan Creations</b>", bold_style)],
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', Paragraph("<b>Authorized Signatory</b>", normal_style)],
+        ]
+    
+    bank_table = Table(bank_data, colWidths=[200, 130, 200])
+    bank_table.setStyle(TableStyle([
+        ('ALIGN', (2, 0), (2, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    elements.append(bank_table)
+    elements.append(Spacer(1, 20))
+    
+    # Footer
+    if invoice.get('invoice_footer_text'):
+        elements.append(Paragraph(f"<i>{invoice['invoice_footer_text']}</i>", header_style))
+    
+    elements.append(Paragraph("This is a computer generated invoice and does not require a physical signature.", header_style))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    # Update invoice with PDF path
+    await db.invoices.update_one(
+        {"order_id": order_id},
+        {"$set": {"pdf_path": f"/api/uploads/{pdf_filename}"}}
+    )
+    
+    return FileResponse(
+        pdf_path,
+        media_type="application/pdf",
+        filename=pdf_filename,
+        headers={"Content-Disposition": f"attachment; filename={pdf_filename}"}
+    )
+
+@api_router.get("/admin/invoices")
+async def list_invoices(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None), limit: int = 50, skip: int = 0):
+    """List all invoices (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    invoices = await db.invoices.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.invoices.count_documents({})
+    
+    return {"invoices": invoices, "total": total}
+
+# Update product GST
+@api_router.put("/admin/products/{product_id}/gst")
+async def update_product_gst(product_id: str, gst_rate: Optional[float] = None, hsn_code: Optional[str] = None, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Update product GST rate and HSN code (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    update_dict = {}
+    if gst_rate is not None:
+        update_dict["gst_rate"] = gst_rate
+    if hsn_code is not None:
+        update_dict["hsn_code"] = hsn_code
+    
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    result = await db.products.update_one(
+        {"product_id": product_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    product = await db.products.find_one({"product_id": product_id}, {"_id": 0})
+    return product
+
+# Update category GST
+@api_router.put("/admin/categories/{category_id}/gst")
+async def update_category_gst(category_id: str, gst_rate: Optional[float] = None, hsn_code: Optional[str] = None, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
+    """Update category default GST rate and HSN code (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    update_dict = {}
+    if gst_rate is not None:
+        update_dict["gst_rate"] = gst_rate
+    if hsn_code is not None:
+        update_dict["hsn_code"] = hsn_code
+    
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    result = await db.categories.update_one(
+        {"category_id": category_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    category = await db.categories.find_one({"category_id": category_id}, {"_id": 0})
+    return category
+
 app.include_router(api_router)
 
 app.add_middleware(
