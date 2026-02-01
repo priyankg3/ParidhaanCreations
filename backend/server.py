@@ -115,6 +115,9 @@ class Product(BaseModel):
     tags: Optional[List[str]] = None  # Tags for search
     # Laddu Gopal specific
     laddu_gopal_sizes: Optional[List[str]] = None  # Sizes this dress fits: ["0", "1", "2"] etc.
+    # GST fields
+    gst_rate: Optional[float] = None  # GST rate in percentage (5, 12, 18, 28)
+    hsn_code: Optional[str] = None  # HSN/SAC code for GST
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ProductCreate(BaseModel):
