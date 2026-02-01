@@ -329,6 +329,45 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleEditProduct = (product) => {
+    setEditingProduct({
+      ...product,
+      laddu_gopal_sizes: product.laddu_gopal_sizes || []
+    });
+    setShowEditProductModal(true);
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    
+    try {
+      const updateData = {
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: parseFloat(editingProduct.price),
+        category: editingProduct.category,
+        images: editingProduct.images,
+        stock: parseInt(editingProduct.stock),
+        featured: editingProduct.featured,
+        badge: editingProduct.badge || null,
+        laddu_gopal_sizes: editingProduct.laddu_gopal_sizes?.length > 0 ? editingProduct.laddu_gopal_sizes : null,
+        material: editingProduct.material || null,
+        color: editingProduct.color || null,
+        sku: editingProduct.sku || null
+      };
+      
+      await axios.put(`${API}/products/${editingProduct.product_id}`, updateData, { withCredentials: true });
+      toast.success("Product updated successfully!");
+      setShowEditProductModal(false);
+      setEditingProduct(null);
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update product");
+      console.error(error);
+    }
+  };
+
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     try {
