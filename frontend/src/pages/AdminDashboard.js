@@ -602,6 +602,49 @@ export default function AdminDashboard() {
     }
   };
 
+  // GST Settings Functions
+  const handleSaveGstSettings = async () => {
+    try {
+      await axios.put(`${API}/admin/gst-settings`, gstForm, { withCredentials: true });
+      toast.success("GST settings saved successfully!");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to save GST settings");
+    }
+  };
+
+  const handleUpdateProductGst = async (productId, gstRate, hsnCode) => {
+    try {
+      await axios.put(`${API}/admin/products/${productId}/gst?gst_rate=${gstRate}&hsn_code=${hsnCode}`, {}, { withCredentials: true });
+      toast.success("Product GST updated!");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update product GST");
+    }
+  };
+
+  const handleUpdateCategoryGst = async (categoryId, gstRate, hsnCode) => {
+    try {
+      await axios.put(`${API}/admin/categories/${categoryId}/gst?gst_rate=${gstRate}&hsn_code=${hsnCode}`, {}, { withCredentials: true });
+      toast.success("Category GST updated!");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update category GST");
+    }
+  };
+
+  const handleGenerateInvoice = async (orderId) => {
+    try {
+      // First generate the invoice data
+      await axios.get(`${API}/orders/${orderId}/invoice`, { withCredentials: true });
+      // Then download PDF
+      window.open(`${API}/orders/${orderId}/invoice/pdf`, '_blank');
+      toast.success("Invoice generated!");
+    } catch (error) {
+      toast.error("Failed to generate invoice: " + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const resetProductForm = () => {
     setProductForm({
       name: "",
