@@ -2073,7 +2073,11 @@ async def get_abandoned_carts(
         if isinstance(updated_at, str):
             updated_at = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
         
-        hours_abandoned = (datetime.now(timezone.utc) - updated_at).total_seconds() / 3600
+        # Ensure updated_at is timezone-aware
+        if updated_at and updated_at.tzinfo is None:
+            updated_at = updated_at.replace(tzinfo=timezone.utc)
+        
+        hours_abandoned = (datetime.now(timezone.utc) - updated_at).total_seconds() / 3600 if updated_at else 0
         
         # Determine abandonment stage
         if hours_abandoned < 1:
