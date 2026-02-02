@@ -173,6 +173,26 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
   - Admin dashboard GST Settings tab
   - Invoice number sequence (PC-2024-0001 format)
 
+### Shiprocket Shipping Integration (NEW)
+- **Status:** IMPLEMENTED (Feb 2, 2026)
+- Features:
+  - Auto order push to Shiprocket
+  - Courier selection with live rates
+  - AWB generation & label download
+  - Customer tracking page (`/track/:orderId`)
+  - Admin Shipping tab with stats & management
+  - Webhook for real-time status updates
+
+### Order Email Notifications (NEW)
+- **Status:** IMPLEMENTED (Feb 2, 2026)
+- Features:
+  - Beautiful HTML email templates
+  - Order confirmation email with tracking link
+  - Shipped notification with tracking URL
+  - Delivery confirmation email
+  - Email logs stored in database
+  - Track Order button in My Orders page
+
 ### Products Added
 - 4 new Laddu Gopal Size 1 Dress products added to Pooja category
 
