@@ -307,6 +307,61 @@ export default function CartPage() {
                 </div>
               </div>
 
+              {/* Contact capture for notifications/recovery */}
+              {!contactSaved && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-3">
+                    🔔 Get notified about order updates & special offers!
+                  </p>
+                  <div className="space-y-2">
+                    <input
+                      type="email"
+                      placeholder="Your email (optional)"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                      data-testid="guest-email-input"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="WhatsApp number (optional)"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-amber-300 rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                      data-testid="guest-phone-input"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!guestEmail && !guestPhone) {
+                          toast.info("Please enter email or phone number");
+                          return;
+                        }
+                        try {
+                          await axios.post(`${API}/cart/save-contact`, null, {
+                            params: { guest_email: guestEmail, guest_phone: guestPhone },
+                            withCredentials: true
+                          });
+                          setContactSaved(true);
+                          toast.success("Contact saved! We'll keep you updated 🙏");
+                        } catch (error) {
+                          console.error("Error saving contact:", error);
+                        }
+                      }}
+                      className="w-full py-2 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+                      data-testid="save-contact-button"
+                    >
+                      Save & Get Updates
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {contactSaved && (
+                <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                  <p className="text-sm text-green-700">✅ We'll send you order updates!</p>
+                </div>
+              )}
+
               <button
                 onClick={() => navigate("/checkout")}
                 className="w-full bg-primary text-primary-foreground py-4 font-medium tracking-wide hover:bg-primary/90 transition-all duration-300"
