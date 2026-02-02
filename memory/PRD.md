@@ -107,13 +107,14 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 - [x] OptimizedImage.js component created for centralized image handling
 
 ## Future/Backlog Tasks
-- [ ] Abandoned Cart Recovery system
+- [x] ~~Abandoned Cart Recovery system~~ - DONE (Feb 2, 2026)
 - [ ] Live payments (production Razorpay keys)
-- [ ] Email/SMS notification system
+- [ ] Email/SMS notification system (Currently MOCKED)
 - [ ] Stock replenishment alerts
 - [x] ~~HSN codes for products~~ - DONE (Feb 1, 2026)
 - [x] ~~Bank details for invoice~~ - DONE (Feb 1, 2026)
 - [x] ~~GST breakdown on checkout page~~ - DONE (Feb 1, 2026)
+- [ ] WhatsApp AI Chatbot (Code ready, disabled - enable when business grows)
 
 ## 3rd Party Integrations
 - **Razorpay** (Payments) — requires User API Key
