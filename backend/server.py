@@ -3262,6 +3262,10 @@ async def assign_courier_to_shipment(
         # Generate label
         label_response = await ShiprocketService.generate_label(shipment["shiprocket_shipment_id"])
         
+        # Site URL for tracking
+        site_url = os.environ.get("SITE_URL", "https://paridhaancreations.xyz")
+        tracking_url = f"{site_url}/track/{order_id}"
+        
         # Update shipment record
         update_data = {
             "courier_id": courier_id,
@@ -3295,13 +3299,22 @@ async def assign_courier_to_shipment(
             {"$set": {"status": "shipped"}}
         )
         
+        # Send "shipped" email with tracking link
+        order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+        if order:
+            await send_order_email(order, "shipped", tracking_url)
+            
+            # Also send SMS if phone available
+            if order.get("shipping_address", {}).get("phone"):
+                await send_order_notification(order_id, order["shipping_address"]["phone"], "shipped", tracking_url)
+        
         return {
             "success": True,
             "message": "Courier assigned successfully",
             "awb_number": awb_data.get("awb_code"),
             "courier_name": awb_data.get("courier_name"),
             "label_url": label_response.get("label_url"),
-            "tracking_url": f"https://shiprocket.co/tracking/{awb_data.get('awb_code', '')}"
+            "tracking_url": tracking_url
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
