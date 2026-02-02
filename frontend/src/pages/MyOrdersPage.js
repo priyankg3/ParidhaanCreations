@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
-import { Package, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Package, Clock, CheckCircle, XCircle, Truck, MapPin } from "lucide-react";
 
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState([]);
