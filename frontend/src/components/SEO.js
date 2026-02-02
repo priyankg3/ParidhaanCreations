@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const SEO_SITE_NAME = "Paridhaan Creations";
-const SEO_BASE_URL = "https://paridhaan-crafts.preview.emergentagent.com";
+const SEO_BASE_URL = "https://pooja-creations.preview.emergentagent.com";
 const SEO_DEFAULT_IMAGE = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
 
 const SEO = ({ 

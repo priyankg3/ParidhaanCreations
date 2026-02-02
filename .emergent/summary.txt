@@ -1,179 +1,151 @@
 <analysis>**original_problem_statement:**
-The user wants to build a full-featured e-commerce website named Paridhaan Creations for handicrafts, pooja articles, perfumes, artificial jewellery, and traditional/decorative items.
+The user wants to build a full-featured e-commerce website named Paridhaan Creations for handicrafts, pooja articles, artificial jewellery, and traditional/decorative items.
 
 **PRODUCT REQUIREMENTS:**
--   **Store Focus:** Handicrafts, Pooja articles, Artificial jewellery, Traditional & decorative items.
--   **Frontend:** Clean, elegant design with a homepage banner, product listings with filters, product detail pages, cart, and user authentication (Email/Google).
--   **Backend:** An admin dashboard to manage products, categories, banners, orders, users, coupons, and view analytics.
--   **Checkout & Payments:** A full checkout system with Razorpay integration.
--   **Advertisement System:** Admin-controlled banner uploads for 9 distinct placements.
--   **Performance & SEO:** Achieve a PageSpeed score of 90+ for Performance and 100/100 for SEO and Best Practices.
--   **Unique Feature:** An interactive size guide and filter for Laddu Gopal dresses based on murti size.
+*   **Store Focus:** Handicrafts, Pooja articles, Artificial jewellery, Traditional & decorative items.
+*   **Frontend:** Clean, elegant design with a homepage banner, product listings with filters, product detail pages, cart, and user authentication (Email/Google).
+*   **Backend:** An admin dashboard to manage products, categories, banners, orders, users, coupons, and view analytics.
+*   **Checkout & Payments:** A full checkout system with Razorpay integration.
+*   **GST & Invoicing:** Advanced system for GST calculation and invoice generation.
+*   **Shipping:** Shiprocket integration for order processing and tracking.
+*   **Notifications:** Order status updates via Email and WhatsApp.
+*   **Unique Feature:** An interactive size guide and filter for Laddu Gopal dresses based on murti size.
 
 **User's preferred language**: Hinglish. The user communicates technical requirements and feedback in a mix of Hindi and English. The next agent MUST respond in simple English and Hindi for clarity (e.g., Samajh gaya! Chalo yeh fix karte hain., Performance ab behtar hai, please check karke batayein.).
 
 **what currently exists?**
-A full-stack e-commerce platform with a React frontend, FastAPI backend, and MongoDB. The application features an admin dashboard, a multi-placement banner system, and product management. The last session focused heavily on adding new features: a product badge system (, , ), a complete Laddu Gopal size guide with filtering, an admin product edit functionality, and significant category/SEO updates (renaming 'Jewellery' to 'Artificial Jewellery' and removing 'Perfumes'). However, a recent attempt to fix a recurring image display issue caused a critical regression, breaking all product images on the site.
+A full-stack e-commerce platform with a React frontend, FastAPI backend, and MongoDB. The application is feature-rich, including an admin dashboard, product management, a Laddu Gopal size guide, and a complete GST/invoicing system. The last session focused on resolving critical production bugs (broken images, deployment issues), migrating user data, and then implementing several major features: an advanced GST system with HSN codes, a full Shiprocket integration for shipping, and email notifications with tracking links. The agent was about to start implementing WhatsApp notifications when the session ended.
 
 **Last working item**:
--   **Last item agent was working:** The user is extremely frustrated as a recent change broke all images across the website. The agent had attempted a permanent fix for image display by changing the CSS class  to , which resulted in images not rendering at all. The agent was in the process of reverting these changes across multiple files when the session ended.
--   **Status:** IN PROGRESS
+-   **Last item agent was working:** The agent was planning to implement WhatsApp Business API for order notifications. After receiving a complex playbook, the agent decided to use the simpler, official WhatsApp Cloud API that can be integrated directly into the existing FastAPI backend.
+-   **Status:** NOT STARTED
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** screenshot tool. After reverting the CSS changes, the agent must take screenshots of the homepage, a product listing page, and a product detail page to verify that all images are rendering correctly again.
--   **User Testing Done:** Y (User reported the critical bug with screenshots showing blank images).
+-   **Which testing method agent to use?** backend testing agent. After implementation, the agent will need to test the new backend service for sending WhatsApp messages.
+-   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** [P0 - CRITICAL REGRESSION] All product images are broken and not displaying on the website.
--   **Issue 2:** [P1] Product edit functionality in the admin panel has been implemented but not verified by the user.
--   **Issue 3:** [P2 - TECHNICAL DEBT] The  and  files are monolithic and require refactoring.
--   **Issue 4:** [P2 - TECHNICAL DEBT] A potential N+1 query pattern exists in the  endpoint.
-
-**Issues Detail**:
--   **Issue 1: All product images are broken**
-    -   **Attempted fixes:** The agent replaced  with  in image components, which caused the images to disappear entirely. The agent started reverting this change but did not complete it.
-    -   **Next debug checklist:**
-        1.  Resume reverting the CSS class from  back to  in all affected files. The agent was last working on . Ensure the fix is also applied to:
-            -   
-            -   
-        2.  Remove the  fallback handlers that were added alongside , as  is more reliable and these handlers may mask other issues.
-        3.  Run yarn run v1.22.22
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command. to ensure all changes are compiled.
-        4.  Use the  to visually verify that images are correctly displayed on the homepage, product listing page, and product detail page.
-    -   **Why fix this issue and what will be achieved with the fix?** The website is visually broken and unusable. Fixing this is the highest priority to restore basic functionality and user trust.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y (The user has explicitly stated that image display issues are a recurring problem after forks).
-    -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on other issue:** None. This is the primary blocker.
--   **Issue 2: Product edit functionality needs verification**
-    -   **Attempted fixes:** An Edit button and modal were added to the admin product table. This was done to allow the user to assign  to products on their production environment. The implementation is complete.
-    -   **Next debug checklist:**
-        1.  After the critical image bug is fixed and deployed, guide the user to log into the admin panel.
-        2.  Instruct them to find a Laddu Gopal product, click the new Edit icon, and assign a size using the form.
-        3.  Ask them to verify that the size filter on the live product listing page then works as expected.
-    -   **Why fix this issue and what will be achieved with the fix?** To resolve the user's reported problem of the size filter not working on their production site and to deliver the completed edit feature.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on other issue:** Issue 1
+There are no major pending issues. All critical bugs from the previous session have been resolved.
 
 **In progress Task List**:
--   **Task 1: Revert faulty image styling changes**
-    -   **Where to resume:** Continue reverting CSS classes in . The agent had fixed the featured products section but still needed to fix the categories section. After that, proceed to  and .
-    -   **What will be achieved with this?** Restore all broken images on the website.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** frontend
-    -   **Blocked on something:** None.
+-   **Task 1: Implement WhatsApp Business API Integration [P0]**
+    -   **Where to resume:** The agent has chosen to use the WhatsApp Cloud API. The next step is to begin the implementation.
+        1.  Start by asking the user for the necessary credentials (Phone Number ID, WhatsApp Business Account ID, Access Token).
+        2.  Create a new service module in the backend (e.g., ).
+        3.  Implement functions to send templated messages for order confirmation, shipment, and delivery.
+        4.  Integrate calls to this new service within the order processing logic in  (e.g., after payment verification and when an order is shipped).
+    -   **What will be achieved with this?** Customers will receive real-time order updates on WhatsApp, enhancing the user experience.
+    -   **Status:** NOT STARTED
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on something:** User credentials for the WhatsApp Cloud API.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks:**
-    -   **P0: User verification of Dynamic Favicon:** The frontend logic is in place. Guide the user to upload a favicon in the admin panel to confirm it works.
-    -   **P1: Final verification of Advanced Product attributes** (Badges feature is mostly done, needs full user workflow test).
--   **Future Tasks:**
-    -   Abandoned Cart Recovery system.
-    -   Enable live payments by guiding the user to input production Razorpay keys.
-    -   Configure and enable notification services (Email/SMS).
-    -   Stock replenishment alerts for the admin.
-    -   **Backend Refactoring (P1):** Break down  into a proper project structure (, , ).
-    -   **Frontend Refactoring (P2):** Break down  into smaller components.
+**Upcoming Tasks:**
+-   **P1: Implement a real Email Service:** The current email notification system uses a placeholder that only logs to the console. This needs to be replaced with a real email provider (e.g., Resend, SendGrid) to send actual emails in production.
+-   **P1: User Verification of Shiprocket Integration:** The core integration is complete, but the user needs to test the end-to-end flow: creating an order, seeing it in the admin Shipping tab, assigning a courier, and tracking it.
+-   **P2: User Verification of GST & Invoicing:** The GST system is implemented. The user needs to verify that GST calculations are correct on the checkout page and that invoices are generated correctly from the admin panel.
+
+**Future Tasks:**
+-   Abandoned Cart Recovery system.
+-   Enable live payments by guiding the user to input production Razorpay keys.
+-   Stock replenishment alerts for the admin.
+-   **Backend Refactoring (P1):** Break down  into a proper project structure (, , ).
+-   **Frontend Refactoring (P2):** Break down  into smaller, dedicated components for each admin tab.
 
 **Completed work in this session**
--   **Laddu Gopal Size Guide Feature:** Implemented a complete, interactive size guide and filtering system. This included backend model/API changes, a new  component and modal, and filter UI on the .
--   **Admin Product Edit Feature:** Added an Edit button and a modal form to the admin product list, allowing for inline product updates.
--   **Category & SEO Overhaul:** Renamed Jewellery to Artificial Jewellery and removed the Perfumes category throughout the database, frontend components, and SEO metadata.
--   **Product Badge System Expansion:** Added  and  fields to the backend, and integrated a dropdown for badge selection in the admin product form.
--   **Featured Products Carousel:** Converted the static featured products grid on the homepage into a dynamic carousel.
--   **UX/UI Fixes:**
-    -   Implemented scroll-to-top on .
-    -   Fixed spacing and layout on product cards in .
-    -   Updated footer links to reflect category changes.
+-   **Critical Bug Fixes:** Resolved site-wide image display issues and production deployment failures (CORS, backend URL, ).
+-   **Data Restoration:** Investigated data loss issues from previous forks and re-created the user's missing Laddu Gopal products.
+-   **GST & Invoicing System:** Implemented a full-featured GST system with an admin management UI, HSN codes on products, and a dynamic GST breakdown on the checkout page.
+-   **Shiprocket Integration:** Integrated Shiprocket for shipping, including an admin UI to manage shipments and a customer-facing tracking page.
+-   **Email Notifications:** Added logic to send order confirmation and shipping update emails (currently using a placeholder service) with a direct link to the tracking page.
 
 **Earlier issues found/mentioned but not fixed**
 -   **N+1 Query Pattern:** A potential performance bottleneck in the  endpoint in  remains unaddressed.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork:** Image display issues. The user explicitly stated this is a recurring problem: *yeh kuch photos dikh kyun nhi rahey... iska yr humesa ke liye fix kro.. jab bhi fork kro yeh issue aajata h*. The agent's attempt at a permanent fix backfired and caused a major regression.
--   **Recurrence count:** At least 2.
--   **Status:** IN PROGRESS (The immediate fix is to revert, but a robust, permanent solution is still needed).
+-   **Issue recurrence in previous fork:** Image display issues.
+-   **Recurrence count:** 2+
+-   **Status:** RESOLVED. The agent fixed the issue by correctly using  for specific image types and implementing more robust fallback URLs.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React (, , , Conditional Rendering), Tailwind CSS, .
--   **Backend:** FastAPI (Pydantic models, query parameters for filtering).
--   **Database:** MongoDB (updating documents, adding new fields).
--   **UI/UX:** Created modals for new features (Size Guide, Product Edit), implemented a carousel for featured products, and added conditional filters to the UI.
+-   **Frontend:** React, Tailwind CSS, , Conditional Rendering.
+-   **Backend:** FastAPI, Pydantic,  for PDF invoices,  for API calls.
+-   **Integrations:** Shiprocket API, WhatsApp Cloud API (Planned).
+-   **Database:** MongoDB.
 
 **key DB schema**
--   **products:**
-    -    (for 'new', 'hot', 'bestseller', etc.).
-    -    (e.g., ).
--   **categories:**
-    -    was renamed to .
-    -   The  category and related products were deleted.
+-   **products:** , 
+-   **orders:** , , 
+-   **New Collections:** , , 
 
 **All files of reference**
--   : Site of the critical image bug, also contains new Laddu Gopal filter logic.
--   : Site of the critical image bug.
--   : Site of the critical image bug, also has new Laddu Gopal section and featured product carousel.
--   : Contains the new, unverified Product Edit modal implementation.
--   : New component for the size guide feature.
--   : New component to handle dynamic favicon.
--   : Contains backend logic for new product fields and API filters.
+-   : Core logic for all new features.
+-   : New module for Shiprocket logic.
+-   : Major UI changes for GST and Shipping management.
+-   : UI for GST breakdown.
+-   : New customer-facing page.
+-   : Added tracking button.
 
 **Areas that need refactoring**:
--   **Image Components:** The recurring image display issue highlights a need for a single, robust, and well-tested image component to be used across the application, instead of ad-hoc styling in each page.
--   ** (CRITICAL):** Remains a large monolith.
--   ** (HIGH):** Still over 2000 lines and needs to be broken down into smaller components.
+-   ** (CRITICAL):** Has grown significantly and urgently needs to be refactored into a modular structure (, , ).
+-   ** (CRITICAL):** Is now over 3000 lines long and must be broken down into smaller components for maintainability.
+-   **Unused Code:** The file  was created but never used and can be removed.
 
 **key api endpoints**
--   : Updated to support  filtering.
--   : Now handles updates for  and .
--   : Now accepts  and  on creation.
+-    (GET, POST)
+-    (POST)
+-    (POST)
+-    (GET)
+-    (GET)
 
 **Critical Info for New Agent**
--   **TOP PRIORITY:** The user is extremely frustrated because all product images are broken. Your first and only task is to fix this regression by reverting the recent  CSS changes back to  across all relevant files and verifying the fix with screenshots. Do not work on anything else until the images are back.
--   **User Sentiment:** The user has expressed extreme frustration, mentioned wasted credits, and feels the agent is incompetent (*bhai yeh kya ker rahey ho?*). Acknowledge the severity of the issue and be direct and efficient in your fix.
--   **Recurring Issue:** The image display problem is a recurring pain point for the user. After the immediate fix, a more permanent, robust solution for image components should be planned to prevent future regressions.
--   **Verification Pending:** Several major features (Product Edit, Dynamic Favicon, Laddu Gopal size updates on production) are coded but unverified. Address these only *after* the critical image bug is resolved.
+-   **Top Priority:** Begin implementation of the WhatsApp Business API integration. You will need to start by requesting the necessary credentials from the user.
+-   **User Sentiment:** The user has been frustrated by past issues. Maintain clear, proactive communication in Hinglish and ensure features are thoroughly tested.
+-   **Technical Debt:** The backend () and frontend () are in critical need of refactoring. This should be prioritized once the current feature set is stable and verified by the user.
+-   **Mocked Service:** The email notification feature is incomplete. It uses a placeholder and needs a real email provider to function in production. This should be addressed as a high-priority upcoming task.
 
 **documents and test reports created in this job**
--    was updated.
+-    (updated extensively)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request for Laddu Gopal Size Guide feature:** User proposed a unique feature for a size chart and filter for Laddu Gopal dresses.
-2.  **Feedback on size chart:** User corrected the agent, asking for research on standard inch-based sizes, not S/M/L.
-3.  **Refinement of size chart:** User specified that dress diameter should be a range (e.g., 4-4.5 inches).
-4.  **Bug Report (Filter):** User reported that the new size filter showed 0 products even when a relevant product existed. (This was due to DB data missing).
-5.  **Bug Report (UI):** User complained that the product card layout was congested on the Pooja category page.
-6.  **Bug Report (Production):** User reported the size filter was not working on the production URL. (Agent identified this was due to production data not being updated).
-7.  **Blocker Report:** User stated they couldn't update the data because there was no Edit option in the admin panel.
-8.  **Recurring Bug Report (Images):** User reported that images were not displaying correctly on a product page, mentioning this is a recurring problem on forks and asking for a permanent fix.
-9.  **CRITICAL - User Frustration:** User sent screenshots showing all images were now broken across the site and expressed extreme frustration, asking for their credits to be returned.
-10. **Confirmation to continue**: User asked to continue with  component creation.
+1.  **Request:** Implement GST & Invoicing. (Completed)
+2.  **Info:** Provided GSTIN and business details. (Used)
+3.  **Request:** Implement HSN codes and GST breakdown on checkout. (Completed)
+4.  **Request:** Integrate Shiprocket for automated shipping and tracking. (Completed)
+5.  **Info:** Provided Shiprocket credentials. (Used)
+6.  **Request:** Implement adding a tracking link to the order confirmation email. (Completed)
+7.  **Request:** Implement order updates via WhatsApp Business API. (In Progress)
+8.  **Confirmation:** Confirmed to proceed with the WhatsApp integration using the WhatsApp Business API option.
+9. **Complaint:** Reported data loss after fork. (Resolved)
+10. **Complaint:** Reported image cropping issues. (Resolved)
 
 **Project Health Check:**
--   **Broken:** Image rendering is critically broken across the entire frontend.
--   **Mocked:** Email and SMS notification systems, Razorpay (test mode).
--   **Needs Improvement:** Stability of image components to prevent recurring display bugs.
+-   **Broken:** None.
+-   **Mocked:** The email service is a placeholder () and does not send real emails. This prevents the notification feature from working in a deployed environment.
+-   **Needs Improvement:**
+    -   The monolithic  and  files are becoming unmanageable.
+    -   A real email provider needs to be integrated.
 
 **3rd Party Integrations**
 -   **Razorpay** (Payments) — requires User API Key.
 -   **Emergent-managed Google Auth** (Authentication).
--   **Twilio** (SMS Notifications) — Code exists, inactive.
--   **Recharts** (Charts/Analytics).
--   **Lucide React** (Icons).
--   **Pillow** (Backend Image Compression).
+-   **Shiprocket** (Shipping) — Integrated with User API Key.
+-   **Twilio** (SMS Notifications) — Inactive.
+-   **reportlab** (Backend PDF Generation).
+-   **WhatsApp Cloud API** (Planned).
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None in this session.
--   **Known regressions:** A critical, site-wide regression where no images are displayed.
+-   **Test files created:** None.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
--   **Admin Access:** Requires Google Sign-In with the email .
+-   **Admin Access:** Google Sign-In with the email .
+-   **Shiprocket:** Credentials are stored in .
 
 **What agent forgot to execute**
--   The agent failed to adequately test the permanent fix for images before applying it, leading to a critical site-wide regression.
--   The agent did not address the user's explicit frustration and request regarding wasted credits, instead moving directly to a technical fix. This damaged user trust.</analysis>
+-   The agent implemented an email notification feature but used a placeholder  service instead of integrating a real email provider like SendGrid or Resend. This means the feature is non-functional in production.
+-   The agent created an  component but never integrated it, leaving unused code in the repository.</analysis>
