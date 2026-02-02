@@ -260,6 +260,13 @@ export default function AdminDashboard() {
       } else if (activeTab === "shipping") {
         const shipmentsRes = await axios.get(`${API}/admin/shipments`, { withCredentials: true });
         setShipments(shipmentsRes.data.shipments || []);
+      } else if (activeTab === "whatsapp") {
+        const [statsRes, convsRes] = await Promise.all([
+          axios.get(`${API}/whatsapp/stats`, { withCredentials: true }),
+          axios.get(`${API}/whatsapp/conversations`, { withCredentials: true })
+        ]);
+        setWhatsappStats(statsRes.data);
+        setWhatsappConversations(convsRes.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
