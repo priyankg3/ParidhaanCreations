@@ -51,7 +51,7 @@ twilio_client = None
 if os.environ.get('TWILIO_ACCOUNT_SID') and os.environ.get('TWILIO_AUTH_TOKEN'):
     twilio_client = TwilioClient(os.environ['TWILIO_ACCOUNT_SID'], os.environ['TWILIO_AUTH_TOKEN'])
 
-async def send_order_notification(order_id: str, phone: str, status: str):
+async def send_order_notification(order_id: str, phone: str, status: str, tracking_url: str = None):
     """Send SMS notification for order updates"""
     if not twilio_client or not os.environ.get('TWILIO_PHONE_NUMBER'):
         logging.info(f"Twilio not configured. Skipping SMS for order {order_id}")
@@ -60,7 +60,7 @@ async def send_order_notification(order_id: str, phone: str, status: str):
     try:
         messages = {
             "confirmed": f"Your order #{order_id} has been confirmed! We'll notify you when it ships.",
-            "shipped": f"Great news! Your order #{order_id} has been shipped and is on its way.",
+            "shipped": f"Great news! Your order #{order_id} has been shipped and is on its way. Track here: {tracking_url}" if tracking_url else f"Great news! Your order #{order_id} has been shipped and is on its way.",
             "delivered": f"Your order #{order_id} has been delivered. Thank you for shopping with Paridhaan Creations!",
             "cancelled": f"Your order #{order_id} has been cancelled. Contact us if you have questions."
         }
@@ -73,6 +73,204 @@ async def send_order_notification(order_id: str, phone: str, status: str):
         logging.info(f"SMS sent for order {order_id}: {message.sid}")
     except Exception as e:
         logging.error(f"Failed to send SMS for order {order_id}: {str(e)}")
+
+def generate_order_email_html(order: dict, email_type: str = "confirmation", tracking_url: str = None) -> str:
+    """Generate beautiful HTML email for order notifications"""
+    
+    # Get site URL from environment or use default
+    site_url = os.environ.get("SITE_URL", "https://paridhaancreations.xyz")
+    
+    # Common styles
+    styles = """
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; }
+        .header { background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .header p { margin: 10px 0 0; opacity: 0.9; }
+        .content { padding: 30px; }
+        .order-box { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .order-id { font-size: 14px; color: #6c757d; margin-bottom: 5px; }
+        .order-status { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-shipped { background: #cce5ff; color: #004085; }
+        .status-delivered { background: #d4edda; color: #155724; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; }
+        .items-table td { padding: 12px; border-bottom: 1px solid #dee2e6; }
+        .total-row { font-weight: bold; font-size: 18px; }
+        .tracking-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 8px; text-align: center; margin: 25px 0; }
+        .tracking-box h3 { margin: 0 0 15px; }
+        .track-btn { display: inline-block; background: white; color: #667eea; padding: 14px 28px; text-decoration: none; border-radius: 25px; font-weight: 600; margin-top: 10px; }
+        .track-btn:hover { background: #f8f9fa; }
+        .address-box { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; }
+        .footer { background: #f8f9fa; padding: 25px; text-align: center; border-top: 1px solid #e9ecef; }
+        .footer p { margin: 5px 0; color: #6c757d; font-size: 14px; }
+        .social-links a { display: inline-block; margin: 0 10px; color: #8B4513; text-decoration: none; }
+    """
+    
+    # Order items HTML
+    items_html = ""
+    for item in order.get("items", []):
+        items_html += f"""
+            <tr>
+                <td>{item.get('product_name', 'Product')}</td>
+                <td style="text-align: center;">{item.get('quantity', 1)}</td>
+                <td style="text-align: right;">₹{item.get('price', 0):.2f}</td>
+            </tr>
+        """
+    
+    # Email type specific content
+    if email_type == "confirmation":
+        header_title = "Order Confirmed! 🎉"
+        header_subtitle = "Thank you for shopping with Paridhaan Creations"
+        status_class = "status-confirmed"
+        status_text = "CONFIRMED"
+        main_message = "We've received your order and are preparing it with care. You'll receive another email once your order ships."
+    elif email_type == "shipped":
+        header_title = "Your Order is on its Way! 🚚"
+        header_subtitle = "Exciting news - your package has been shipped"
+        status_class = "status-shipped"
+        status_text = "SHIPPED"
+        main_message = "Your order has been handed over to our courier partner and is on its way to you."
+    elif email_type == "delivered":
+        header_title = "Order Delivered! ✨"
+        header_subtitle = "Your package has arrived"
+        status_class = "status-delivered"
+        status_text = "DELIVERED"
+        main_message = "We hope you love your purchase! If you have any questions, feel free to reach out."
+    else:
+        header_title = "Order Update"
+        header_subtitle = "Here's the latest on your order"
+        status_class = "status-confirmed"
+        status_text = order.get("status", "").upper()
+        main_message = "Here's an update on your order status."
+    
+    # Tracking section (only show if tracking URL exists)
+    tracking_section = ""
+    if tracking_url:
+        tracking_section = f"""
+            <div class="tracking-box">
+                <h3>📦 Track Your Package</h3>
+                <p>Follow your order's journey in real-time</p>
+                <a href="{tracking_url}" class="track-btn">Track Order →</a>
+            </div>
+        """
+    
+    # Shipping address
+    shipping = order.get("shipping_address", {})
+    address_html = f"""
+        <strong>{shipping.get('full_name', '')}</strong><br>
+        {shipping.get('address_line1', '')}<br>
+        {shipping.get('address_line2', '') + '<br>' if shipping.get('address_line2') else ''}
+        {shipping.get('city', '')}, {shipping.get('state', '')} - {shipping.get('pincode', '')}<br>
+        Phone: {shipping.get('phone', '')}
+    """
+    
+    # Complete HTML
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{header_title}</title>
+        <style>{styles}</style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>{header_title}</h1>
+                <p>{header_subtitle}</p>
+            </div>
+            
+            <div class="content">
+                <div class="order-box">
+                    <div class="order-id">Order ID: {order.get('order_id', '')}</div>
+                    <span class="order-status {status_class}">{status_text}</span>
+                    <p style="margin-top: 15px; color: #495057;">{main_message}</p>
+                </div>
+                
+                {tracking_section}
+                
+                <h3 style="margin-bottom: 15px;">Order Details</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: right;">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items_html}
+                        <tr class="total-row">
+                            <td colspan="2">Total Amount</td>
+                            <td style="text-align: right;">₹{order.get('total_amount', 0):.2f}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-bottom: 15px;">Shipping Address</h3>
+                <div class="address-box">
+                    {address_html}
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p><strong>Paridhaan Creations</strong></p>
+                <p>Traditional Handicrafts & Pooja Articles</p>
+                <p style="margin-top: 15px;">
+                    <a href="{site_url}" style="color: #8B4513;">Visit Store</a> | 
+                    <a href="{site_url}/support" style="color: #8B4513;">Contact Support</a>
+                </p>
+                <p style="font-size: 12px; color: #adb5bd; margin-top: 20px;">
+                    This email was sent regarding your order at Paridhaan Creations.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html
+
+async def send_order_email(order: dict, email_type: str = "confirmation", tracking_url: str = None):
+    """Send order notification email"""
+    email = order.get("guest_email") or order.get("user_email")
+    if not email:
+        logging.info(f"No email found for order {order.get('order_id')}. Skipping email.")
+        return
+    
+    # Generate HTML email
+    html_content = generate_order_email_html(order, email_type, tracking_url)
+    
+    # Subject lines
+    subjects = {
+        "confirmation": f"Order Confirmed! #{order.get('order_id')} - Paridhaan Creations",
+        "shipped": f"Your Order is on its Way! #{order.get('order_id')} - Paridhaan Creations",
+        "delivered": f"Order Delivered! #{order.get('order_id')} - Paridhaan Creations"
+    }
+    subject = subjects.get(email_type, f"Order Update #{order.get('order_id')}")
+    
+    # TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
+    # For now, log the email
+    logging.info(f"📧 ORDER EMAIL: To={email}, Type={email_type}, Subject={subject}")
+    logging.info(f"   Tracking URL: {tracking_url}")
+    
+    # Store email record in database for reference
+    email_record = {
+        "email_id": f"email_{uuid.uuid4().hex[:12]}",
+        "order_id": order.get("order_id"),
+        "to_email": email,
+        "subject": subject,
+        "email_type": email_type,
+        "tracking_url": tracking_url,
+        "sent_at": datetime.now(timezone.utc),
+        "status": "logged"  # Change to "sent" when actual email service is integrated
+    }
+    await db.email_logs.insert_one(email_record)
+    
+    return True
 
 async def send_email_notification(email: str, subject: str, body: str):
     """Send email notification (placeholder for actual email service)"""
