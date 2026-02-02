@@ -210,3 +210,49 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 ### Category Updates (Previous Session)
 - "Jewellery" → "Artificial Jewellery" (slug: artificial-jewellery)
 - "Perfumes" category REMOVED
+
+## Session Log (Feb 2, 2026)
+
+### Abandoned Cart Recovery System (NEW)
+- **Status:** IMPLEMENTED & TESTED
+- Features:
+  - **Admin Dashboard "Abandoned Carts" Tab:**
+    - Stats cards: Hot (1-24h), Warm (24-72h), Cold (72h+), Potential Revenue
+    - Filter by time threshold (1h, 24h, 3 days, 7 days)
+    - Abandoned carts table with customer info, items, cart value
+    - Recovery status management (Pending → Contacted → Recovered → Lost)
+    - Direct WhatsApp/Email contact buttons
+    - Cart detail modal with full item view
+  - **Cart Page Contact Capture:**
+    - Guest email/phone input before checkout
+    - "Save & Get Updates" button
+    - Data saved for abandoned cart recovery
+  - **Backend APIs:**
+    - `GET /admin/abandoned-carts` - Enriched abandoned cart list
+    - `GET /admin/abandoned-carts/stats` - Recovery statistics
+    - `PUT /admin/abandoned-carts/{cart_id}` - Update recovery status
+    - `POST /cart/save-contact` - Save guest contact info
+- **Bug Fix:** Fixed datetime timezone issue in abandoned carts endpoint
+
+### WhatsApp AI Chatbot (DISABLED)
+- **Status:** CODE READY, DISABLED
+- User requested to disable due to cost concerns
+- Files saved for future:
+  - `/app/backend/whatsapp_chatbot.py.disabled`
+  - `/app/backend/whatsapp_service.py`
+- Features (when enabled):
+  - AI-powered responses using GPT
+  - Spiritual greeting style (Radhey Radhey, Jai Shree Krishna)
+  - Product catalog integration
+  - Laddu Gopal size guide
+  - Order tracking via WhatsApp
+  - Admin conversation management
+
+### Verified Working Features (Feb 2, 2026)
+- ✅ GST calculation on checkout (IGST/CGST+SGST)
+- ✅ Shiprocket shipping tab in admin
+- ✅ Abandoned carts admin tab
+- ✅ Contact capture on cart page
+- ✅ Product catalog (12 products)
+- ✅ All 24 backend tests passed (100%)
+
