@@ -3500,6 +3500,229 @@ async def cancel_shiprocket_order(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# ============ WHATSAPP AI CHATBOT ENDPOINTS ============
+
+from whatsapp_chatbot import WhatsAppAIChatbot, format_products_list
+from whatsapp_service import WhatsAppService
+
+# Initialize chatbot with database
+whatsapp_chatbot = WhatsAppAIChatbot(db=db)
+
+WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get("WHATSAPP_WEBHOOK_VERIFY_TOKEN", "paridhaan_verify_token")
+
+@api_router.get("/webhook/whatsapp")
+async def verify_whatsapp_webhook(
+    request: Request
+):
+    """WhatsApp webhook verification endpoint (GET request from Meta)"""
+    # Get query parameters
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.verify_token")
+    challenge = request.query_params.get("hub.challenge")
+    
+    if mode == "subscribe" and token == WHATSAPP_WEBHOOK_VERIFY_TOKEN:
+        logging.info("WhatsApp webhook verified successfully")
+        return Response(content=challenge, media_type="text/plain")
+    else:
+        logging.warning(f"WhatsApp webhook verification failed. Mode: {mode}, Token match: {token == WHATSAPP_WEBHOOK_VERIFY_TOKEN}")
+        raise HTTPException(status_code=403, detail="Verification failed")
+
+@api_router.post("/webhook/whatsapp")
+async def handle_whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Handle incoming WhatsApp messages via webhook"""
+    try:
+        data = await request.json()
+        logging.info(f"WhatsApp webhook received: {data}")
+        
+        # Parse the webhook data
+        entry = data.get("entry", [{}])[0]
+        changes = entry.get("changes", [{}])[0]
+        value = changes.get("value", {})
+        
+        # Check for incoming messages
+        messages = value.get("messages", [])
+        if not messages:
+            # Might be a status update, acknowledge it
+            return {"status": "ok"}
+        
+        message = messages[0]
+        from_phone = message.get("from")
+        message_type = message.get("type")
+        message_id = message.get("id")
+        
+        # Extract message text based on type
+        message_text = ""
+        if message_type == "text":
+            message_text = message.get("text", {}).get("body", "")
+        elif message_type == "button":
+            message_text = message.get("button", {}).get("text", "")
+        elif message_type == "interactive":
+            interactive = message.get("interactive", {})
+            if interactive.get("type") == "button_reply":
+                message_text = interactive.get("button_reply", {}).get("title", "")
+            elif interactive.get("type") == "list_reply":
+                message_text = interactive.get("list_reply", {}).get("title", "")
+        
+        if not message_text:
+            logging.info(f"Unsupported message type: {message_type}")
+            return {"status": "ok"}
+        
+        # Store incoming message
+        await db.whatsapp_messages.insert_one({
+            "message_id": message_id,
+            "from_phone": from_phone,
+            "message_type": message_type,
+            "message_text": message_text,
+            "direction": "incoming",
+            "timestamp": datetime.now(timezone.utc),
+            "raw_data": message
+        })
+        
+        # Process message with AI chatbot (in background to respond quickly)
+        background_tasks.add_task(process_and_respond_whatsapp, from_phone, message_text, message_id)
+        
+        return {"status": "ok"}
+        
+    except Exception as e:
+        logging.error(f"WhatsApp webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+async def process_and_respond_whatsapp(from_phone: str, message_text: str, message_id: str):
+    """Process incoming message and send AI response"""
+    try:
+        # Get AI response from chatbot
+        result = await whatsapp_chatbot.process_message(from_phone, message_text)
+        response_text = result.get("response", "")
+        products = result.get("products", [])
+        
+        # If products were found, append product list
+        if products:
+            product_list = format_products_list(products)
+            response_text = f"{response_text}\n\n{product_list}"
+        
+        # Send response via WhatsApp
+        send_result = await WhatsAppService.send_text_message(from_phone, response_text)
+        
+        # Store outgoing message
+        await db.whatsapp_messages.insert_one({
+            "message_id": f"out_{message_id}",
+            "to_phone": from_phone,
+            "message_text": response_text,
+            "direction": "outgoing",
+            "intent": result.get("intent"),
+            "timestamp": datetime.now(timezone.utc),
+            "send_result": send_result
+        })
+        
+        logging.info(f"WhatsApp response sent to {from_phone}: {response_text[:100]}...")
+        
+    except Exception as e:
+        logging.error(f"Error processing WhatsApp message: {str(e)}")
+
+@api_router.post("/whatsapp/send")
+async def send_whatsapp_message(
+    phone: str,
+    message: str,
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None)
+):
+    """Admin endpoint to send WhatsApp message manually"""
+    await require_admin(authorization, session_token)
+    
+    result = await WhatsAppService.send_text_message(phone, message)
+    
+    # Log the message
+    await db.whatsapp_messages.insert_one({
+        "to_phone": phone,
+        "message_text": message,
+        "direction": "outgoing",
+        "sent_by": "admin",
+        "timestamp": datetime.now(timezone.utc),
+        "send_result": result
+    })
+    
+    return result
+
+@api_router.get("/whatsapp/conversations")
+async def get_whatsapp_conversations(
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+    limit: int = 50
+):
+    """Get recent WhatsApp conversations (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    # Get unique phone numbers with latest message
+    pipeline = [
+        {"$sort": {"timestamp": -1}},
+        {"$group": {
+            "_id": {"$ifNull": ["$from_phone", "$to_phone"]},
+            "last_message": {"$first": "$message_text"},
+            "last_timestamp": {"$first": "$timestamp"},
+            "direction": {"$first": "$direction"},
+            "message_count": {"$sum": 1}
+        }},
+        {"$sort": {"last_timestamp": -1}},
+        {"$limit": limit}
+    ]
+    
+    conversations = await db.whatsapp_messages.aggregate(pipeline).to_list(limit)
+    return conversations
+
+@api_router.get("/whatsapp/messages/{phone}")
+async def get_phone_messages(
+    phone: str,
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+    limit: int = 50
+):
+    """Get messages for a specific phone number (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    # Normalize phone number
+    phone = phone.replace("+", "").replace(" ", "").replace("-", "")
+    if len(phone) == 10:
+        phone = "91" + phone
+    
+    messages = await db.whatsapp_messages.find(
+        {"$or": [{"from_phone": phone}, {"to_phone": phone}]},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return messages
+
+@api_router.get("/whatsapp/stats")
+async def get_whatsapp_stats(
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None)
+):
+    """Get WhatsApp chatbot statistics (admin only)"""
+    await require_admin(authorization, session_token)
+    
+    total_messages = await db.whatsapp_messages.count_documents({})
+    incoming = await db.whatsapp_messages.count_documents({"direction": "incoming"})
+    outgoing = await db.whatsapp_messages.count_documents({"direction": "outgoing"})
+    
+    # Get intent distribution
+    intent_pipeline = [
+        {"$match": {"intent": {"$exists": True}}},
+        {"$group": {"_id": "$intent", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    intent_stats = await db.whatsapp_conversations.aggregate(intent_pipeline).to_list(20)
+    
+    # Get unique users count
+    unique_users = len(await db.whatsapp_messages.distinct("from_phone", {"direction": "incoming"}))
+    
+    return {
+        "total_messages": total_messages,
+        "incoming": incoming,
+        "outgoing": outgoing,
+        "unique_users": unique_users,
+        "intent_distribution": {item["_id"]: item["count"] for item in intent_stats if item["_id"]},
+        "is_configured": WhatsAppService.is_configured()
+    }
+
 app.include_router(api_router)
 
 app.add_middleware(
