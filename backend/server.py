@@ -1963,6 +1963,346 @@ async def get_customer_insights(authorization: Optional[str] = Header(None), ses
         "vip_customers": vip_customers
     }
 
+# ============ ABANDONED CART RECOVERY ENDPOINTS ============
+
+class AbandonedCartUpdate(BaseModel):
+    guest_email: Optional[str] = None
+    guest_phone: Optional[str] = None
+    recovery_status: Optional[str] = None  # pending, contacted, recovered, lost
+    notes: Optional[str] = None
+
+@api_router.get("/admin/abandoned-carts")
+async def get_abandoned_carts(
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+    hours_threshold: int = 1,  # Default: carts older than 1 hour
+    limit: int = 50
+):
+    """Get abandoned carts (carts with items that haven't converted to orders)"""
+    await require_admin(authorization, session_token)
+    
+    # Calculate the threshold time
+    threshold_time = datetime.now(timezone.utc) - timedelta(hours=hours_threshold)
+    
+    # Find carts that:
+    # 1. Have items
+    # 2. Were last updated before threshold
+    # 3. Don't have a corresponding paid order
+    
+    pipeline = [
+        {
+            "$match": {
+                "items": {"$exists": True, "$ne": []},
+                "updated_at": {"$lt": threshold_time}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "orders",
+                "let": {"cart_user": "$user_id", "cart_session": "$session_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$or": [
+                                        {"$eq": ["$user_id", "$$cart_user"]},
+                                        {"$eq": ["$session_id", "$$cart_session"]}
+                                    ]},
+                                    {"$eq": ["$payment_status", "paid"]}
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "as": "completed_orders"
+            }
+        },
+        {
+            "$match": {
+                "completed_orders": {"$size": 0}
+            }
+        },
+        {
+            "$sort": {"updated_at": -1}
+        },
+        {
+            "$limit": limit
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "completed_orders": 0
+            }
+        }
+    ]
+    
+    abandoned_carts = await db.cart.aggregate(pipeline).to_list(limit)
+    
+    # Enrich cart data with product details and calculate total
+    enriched_carts = []
+    for cart in abandoned_carts:
+        cart_total = 0
+        enriched_items = []
+        
+        for item in cart.get("items", []):
+            product = await db.products.find_one({"product_id": item["product_id"]}, {"_id": 0})
+            if product:
+                item_total = product.get("price", 0) * item.get("quantity", 1)
+                cart_total += item_total
+                enriched_items.append({
+                    "product_id": item["product_id"],
+                    "product_name": product.get("name", "Unknown"),
+                    "product_image": product.get("images", ["/placeholder.jpg"])[0] if product.get("images") else "/placeholder.jpg",
+                    "price": product.get("price", 0),
+                    "quantity": item.get("quantity", 1),
+                    "item_total": item_total
+                })
+        
+        # Get user email if logged in user
+        user_email = None
+        user_name = None
+        if cart.get("user_id"):
+            user = await db.users.find_one({"user_id": cart["user_id"]}, {"_id": 0})
+            if user:
+                user_email = user.get("email")
+                user_name = user.get("name")
+        
+        # Calculate time since abandoned
+        updated_at = cart.get("updated_at")
+        if isinstance(updated_at, str):
+            updated_at = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+        
+        hours_abandoned = (datetime.now(timezone.utc) - updated_at).total_seconds() / 3600
+        
+        # Determine abandonment stage
+        if hours_abandoned < 1:
+            stage = "fresh"
+            stage_label = "< 1 hour"
+        elif hours_abandoned < 24:
+            stage = "warm"
+            stage_label = f"{int(hours_abandoned)} hours"
+        elif hours_abandoned < 72:
+            stage = "cooling"
+            stage_label = f"{int(hours_abandoned / 24)} days"
+        else:
+            stage = "cold"
+            stage_label = f"{int(hours_abandoned / 24)}+ days"
+        
+        enriched_carts.append({
+            "cart_id": cart.get("cart_id"),
+            "user_id": cart.get("user_id"),
+            "session_id": cart.get("session_id"),
+            "user_email": user_email or cart.get("guest_email"),
+            "user_name": user_name,
+            "guest_phone": cart.get("guest_phone"),
+            "items": enriched_items,
+            "items_count": len(enriched_items),
+            "cart_total": cart_total,
+            "created_at": cart.get("created_at"),
+            "updated_at": cart.get("updated_at"),
+            "hours_abandoned": round(hours_abandoned, 1),
+            "stage": stage,
+            "stage_label": stage_label,
+            "recovery_status": cart.get("recovery_status", "pending"),
+            "notes": cart.get("notes")
+        })
+    
+    # Get summary stats
+    total_abandoned = len(enriched_carts)
+    total_value = sum(c["cart_total"] for c in enriched_carts)
+    
+    # Count by stage
+    stage_counts = {
+        "fresh": len([c for c in enriched_carts if c["stage"] == "fresh"]),
+        "warm": len([c for c in enriched_carts if c["stage"] == "warm"]),
+        "cooling": len([c for c in enriched_carts if c["stage"] == "cooling"]),
+        "cold": len([c for c in enriched_carts if c["stage"] == "cold"])
+    }
+    
+    return {
+        "abandoned_carts": enriched_carts,
+        "summary": {
+            "total_abandoned": total_abandoned,
+            "total_value": total_value,
+            "avg_cart_value": total_value / total_abandoned if total_abandoned > 0 else 0,
+            "by_stage": stage_counts
+        }
+    }
+
+@api_router.get("/admin/abandoned-carts/stats")
+async def get_abandoned_cart_stats(
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None)
+):
+    """Get abandoned cart statistics for dashboard"""
+    await require_admin(authorization, session_token)
+    
+    # Get counts for different time periods
+    now = datetime.now(timezone.utc)
+    
+    async def count_abandoned(hours):
+        threshold = now - timedelta(hours=hours)
+        pipeline = [
+            {
+                "$match": {
+                    "items": {"$exists": True, "$ne": []},
+                    "updated_at": {"$lt": threshold}
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "orders",
+                    "let": {"cart_user": "$user_id", "cart_session": "$session_id"},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$and": [
+                                        {"$or": [
+                                            {"$eq": ["$user_id", "$$cart_user"]},
+                                            {"$eq": ["$session_id", "$$cart_session"]}
+                                        ]},
+                                        {"$eq": ["$payment_status", "paid"]}
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "as": "completed_orders"
+                }
+            },
+            {
+                "$match": {
+                    "completed_orders": {"$size": 0}
+                }
+            },
+            {
+                "$count": "total"
+            }
+        ]
+        result = await db.cart.aggregate(pipeline).to_list(1)
+        return result[0]["total"] if result else 0
+    
+    # Get stats for different periods
+    abandoned_1h = await count_abandoned(1)
+    abandoned_24h = await count_abandoned(24)
+    abandoned_72h = await count_abandoned(72)
+    abandoned_7d = await count_abandoned(168)
+    
+    # Calculate potential revenue lost (from 24h+ abandoned)
+    pipeline = [
+        {
+            "$match": {
+                "items": {"$exists": True, "$ne": []},
+                "updated_at": {"$lt": now - timedelta(hours=24)}
+            }
+        },
+        {
+            "$lookup": {
+                "from": "orders",
+                "let": {"cart_user": "$user_id", "cart_session": "$session_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {"$or": [
+                                        {"$eq": ["$user_id", "$$cart_user"]},
+                                        {"$eq": ["$session_id", "$$cart_session"]}
+                                    ]},
+                                    {"$eq": ["$payment_status", "paid"]}
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "as": "completed_orders"
+            }
+        },
+        {
+            "$match": {
+                "completed_orders": {"$size": 0}
+            }
+        }
+    ]
+    
+    abandoned_carts = await db.cart.aggregate(pipeline).to_list(1000)
+    
+    # Calculate total potential revenue
+    potential_revenue = 0
+    for cart in abandoned_carts:
+        for item in cart.get("items", []):
+            product = await db.products.find_one({"product_id": item["product_id"]}, {"_id": 0, "price": 1})
+            if product:
+                potential_revenue += product.get("price", 0) * item.get("quantity", 1)
+    
+    return {
+        "abandoned_1h": abandoned_1h,
+        "abandoned_24h": abandoned_24h,
+        "abandoned_72h": abandoned_72h,
+        "abandoned_7d": abandoned_7d,
+        "potential_revenue_lost": potential_revenue,
+        "recovery_tip": "Contact customers within 24 hours for best recovery rates!"
+    }
+
+@api_router.put("/admin/abandoned-carts/{cart_id}")
+async def update_abandoned_cart(
+    cart_id: str,
+    update: AbandonedCartUpdate,
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None)
+):
+    """Update abandoned cart with recovery notes/status"""
+    await require_admin(authorization, session_token)
+    
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No update data provided")
+    
+    update_data["recovery_updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.cart.update_one(
+        {"cart_id": cart_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Cart not found")
+    
+    return {"message": "Cart updated successfully", "cart_id": cart_id}
+
+@api_router.post("/cart/save-contact")
+async def save_cart_contact(
+    guest_email: Optional[str] = None,
+    guest_phone: Optional[str] = None,
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+    guest_session: Optional[str] = Cookie(None)
+):
+    """Save guest contact info for abandoned cart recovery"""
+    user = await get_current_user(authorization, session_token)
+    identifier = {"user_id": user.user_id} if user else {"session_id": guest_session}
+    
+    if not guest_email and not guest_phone:
+        raise HTTPException(status_code=400, detail="Please provide email or phone")
+    
+    update_data = {}
+    if guest_email:
+        update_data["guest_email"] = guest_email
+    if guest_phone:
+        update_data["guest_phone"] = guest_phone
+    
+    result = await db.cart.update_one(
+        identifier,
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Cart not found")
+    
+    return {"message": "Contact info saved", "email": guest_email, "phone": guest_phone}
+
 # ============ SUPPORT TICKET ENDPOINTS ============
 
 @api_router.post("/support/tickets")
