@@ -38,10 +38,6 @@ export default function TrackingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchTracking();
-  }, [orderId]);
-
   const fetchTracking = async () => {
     try {
       setLoading(true);
@@ -58,6 +54,11 @@ export default function TrackingPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTracking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
