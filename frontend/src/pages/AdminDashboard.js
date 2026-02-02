@@ -92,13 +92,11 @@ export default function AdminDashboard() {
   const [availableCouriers, setAvailableCouriers] = useState([]);
   const [shippingLoading, setShippingLoading] = useState(false);
 
-  // WhatsApp AI Chatbot state
-  const [whatsappStats, setWhatsappStats] = useState(null);
-  const [whatsappConversations, setWhatsappConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [conversationMessages, setConversationMessages] = useState([]);
-  const [newWhatsappMessage, setNewWhatsappMessage] = useState("");
-  const [sendingMessage, setSendingMessage] = useState(false);
+  // Abandoned Cart Recovery state
+  const [abandonedCarts, setAbandonedCarts] = useState([]);
+  const [abandonedCartStats, setAbandonedCartStats] = useState(null);
+  const [selectedAbandonedCart, setSelectedAbandonedCart] = useState(null);
+  const [abandonedCartFilter, setAbandonedCartFilter] = useState(1); // hours threshold
 
   // Banner size recommendations
   const bannerSizeRecommendations = {
