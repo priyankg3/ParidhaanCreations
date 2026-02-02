@@ -311,7 +311,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, [activeTab, abandonedCartFilter]);
 
   const handleCreateProduct = async (e) => {
     e.preventDefault();
