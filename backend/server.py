@@ -1598,9 +1598,23 @@ async def update_order_status(order_id: str, status: str, authorization: Optiona
         {"$set": {"status": status}}
     )
     
-    # Send notification
+    # Get site URL for tracking link
+    site_url = os.environ.get("SITE_URL", "https://paridhaancreations.xyz")
+    tracking_url = f"{site_url}/track/{order_id}"
+    
+    # Send SMS notification
     if order.get("shipping_address", {}).get("phone"):
-        await send_order_notification(order_id, order["shipping_address"]["phone"], status)
+        await send_order_notification(order_id, order["shipping_address"]["phone"], status, tracking_url)
+    
+    # Send email notification with tracking link
+    email_type_map = {
+        "confirmed": "confirmation",
+        "processing": "confirmation",
+        "shipped": "shipped",
+        "delivered": "delivered"
+    }
+    if status in email_type_map:
+        await send_order_email(order, email_type_map[status], tracking_url)
     
     return {"message": "Order status updated"}
 
