@@ -92,6 +92,14 @@ export default function AdminDashboard() {
   const [availableCouriers, setAvailableCouriers] = useState([]);
   const [shippingLoading, setShippingLoading] = useState(false);
 
+  // WhatsApp AI Chatbot state
+  const [whatsappStats, setWhatsappStats] = useState(null);
+  const [whatsappConversations, setWhatsappConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversationMessages, setConversationMessages] = useState([]);
+  const [newWhatsappMessage, setNewWhatsappMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+
   // Banner size recommendations
   const bannerSizeRecommendations = {
     hero: { size: "1920 x 600", priority: "High", placement: "Homepage Hero", needsCategory: false },
