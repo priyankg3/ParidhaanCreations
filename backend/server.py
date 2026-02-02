@@ -379,6 +379,10 @@ class Cart(BaseModel):
     user_id: Optional[str] = None
     session_id: Optional[str] = None
     items: List[CartItem]
+    # For abandoned cart recovery
+    guest_email: Optional[str] = None
+    guest_phone: Optional[str] = None
+    cart_value: float = 0  # Total cart value for quick reference
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
