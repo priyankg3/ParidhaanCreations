@@ -3501,14 +3501,16 @@ async def cancel_shiprocket_order(
         raise HTTPException(status_code=400, detail=str(e))
 
 # ============ WHATSAPP AI CHATBOT ENDPOINTS ============
-
-from whatsapp_chatbot import WhatsAppAIChatbot, format_products_list
-from whatsapp_service import WhatsAppService
-
-# Initialize chatbot with database
-whatsapp_chatbot = WhatsAppAIChatbot(db=db)
+# DISABLED - Enable when business grows and AI chatbot is needed
+# from whatsapp_chatbot import WhatsAppAIChatbot, format_products_list
+# from whatsapp_service import WhatsAppService
+# whatsapp_chatbot = WhatsAppAIChatbot(db=db)
 
 WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get("WHATSAPP_WEBHOOK_VERIFY_TOKEN", "paridhaan_verify_token")
+
+# Note: WhatsApp AI Chatbot endpoints are disabled. 
+# Basic WhatsApp click-to-chat is still available on frontend.
+# To enable AI chatbot later, uncomment the imports above and endpoints below.
 
 @api_router.get("/webhook/whatsapp")
 async def verify_whatsapp_webhook(
