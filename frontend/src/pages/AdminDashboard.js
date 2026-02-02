@@ -258,13 +258,13 @@ export default function AdminDashboard() {
       } else if (activeTab === "shipping") {
         const shipmentsRes = await axios.get(`${API}/admin/shipments`, { withCredentials: true });
         setShipments(shipmentsRes.data.shipments || []);
-      } else if (activeTab === "whatsapp") {
-        const [statsRes, convsRes] = await Promise.all([
-          axios.get(`${API}/whatsapp/stats`, { withCredentials: true }),
-          axios.get(`${API}/whatsapp/conversations`, { withCredentials: true })
+      } else if (activeTab === "abandoned") {
+        const [cartsRes, statsRes] = await Promise.all([
+          axios.get(`${API}/admin/abandoned-carts?hours_threshold=${abandonedCartFilter}`, { withCredentials: true }),
+          axios.get(`${API}/admin/abandoned-carts/stats`, { withCredentials: true })
         ]);
-        setWhatsappStats(statsRes.data);
-        setWhatsappConversations(convsRes.data);
+        setAbandonedCarts(cartsRes.data.abandoned_carts || []);
+        setAbandonedCartStats(statsRes.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
