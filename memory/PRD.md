@@ -116,11 +116,19 @@ Build a full-featured e-commerce website named "Paridhaan Creations" for handicr
 - [x] ~~GST breakdown on checkout page~~ - DONE (Feb 1, 2026)
 
 ## 3rd Party Integrations
-- **Razorpay** (Payments) - TEST MODE, needs user API keys for production
-- **Emergent Google Auth** (Authentication)
-- **Twilio** (SMS) - Code exists, inactive
+- **Razorpay** (Payments) — requires User API Key
+- **Emergent-managed Google Auth** (Authentication)
+- **Twilio** (SMS Notifications) — Code exists, inactive
 - **Recharts** (Charts/Analytics)
+- **Lucide React** (Icons)
 - **Pillow** (Backend Image Compression)
+- **Shiprocket** (Shipping & Tracking) — Integrated (Feb 2, 2026)
+  - Auto order creation in Shiprocket
+  - Courier selection with rates
+  - AWB generation
+  - Label/Manifest generation
+  - Real-time tracking via webhook
+  - Customer tracking page
 
 ## Credentials
 - **Admin Access:** Google Sign-In with `priyankg3@gmail.com`
