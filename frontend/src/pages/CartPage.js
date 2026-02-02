@@ -14,6 +14,10 @@ export default function CartPage() {
   const [discount, setDiscount] = useState(0);
   const [cartBanner, setCartBanner] = useState(null);
   const [bannerLoading, setBannerLoading] = useState(true);
+  // Contact capture for abandoned cart recovery
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [contactSaved, setContactSaved] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
