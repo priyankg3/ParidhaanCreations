@@ -1892,6 +1892,277 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === "abandoned" && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-heading font-bold">🛒 Abandoned Cart Recovery</h2>
+              <div className="flex items-center space-x-4">
+                <select
+                  value={abandonedCartFilter}
+                  onChange={(e) => {
+                    setAbandonedCartFilter(Number(e.target.value));
+                    fetchData();
+                  }}
+                  className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary"
+                >
+                  <option value={1}>Last 1 hour</option>
+                  <option value={24}>Last 24 hours</option>
+                  <option value={72}>Last 3 days</option>
+                  <option value={168}>Last 7 days</option>
+                </select>
+                <button
+                  onClick={fetchData}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                >
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            {abandonedCartStats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                  <p className="text-sm text-amber-600 mb-1">🔥 Hot (1-24 hrs)</p>
+                  <p className="text-3xl font-bold text-amber-800">{abandonedCartStats.abandoned_24h - abandonedCartStats.abandoned_1h}</p>
+                  <p className="text-xs text-amber-500">Best time to recover!</p>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                  <p className="text-sm text-orange-600 mb-1">⏰ Warm (24-72 hrs)</p>
+                  <p className="text-3xl font-bold text-orange-800">{abandonedCartStats.abandoned_72h - abandonedCartStats.abandoned_24h}</p>
+                  <p className="text-xs text-orange-500">Still recoverable</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+                  <p className="text-sm text-red-600 mb-1">❄️ Cold (72+ hrs)</p>
+                  <p className="text-3xl font-bold text-red-800">{abandonedCartStats.abandoned_7d - abandonedCartStats.abandoned_72h}</p>
+                  <p className="text-xs text-red-500">Low recovery chance</p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                  <p className="text-sm text-purple-600 mb-1">💰 Potential Revenue</p>
+                  <p className="text-3xl font-bold text-purple-800">₹{abandonedCartStats.potential_revenue_lost?.toFixed(0) || 0}</p>
+                  <p className="text-xs text-purple-500">Recoverable value</p>
+                </div>
+              </div>
+            )}
+
+            {/* Recovery Tip */}
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex items-start space-x-3">
+              <span className="text-2xl">💡</span>
+              <div>
+                <p className="font-semibold text-blue-800">Recovery Tips:</p>
+                <ul className="text-sm text-blue-700 mt-1 list-disc list-inside">
+                  <li>Contact within 24 hours for 3x higher recovery rate</li>
+                  <li>WhatsApp/Call works better than email for Indian customers</li>
+                  <li>Offer 5-10% discount for cart recovery</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Abandoned Carts Table */}
+            <div className="bg-white border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Customer</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Cart Items</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Value</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Abandoned</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {abandonedCarts.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-muted-foreground">
+                        🎉 No abandoned carts found! Great job!
+                      </td>
+                    </tr>
+                  ) : (
+                    abandonedCarts.map((cart) => (
+                      <tr key={cart.cart_id} className="border-t hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="font-medium text-sm">
+                              {cart.user_name || cart.user_email || "Guest User"}
+                            </p>
+                            {cart.user_email && (
+                              <p className="text-xs text-muted-foreground">{cart.user_email}</p>
+                            )}
+                            {cart.guest_phone && (
+                              <p className="text-xs text-green-600">📱 {cart.guest_phone}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center space-x-2">
+                            {cart.items.slice(0, 2).map((item, idx) => (
+                              <img
+                                key={idx}
+                                src={item.product_image}
+                                alt={item.product_name}
+                                className="w-10 h-10 object-cover rounded border"
+                                onError={(e) => { e.target.src = 'https://placehold.co/40x40?text=No+Image'; }}
+                              />
+                            ))}
+                            {cart.items.length > 2 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{cart.items.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {cart.items_count} item(s)
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-bold text-lg text-primary">₹{cart.cart_total.toFixed(0)}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            cart.stage === 'fresh' ? 'bg-green-100 text-green-700' :
+                            cart.stage === 'warm' ? 'bg-amber-100 text-amber-700' :
+                            cart.stage === 'cooling' ? 'bg-orange-100 text-orange-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {cart.stage_label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={cart.recovery_status || 'pending'}
+                            onChange={async (e) => {
+                              try {
+                                await axios.put(`${API}/admin/abandoned-carts/${cart.cart_id}`, 
+                                  { recovery_status: e.target.value },
+                                  { withCredentials: true }
+                                );
+                                toast.success("Status updated!");
+                                fetchData();
+                              } catch (error) {
+                                toast.error("Failed to update status");
+                              }
+                            }}
+                            className="text-xs px-2 py-1 border rounded"
+                          >
+                            <option value="pending">⏳ Pending</option>
+                            <option value="contacted">📞 Contacted</option>
+                            <option value="recovered">✅ Recovered</option>
+                            <option value="lost">❌ Lost</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setSelectedAbandonedCart(cart)}
+                              className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                            >
+                              View
+                            </button>
+                            {cart.guest_phone && (
+                              <a
+                                href={`https://wa.me/91${cart.guest_phone.replace(/\D/g, '')}?text=Hi! We noticed you left some items in your cart at Paridhaan Creations. Can we help you complete your order?`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+                              >
+                                WhatsApp
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Cart Detail Modal */}
+            {selectedAbandonedCart && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-bold">Cart Details</h3>
+                      <button
+                        onClick={() => setSelectedAbandonedCart(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Customer Info */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-semibold mb-2">Customer Information</h4>
+                        <p><strong>Name:</strong> {selectedAbandonedCart.user_name || "Not provided"}</p>
+                        <p><strong>Email:</strong> {selectedAbandonedCart.user_email || "Not provided"}</p>
+                        <p><strong>Phone:</strong> {selectedAbandonedCart.guest_phone || "Not provided"}</p>
+                        <p><strong>Cart ID:</strong> {selectedAbandonedCart.cart_id}</p>
+                      </div>
+                      
+                      {/* Items */}
+                      <div>
+                        <h4 className="font-semibold mb-2">Cart Items</h4>
+                        <div className="space-y-2">
+                          {selectedAbandonedCart.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center space-x-3 p-2 border rounded">
+                              <img
+                                src={item.product_image}
+                                alt={item.product_name}
+                                className="w-16 h-16 object-cover rounded"
+                                onError={(e) => { e.target.src = 'https://placehold.co/64x64?text=No+Image'; }}
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium">{item.product_name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  ₹{item.price} × {item.quantity} = ₹{item.item_total}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Total */}
+                      <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg">
+                        <span className="font-semibold">Cart Total:</span>
+                        <span className="text-2xl font-bold text-primary">
+                          ₹{selectedAbandonedCart.cart_total.toFixed(2)}
+                        </span>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex space-x-3">
+                        {selectedAbandonedCart.user_email && (
+                          <a
+                            href={`mailto:${selectedAbandonedCart.user_email}?subject=Complete your order at Paridhaan Creations&body=Hi! We noticed you left some items in your cart. Would you like to complete your order?`}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700"
+                          >
+                            📧 Send Email
+                          </a>
+                        )}
+                        {selectedAbandonedCart.guest_phone && (
+                          <a
+                            href={`https://wa.me/91${selectedAbandonedCart.guest_phone.replace(/\D/g, '')}?text=Radhey Radhey! 🙏 Paridhaan Creations se bol rahe hain. Aapne kuch items apne cart mein daale the. Kya hum aapki koi madad kar sakte hain?`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white text-center rounded-lg hover:bg-green-700"
+                          >
+                            💬 WhatsApp
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "support" && (
           <div>
             <div className="flex justify-between items-center mb-6">
