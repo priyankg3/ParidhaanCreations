@@ -1554,6 +1554,13 @@ async def verify_razorpay_payment(razorpay_order_id: str, razorpay_payment_id: s
                 {"order_id": transaction["order_id"]},
                 {"$set": {"payment_status": "paid", "status": "confirmed"}}
             )
+            
+            # Send order confirmation email with tracking link
+            order = await db.orders.find_one({"order_id": transaction["order_id"]}, {"_id": 0})
+            if order:
+                site_url = os.environ.get("SITE_URL", "https://paridhaancreations.xyz")
+                tracking_url = f"{site_url}/track/{transaction['order_id']}"
+                await send_order_email(order, "confirmation", tracking_url)
         
         return {"status": "success", "message": "Payment verified"}
     except Exception as e:
