@@ -27,25 +27,38 @@ class ShiprocketAuth:
         if cls._token and cls._token_expiry and datetime.now(timezone.utc) < cls._token_expiry:
             return cls._token
         
-        # Get new token
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{SHIPROCKET_API_URL}/auth/login",
-                json={
-                    "email": SHIPROCKET_EMAIL,
-                    "password": SHIPROCKET_PASSWORD
-                }
-            )
+        # Get new token with retry
+        max_retries = 3
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        f"{SHIPROCKET_API_URL}/auth/login",
+                        json={
+                            "email": SHIPROCKET_EMAIL,
+                            "password": SHIPROCKET_PASSWORD
+                        }
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        cls._token = data.get("token")
+                        # Token valid for 10 days, refresh after 9 days
+                        cls._token_expiry = datetime.now(timezone.utc) + timedelta(days=9)
+                        return cls._token
+                    else:
+                        last_error = f"Status {response.status_code}: {response.text[:200]}"
+            except Exception as e:
+                last_error = str(e)
             
-            if response.status_code != 200:
-                raise Exception(f"Shiprocket authentication failed: {response.text}")
-            
-            data = response.json()
-            cls._token = data.get("token")
-            # Token valid for 10 days, refresh after 9 days
-            cls._token_expiry = datetime.now(timezone.utc) + timedelta(days=9)
-            
-            return cls._token
+            # Wait before retry
+            if attempt < max_retries - 1:
+                import asyncio
+                await asyncio.sleep(1)
+        
+        raise Exception(f"Shiprocket authentication failed after {max_retries} attempts: {last_error}")
     
     @classmethod
     async def get_headers(cls) -> dict:
