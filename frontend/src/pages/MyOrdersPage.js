@@ -130,6 +130,37 @@ export default function MyOrdersPage() {
                     </div>
                   ))}
                 </div>
+                
+                {/* Track Order Button */}
+                {['confirmed', 'processing', 'shipped', 'in_transit', 'out_for_delivery'].includes(order.status) && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <Link
+                      to={`/track/${order.order_id}`}
+                      className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 hover:bg-primary/90 transition-all"
+                      data-testid={`track-order-${order.order_id}`}
+                    >
+                      <Truck className="w-4 h-4" />
+                      Track Order
+                    </Link>
+                  </div>
+                )}
+                
+                {/* Delivered status with delivered message */}
+                {order.status === 'delivered' && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-medium">Delivered successfully!</span>
+                    </div>
+                    <Link
+                      to={`/track/${order.order_id}`}
+                      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mt-2"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      View Delivery Details
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           ))}
