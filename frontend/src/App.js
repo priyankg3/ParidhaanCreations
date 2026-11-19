@@ -34,18 +34,12 @@ const AuthCallback = lazy(() => import("@/components/AuthCallback"));
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 const WhatsAppButton = lazy(() => import("@/components/WhatsAppButton"));
 
-// Smart backend URL detection - uses current origin if env var not set or for production
-const getBackendUrl = () => {
-  const envUrl = process.env.REACT_APP_BACKEND_URL;
-  // If env URL is set and we're in development/preview, use it
-  if (envUrl && (window.location.hostname === 'localhost' || window.location.hostname.includes('preview'))) {
-    return envUrl;
-  }
-  // For production or if env URL not set, use current origin
-  return window.location.origin;
-};
-
-const BACKEND_URL = getBackendUrl();
+// Backend URL is always read from REACT_APP_BACKEND_URL. In the Emergent
+// deployment the frontend and backend shared an origin, so a fallback to
+// window.location.origin existed. On Vercel/Railway they live on different
+// hosts (e.g. paridhaancreations.xyz + api.paridhaancreations.xyz), so the
+// env var must be set at build time.
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 export const API = `${BACKEND_URL}/api`;
 
 // Loading spinner component
@@ -67,18 +61,11 @@ const SmallLoader = () => (
 
 function AppRouter() {
   const location = useLocation();
-  
-  if (location.hash?.includes('session_id=')) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <AuthCallback />
-      </Suspense>
-    );
-  }
 
-  // Hide WhatsApp button on admin pages
-  const showWhatsApp = !location.pathname.startsWith('/admin');
-  
+  // Hide WhatsApp button on admin pages and during the OAuth handoff
+  const showWhatsApp = !location.pathname.startsWith('/admin') &&
+                        location.pathname !== '/auth/google';
+
   return (
     <div className="App">
       <DynamicFavicon />
@@ -92,6 +79,7 @@ function AppRouter() {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-success" element={<OrderSuccessPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/google" element={<AuthCallback />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/wishlist" element={
