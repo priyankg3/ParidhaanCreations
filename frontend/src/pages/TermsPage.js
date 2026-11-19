@@ -38,7 +38,7 @@ export default function TermsPage() {
             <div className="text-muted-foreground leading-relaxed space-y-3">
               <p><strong>Order Acceptance:</strong> All orders are subject to acceptance and availability. We reserve the right to refuse or cancel any order for any reason.</p>
               <p><strong>Pricing:</strong> All prices are listed in Indian Rupees (₹) and are inclusive of applicable taxes unless stated otherwise.</p>
-              <p><strong>Payment Methods:</strong> We accept payments through Razorpay (UPI, Cards, Wallets) and Stripe (International Cards).</p>
+              <p><strong>Payment Methods:</strong> We accept payments through Razorpay (UPI, Cards, Wallets, Net Banking).</p>
               <p><strong>Payment Security:</strong> All payment transactions are encrypted and secure. We do not store your card details.</p>
             </div>
           </section>

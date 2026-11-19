@@ -98,15 +98,9 @@ frontend/node_modules/.cache/default-development/18.pack
 frontend/node_modules/.cache/default-development/7.pack
 -e 
 # Keep env files for deployment
--e 
 # Environment files
 *.env
 *.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+# but DO track the templates
+!.env.example
+!**/.env.example

@@ -1,20 +1,18 @@
 import React from "react";
+import { API } from "@/App";
 
 export default function LoginPage() {
   const handleGoogleLogin = () => {
-    const redirectUrl = window.location.origin + '/';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Backend starts the OAuth flow and redirects to Google. Google will
+    // redirect back to the frontend's /auth/google route with ?code=...,
+    // where AuthCallback hands the code back to the backend.
+    window.location.href = `${API}/auth/google/login`;
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <img 
-            src="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" 
-            alt="Paridhaan Creations" 
-            className="mx-auto h-24 w-auto mb-8"
-          />
           <h2 className="text-4xl font-heading font-bold mb-2" data-testid="login-title">Welcome Back</h2>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>

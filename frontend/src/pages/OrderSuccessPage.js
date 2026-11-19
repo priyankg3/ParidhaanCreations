@@ -7,48 +7,19 @@ import { getOrderWhatsAppLink } from "@/components/WhatsAppButton";
 
 export default function OrderSuccessPage() {
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session_id");
   const orderId = searchParams.get("order_id");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
-    if (sessionId) {
-      pollPaymentStatus();
-    } else if (orderId) {
+    // Stripe session polling was removed in Phase 1; Razorpay verifies
+    // server-side before this page loads, so an order_id is all we need.
+    if (orderId) {
       fetchOrder();
+    } else {
+      setLoading(false);
     }
-  }, [sessionId, orderId]);
-
-  const pollPaymentStatus = async () => {
-    let attempts = 0;
-    const maxAttempts = 5;
-
-    const poll = async () => {
-      if (attempts >= maxAttempts) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await axios.get(`${API}/payments/stripe/status/${sessionId}`);
-        if (response.data.payment_status === "paid") {
-          const orderResponse = await axios.get(`${API}/orders/${response.data.metadata.order_id}`, { withCredentials: true });
-          setOrder(orderResponse.data);
-          setLoading(false);
-        } else {
-          attempts++;
-          setTimeout(poll, 2000);
-        }
-      } catch (error) {
-        console.error("Error checking payment status:", error);
-        attempts++;
-        setTimeout(poll, 2000);
-      }
-    };
-
-    poll();
-  };
+  }, [orderId]);
 
   const fetchOrder = async () => {
     try {

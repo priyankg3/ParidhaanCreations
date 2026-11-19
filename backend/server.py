@@ -13,7 +13,14 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import razorpay
 import requests
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+import cloudinary
+import cloudinary.uploader
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+import jwt as pyjwt
+import secrets
+from urllib.parse import urlencode
+from fastapi.responses import RedirectResponse
 from twilio.rest import Client as TwilioClient
 import csv
 import io
@@ -45,6 +52,34 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 razorpay_client = razorpay.Client(auth=(os.environ['RAZORPAY_KEY_ID'], os.environ['RAZORPAY_KEY_SECRET']))
+
+# Cloudinary configuration (image hosting)
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
+    secure=True,
+)
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+# Where Google will redirect after the user signs in. The same value must be
+# listed in the Google Cloud Console → Credentials → Authorized redirect URIs.
+GOOGLE_REDIRECT_URI = os.environ.get(
+    'GOOGLE_REDIRECT_URI',
+    'https://paridhaancreations.xyz/auth/google'
+)
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://paridhaancreations.xyz')
+# Optional: domain for the session cookie, e.g. ".paridhaancreations.xyz" when
+# the frontend and backend live on different subdomains of the same apex.
+COOKIE_DOMAIN = os.environ.get('COOKIE_DOMAIN') or None
+# Admin whitelist — only these emails get is_admin=True on first login.
+ADMIN_EMAILS = {
+    e.strip().lower()
+    for e in os.environ.get('ADMIN_EMAILS', 'priyankg3@gmail.com').split(',')
+    if e.strip()
+}
 
 # Initialize Twilio client if credentials are available
 twilio_client = None
@@ -780,68 +815,133 @@ async def require_admin(authorization: Optional[str] = Header(None), session_tok
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 
-@api_router.post("/auth/session")
-async def create_session(request: Request, response: Response):
-    session_id = request.headers.get("X-Session-ID")
-    if not session_id:
-        raise HTTPException(status_code=400, detail="Missing session ID")
-    
-    try:
-        auth_response = requests.get(
-            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
-            headers={"X-Session-ID": session_id}
-        )
-        auth_response.raise_for_status()
-        auth_data = auth_response.json()
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Invalid session: {str(e)}")
-    
-    # Admin email configuration - ONLY this email gets admin access
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'priyankg3@gmail.com')
-    is_admin = auth_data["email"].lower() == ADMIN_EMAIL.lower()
-    
-    user_id = f"user_{uuid.uuid4().hex[:12]}"
-    user_doc = await db.users.find_one({"email": auth_data["email"]}, {"_id": 0})
-    
-    if user_doc:
-        user_id = user_doc["user_id"]
-        # Update user and set admin status based on email
-        await db.users.update_one(
-            {"user_id": user_id},
-            {"$set": {"name": auth_data["name"], "picture": auth_data["picture"], "is_admin": is_admin}}
-        )
-    else:
-        user_data = {
-            "user_id": user_id,
-            "email": auth_data["email"],
-            "name": auth_data["name"],
-            "picture": auth_data["picture"],
-            "is_admin": is_admin,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        await db.users.insert_one(user_data)
-    
-    session_token = auth_data["session_token"]
-    session_data = {
-        "user_id": user_id,
-        "session_token": session_token,
-        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
-        "created_at": datetime.now(timezone.utc)
-    }
-    await db.user_sessions.insert_one(session_data)
-    
-    response.set_cookie(
+# ==================== GOOGLE OAUTH 2.0 ====================
+# Standard Google OAuth flow (replaces the earlier Emergent-managed session).
+#   1. Frontend sends the user to GET /api/auth/google/login.
+#   2. That endpoint builds Google's consent URL and redirects there.
+#   3. Google redirects back to GOOGLE_REDIRECT_URI with ?code=... &state=...
+#      Frontend's /auth/google route picks up the code and POSTs it to
+#      /api/auth/google/exchange, which creates the user and sets the cookie.
+
+def _set_session_cookie(response: Response, session_token: str) -> None:
+    """Centralised cookie writer so prod/dev behaviour stays consistent."""
+    cookie_kwargs = dict(
         key="session_token",
         value=session_token,
         httponly=True,
         secure=True,
         samesite="none",
         path="/",
-        max_age=7*24*60*60
+        max_age=7 * 24 * 60 * 60,
     )
-    
-    user_response = await db.users.find_one({"user_id": user_id}, {"_id": 0})
-    return user_response
+    if COOKIE_DOMAIN:
+        cookie_kwargs["domain"] = COOKIE_DOMAIN
+    response.set_cookie(**cookie_kwargs)
+
+
+async def _upsert_user_from_google(email: str, name: str, picture: str) -> dict:
+    """Create or update the local user record for a verified Google account."""
+    is_admin = email.lower() in ADMIN_EMAILS
+    user_doc = await db.users.find_one({"email": email}, {"_id": 0})
+    if user_doc:
+        user_id = user_doc["user_id"]
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"name": name, "picture": picture, "is_admin": is_admin}},
+        )
+    else:
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        await db.users.insert_one({
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "is_admin": is_admin,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+    return await db.users.find_one({"user_id": user_id}, {"_id": 0})
+
+
+@api_router.get("/auth/google/login")
+async def google_login():
+    """Kick off the Google OAuth flow by redirecting to Google's consent screen."""
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    return RedirectResponse(
+        url=f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+    )
+
+
+class GoogleExchangeRequest(BaseModel):
+    code: str
+
+
+@api_router.post("/auth/google/exchange")
+async def google_exchange(payload: GoogleExchangeRequest, response: Response):
+    """Exchange the authorization code for tokens, verify, and set cookie."""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+
+    # 1. Trade the short-lived code for an ID token.
+    try:
+        token_resp = requests.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": payload.code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+            timeout=10,
+        )
+        token_resp.raise_for_status()
+        tokens = token_resp.json()
+    except Exception as e:
+        logging.error(f"Google token exchange failed: {e}")
+        raise HTTPException(status_code=401, detail="Google token exchange failed")
+
+    id_token_str = tokens.get("id_token")
+    if not id_token_str:
+        raise HTTPException(status_code=401, detail="No id_token returned by Google")
+
+    # 2. Cryptographically verify the ID token and extract claims.
+    try:
+        claims = google_id_token.verify_oauth2_token(
+            id_token_str, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except Exception as e:
+        logging.error(f"Google id_token verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Invalid id_token")
+
+    email = claims.get("email")
+    if not email or not claims.get("email_verified", False):
+        raise HTTPException(status_code=401, detail="Email not verified by Google")
+
+    user = await _upsert_user_from_google(
+        email=email,
+        name=claims.get("name", ""),
+        picture=claims.get("picture", ""),
+    )
+
+    # 3. Mint our own session token (opaque, stored server-side).
+    session_token = secrets.token_urlsafe(48)
+    await db.user_sessions.insert_one({
+        "user_id": user["user_id"],
+        "session_token": session_token,
+        "expires_at": datetime.now(timezone.utc) + timedelta(days=7),
+        "created_at": datetime.now(timezone.utc),
+    })
+    _set_session_cookie(response, session_token)
+    return user
 
 @api_router.get("/auth/me")
 async def get_me(authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
@@ -1428,88 +1528,9 @@ async def delete_coupon(coupon_id: str, authorization: Optional[str] = Header(No
         raise HTTPException(status_code=404, detail="Coupon not found")
     return {"message": "Coupon deleted successfully"}
 
-@api_router.post("/payments/stripe/session")
-async def create_stripe_session(request: Request, order_id: str, origin_url: str):
-    order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    host_url = origin_url
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=os.environ['STRIPE_API_KEY'], webhook_url=webhook_url)
-    
-    success_url = f"{origin_url}/order-success?session_id={{{{CHECKOUT_SESSION_ID}}}}"
-    cancel_url = f"{origin_url}/checkout"
-    
-    checkout_request = CheckoutSessionRequest(
-        amount=float(order["total_amount"]),
-        currency="usd",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={"order_id": order_id}
-    )
-    
-    session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    await db.payment_transactions.insert_one({
-        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
-        "order_id": order_id,
-        "session_id": session.session_id,
-        "amount": order["total_amount"],
-        "currency": "usd",
-        "payment_status": "pending",
-        "payment_method": "stripe",
-        "created_at": datetime.now(timezone.utc).isoformat()
-    })
-    
-    return {"url": session.url, "session_id": session.session_id}
-
-@api_router.get("/payments/stripe/status/{session_id}")
-async def get_stripe_status(session_id: str):
-    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=os.environ['STRIPE_API_KEY'], webhook_url=webhook_url)
-    
-    status = await stripe_checkout.get_checkout_status(session_id)
-    
-    transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-    if transaction and transaction["payment_status"] != "paid" and status.payment_status == "paid":
-        await db.payment_transactions.update_one(
-            {"session_id": session_id},
-            {"$set": {"payment_status": "paid"}}
-        )
-        
-        await db.orders.update_one(
-            {"order_id": status.metadata.get("order_id")},
-            {"$set": {"payment_status": "paid", "status": "confirmed"}}
-        )
-    
-    return status
-
-@api_router.post("/webhook/stripe")
-async def stripe_webhook(request: Request):
-    body = await request.body()
-    signature = request.headers.get("Stripe-Signature")
-    
-    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=os.environ['STRIPE_API_KEY'], webhook_url=webhook_url)
-    
-    try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        if webhook_response.payment_status == "paid":
-            await db.payment_transactions.update_one(
-                {"session_id": webhook_response.session_id},
-                {"$set": {"payment_status": "paid"}}
-            )
-            
-            await db.orders.update_one(
-                {"order_id": webhook_response.metadata.get("order_id")},
-                {"$set": {"payment_status": "paid", "status": "confirmed"}}
-            )
-        
-        return {"status": "success"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# NOTE: Stripe endpoints removed in Phase 1 (Emergent de-coupling).
+# Razorpay is the sole payment gateway. If international cards are ever needed
+# later, add the official `stripe` Python SDK directly — not the Emergent helper.
 
 @api_router.post("/payments/razorpay/order")
 async def create_razorpay_order(order_id: str):
@@ -2716,170 +2737,172 @@ def compress_image(content: bytes, max_width: int = 1200, max_height: int = 800,
         # Return original content if compression fails
         return content, None
 
+def _upload_to_cloudinary(content: bytes, folder: str = "paridhaan/products") -> dict:
+    """Push bytes to Cloudinary and return the raw SDK response."""
+    return cloudinary.uploader.upload(
+        content,
+        folder=folder,
+        resource_type="image",
+        # Cloudinary auto-serves optimized formats (WebP/AVIF) when the URL
+        # includes f_auto,q_auto transformations — we use its delivery URLs.
+    )
+
+
 @api_router.post("/upload/image")
 async def upload_image(
     request: Request,
-    file: UploadFile = File(...), 
-    authorization: Optional[str] = Header(None), 
-    session_token: Optional[str] = Cookie(None)
+    file: UploadFile = File(...),
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
 ):
-    """Upload an image file with automatic compression (admin only)"""
-    # Get session token from cookie if not in parameter
-    if not session_token:
-        session_token = request.cookies.get("session_token")
-    
-    # Verify admin access
-    if not session_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    # Check session in user_sessions collection
-    session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
-    if not session_doc:
-        raise HTTPException(status_code=401, detail="Invalid session - please login again")
-    
-    # Check if user is admin
-    user = await db.users.find_one({"user_id": session_doc.get("user_id")}, {"_id": 0})
-    if not user or not user.get("is_admin"):
-        raise HTTPException(status_code=403, detail="Admin access required")
-    
-    # Validate file type
+    """Upload a single image to Cloudinary (admin only).
+
+    Returns `{ success, url, public_id, ... }` where `url` is the full Cloudinary
+    delivery URL. The frontend can use that URL directly in <img src>.
+    """
+    await require_admin(authorization, session_token)
+
     if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}")
-    
-    # Read file content
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_TYPES)}",
+        )
+
     content = await file.read()
     original_size = len(content)
-    
-    # Validate file size
     if original_size > MAX_FILE_SIZE:
-        raise HTTPException(status_code=400, detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB")
-    
-    # Compress image for web performance
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)}MB",
+        )
+
+    # Pre-compress on our side first (PIL) — Cloudinary charges on bandwidth too,
+    # and this keeps the originals small. If compression fails we still upload
+    # the original bytes so the admin isn't blocked.
     compressed_content, new_ext = compress_image(content)
-    
-    # Generate unique filename with potentially new extension
-    if new_ext:
-        unique_filename = f"{uuid.uuid4().hex}.{new_ext}"
-    else:
-        ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-        unique_filename = f"{uuid.uuid4().hex}.{ext}"
-        compressed_content = content  # Use original if compression failed
-    
-    file_path = UPLOAD_DIR / unique_filename
-    
-    # Save compressed file
-    with open(file_path, "wb") as f:
-        f.write(compressed_content)
-    
-    # Return the URL that can be used to access the image
-    image_url = f"/api/uploads/{unique_filename}"
-    
+    if not new_ext:
+        compressed_content = content
+
+    try:
+        result = _upload_to_cloudinary(compressed_content)
+    except Exception as e:
+        logging.error(f"Cloudinary upload failed: {e}")
+        raise HTTPException(status_code=502, detail="Image upload failed")
+
     return {
         "success": True,
-        "filename": unique_filename,
-        "url": image_url,
+        "url": result.get("secure_url"),
+        "public_id": result.get("public_id"),
         "original_size": original_size,
         "compressed_size": len(compressed_content),
-        "compression_ratio": f"{(1-len(compressed_content)/original_size)*100:.1f}%",
-        "content_type": f"image/{new_ext}" if new_ext else file.content_type
+        "width": result.get("width"),
+        "height": result.get("height"),
+        "format": result.get("format"),
     }
 
+
 @api_router.post("/upload/images")
-async def upload_multiple_images(files: List[UploadFile] = File(...), authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
-    """Upload multiple image files with compression (admin only)"""
+async def upload_multiple_images(
+    files: List[UploadFile] = File(...),
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+):
+    """Upload up to 10 images to Cloudinary (admin only)."""
     await require_admin(authorization, session_token)
-    
+
     if len(files) > 10:
         raise HTTPException(status_code=400, detail="Maximum 10 files allowed per upload")
-    
-    uploaded = []
-    errors = []
-    
+
+    uploaded: list = []
+    errors: list = []
+
     for file in files:
         try:
             if file.content_type not in ALLOWED_IMAGE_TYPES:
                 errors.append({"filename": file.filename, "error": "Invalid file type"})
                 continue
-            
+
             content = await file.read()
             original_size = len(content)
-            
             if original_size > MAX_FILE_SIZE:
                 errors.append({"filename": file.filename, "error": "File too large"})
                 continue
-            
-            # Compress image
+
             compressed_content, new_ext = compress_image(content)
-            
-            if new_ext:
-                unique_filename = f"{uuid.uuid4().hex}.{new_ext}"
-            else:
-                ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
-                unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            if not new_ext:
                 compressed_content = content
-            
-            file_path = UPLOAD_DIR / unique_filename
-            
-            with open(file_path, "wb") as f:
-                f.write(compressed_content)
-            
+
+            result = _upload_to_cloudinary(compressed_content)
             uploaded.append({
                 "original_name": file.filename,
-                "filename": unique_filename,
-                "url": f"/api/uploads/{unique_filename}",
+                "url": result.get("secure_url"),
+                "public_id": result.get("public_id"),
                 "original_size": original_size,
-                "compressed_size": len(compressed_content)
+                "compressed_size": len(compressed_content),
             })
         except Exception as e:
             errors.append({"filename": file.filename, "error": str(e)})
-    
+
     return {
         "success": len(uploaded) > 0,
         "uploaded": uploaded,
         "errors": errors,
-        "total_uploaded": len(uploaded)
+        "total_uploaded": len(uploaded),
     }
 
+
+# Legacy local-file serving — kept so any URLs stored in the DB from the old
+# Emergent deployment (shape: /api/uploads/<filename>) still resolve. New
+# uploads go straight to Cloudinary and bypass this route entirely.
 @api_router.get("/uploads/{filename}")
 async def get_uploaded_file(filename: str):
-    """Serve uploaded files with caching headers"""
+    """Serve locally-stored files from the pre-Cloudinary era."""
     file_path = UPLOAD_DIR / filename
-    
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
-    
-    # Determine content type
+
     ext = filename.split('.')[-1].lower()
     content_types = {
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'webp': 'image/webp',
-        'gif': 'image/gif'
+        'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+        'png': 'image/png', 'webp': 'image/webp', 'gif': 'image/gif',
     }
     content_type = content_types.get(ext, 'application/octet-stream')
-    
-    # Add cache headers for better performance
     headers = {
-        "Cache-Control": "public, max-age=86400",  # 24 hours cache
-        "X-Content-Type-Options": "nosniff"
+        "Cache-Control": "public, max-age=86400",
+        "X-Content-Type-Options": "nosniff",
     }
-    
     return FileResponse(file_path, media_type=content_type, headers=headers)
 
-@api_router.delete("/upload/{filename}")
-async def delete_uploaded_file(filename: str, authorization: Optional[str] = Header(None), session_token: Optional[str] = Cookie(None)):
-    """Delete an uploaded file (admin only)"""
+
+@api_router.delete("/upload/{public_id:path}")
+async def delete_uploaded_file(
+    public_id: str,
+    authorization: Optional[str] = Header(None),
+    session_token: Optional[str] = Cookie(None),
+):
+    """Delete a Cloudinary asset by its public_id (admin only).
+
+    Falls back to deleting a local legacy file if the id looks like a bare
+    filename that exists in UPLOAD_DIR.
+    """
     await require_admin(authorization, session_token)
-    
-    file_path = UPLOAD_DIR / filename
-    
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    os.remove(file_path)
-    
-    return {"success": True, "message": "File deleted successfully"}
+
+    # Legacy local file first (so old bare filenames still work).
+    legacy_path = UPLOAD_DIR / public_id
+    if legacy_path.exists():
+        os.remove(legacy_path)
+        return {"success": True, "message": "Legacy local file deleted"}
+
+    try:
+        result = cloudinary.uploader.destroy(public_id, resource_type="image")
+    except Exception as e:
+        logging.error(f"Cloudinary delete failed: {e}")
+        raise HTTPException(status_code=502, detail="Cloudinary delete failed")
+
+    if result.get("result") not in {"ok", "not found"}:
+        raise HTTPException(status_code=500, detail=f"Unexpected Cloudinary result: {result}")
+
+    return {"success": True, "result": result.get("result")}
 
 # ==================== GST & INVOICE APIs ====================
 
@@ -3875,10 +3898,18 @@ WHATSAPP_WEBHOOK_VERIFY_TOKEN = os.environ.get("WHATSAPP_WEBHOOK_VERIFY_TOKEN", 
 
 app.include_router(api_router)
 
+_cors_env = os.environ.get('CORS_ORIGINS', '').strip()
+if not _cors_env:
+    raise RuntimeError(
+        "CORS_ORIGINS env var is required. Set it to a comma-separated list of "
+        "allowed frontend origins (e.g. 'https://paridhaancreations.xyz,"
+        "https://www.paridhaancreations.xyz,http://localhost:3000')."
+    )
+_allowed_origins = [o.strip() for o in _cors_env.split(',') if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

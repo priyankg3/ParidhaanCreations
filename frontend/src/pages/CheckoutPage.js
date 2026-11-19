@@ -331,19 +331,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleStripePayment = async (orderId) => {
-    try {
-      const originUrl = window.location.origin;
-      const response = await axios.post(`${API}/payments/stripe/session?order_id=${orderId}&origin_url=${encodeURIComponent(originUrl)}`);
-      
-      if (response.data.url) {
-        window.location.href = response.data.url;
-      }
-    } catch (error) {
-      console.error("Stripe error:", error);
-      toast.error("Payment initialization failed");
-    }
-  };
+  // Stripe handler removed in Phase 1 — Razorpay covers all India payments.
 
   if (loading) {
     return (
