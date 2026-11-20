@@ -1,5 +1,5 @@
 import React from "react";
-import { createRoot, hydrateRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import "@/index.css";
 import App from "@/App";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -33,22 +33,11 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 });
 
-// Hydration-aware mount: react-snap writes a pre-rendered HTML tree into
-// #root at build time. When the browser loads that HTML we want to attach
-// to the existing DOM (hydrateRoot) instead of wiping it and re-rendering
-// (createRoot) — otherwise the first-paint HTML flickers out before React
-// mounts and we lose the SEO/perf benefit of pre-rendering.
-const rootElement = document.getElementById("root");
-const tree = (
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
   <React.StrictMode>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
-
-if (rootElement.hasChildNodes()) {
-  hydrateRoot(rootElement, tree);
-} else {
-  createRoot(rootElement).render(tree);
-}
