@@ -46,7 +46,7 @@ class TestSitemapXML:
         static_pages = ['/', '/products', '/astro', '/terms', '/support', '/refund-policy', '/shipping-policy']
         
         for page in static_pages:
-            assert f"<loc>https://paridhaancreations.com{page}</loc>" in response.text, \
+            assert f"<loc>https://paridhaancreations.xyz{page}</loc>" in response.text, \
                 f"Sitemap should contain {page}"
         print(f"✅ Sitemap contains all {len(static_pages)} static pages")
     

@@ -1,5 +1,5 @@
 # Robots.txt for Paridhaan Creations
-# https://paridhaancreations.com
+# https://paridhaancreations.xyz
 
 User-agent: *
 Allow: /
@@ -24,8 +24,8 @@ Disallow: /wishlist
 # Crawl-delay for polite crawling
 Crawl-delay: 1
 
-# Sitemap location
-Sitemap: https://paridhaancreations.com/api/sitemap.xml
+# Sitemap location — served by the FastAPI backend on the api.* subdomain
+Sitemap: https://api.paridhaancreations.xyz/api/sitemap.xml
 
 # Google specific
 User-agent: Googlebot
