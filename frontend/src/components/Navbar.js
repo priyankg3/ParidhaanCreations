@@ -1,22 +1,62 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, User, Menu, X, Headphones } from "lucide-react";
+import { ShoppingCart, Heart, User, Menu, X, Headphones, Volume2, VolumeX } from "lucide-react";
 import { API } from "@/App";
 import axios from "axios";
 import { LanguageSwitcher, useLanguage } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { toggleMusic, getMusicState } from "@/components/BackgroundMusicPlayer";
 
-const DEFAULT_LOGO = "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png";
+const DEFAULT_LOGO = "/logo-header.png";
+const HEADER_LOGO = "/logo-header.png";
+
+// Default ticker messages if API returns empty
+const DEFAULT_TICKER = [
+  { icon: "🙏", text: "राधे राधे • Welcome to Paridhaan Creations • जय श्री कृष्णा" },
+  { icon: "✨", text: "Free Shipping on Orders Above ₹999" },
+  { icon: "🎁", text: "Use Code RADHE10 for 10% Off" }
+];
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [musicEnabled, setMusicEnabled] = useState(true);
+  const [tickerMessages, setTickerMessages] = useState(DEFAULT_TICKER);
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { settings, getLogoUrl } = useSiteSettings();
 
   const headerLogo = getLogoUrl(settings?.header_logo) || DEFAULT_LOGO;
+
+  // Fetch ticker messages from API
+  useEffect(() => {
+    const fetchTicker = async () => {
+      try {
+        const response = await axios.get(`${API}/ticker`);
+        if (response.data && response.data.length > 0) {
+          setTickerMessages(response.data);
+        }
+      } catch (error) {
+        console.log("Using default ticker messages");
+      }
+    };
+    fetchTicker();
+  }, []);
+
+  // Load music preference
+  useEffect(() => {
+    const savedEnabled = localStorage.getItem('paridhaan_music_enabled');
+    if (savedEnabled !== null) {
+      setMusicEnabled(savedEnabled === 'true');
+    }
+  }, []);
+
+  const handleMusicToggle = () => {
+    const newState = !musicEnabled;
+    setMusicEnabled(newState);
+    toggleMusic(newState);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,16 +90,28 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200" role="navigation" aria-label="Main navigation">
+    <>
+      {/* Divine Greeting Bar - Scrolling Marquee */}
+      <div className="bg-gradient-to-r from-[#8B1538] via-[#D4AF37] to-[#8B1538] text-white py-1.5 text-sm overflow-hidden">
+        <div className="animate-marquee whitespace-nowrap inline-flex">
+          {/* Repeat messages twice for seamless loop */}
+          {[...tickerMessages, ...tickerMessages].map((msg, idx) => (
+            <span key={idx} className="font-medium tracking-wide mx-8">
+              {msg.icon} {msg.text} {msg.icon}
+            </span>
+          ))}
+        </div>
+      </div>
+      
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           <Link to="/" className="flex items-center" data-testid="logo-link" aria-label="Paridhaan Creations Home">
             <img 
-              src={headerLogo} 
+              src={HEADER_LOGO} 
               alt={`${settings?.site_name || "Paridhaan Creations"} - Home`}
-              className="h-20 w-auto"
-              width="100"
-              height="80"
+              className="h-16 md:h-20 w-auto object-contain"
+              style={{ backgroundColor: 'transparent' }}
             />
           </Link>
 
@@ -76,9 +128,13 @@ export default function Navbar() {
               <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-lg" role="menu">
                 <Link to="/products?category=handicrafts" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-handicrafts" role="menuitem">{t("category.handicrafts")}</Link>
                 <Link to="/products?category=pooja" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-pooja" role="menuitem">{t("category.pooja")}</Link>
-                <Link to="/products?category=artificial-jewellery" className="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors" data-testid="dropdown-jewellery" role="menuitem">Artificial Jewellery</Link>
               </div>
             </div>
+
+            <Link to="/astro" className="text-base font-medium text-gray-700 hover:text-purple-600 transition-colors duration-300 flex items-center" data-testid="nav-astro">
+              <span className="mr-1">🔮</span>
+              Astro
+            </Link>
 
             <Link to="/support" className="text-base font-medium text-gray-700 hover:text-primary transition-colors duration-300 flex items-center" data-testid="nav-support">
               <Headphones className="w-4 h-4 mr-1" aria-hidden="true" />
@@ -113,6 +169,20 @@ export default function Navbar() {
                     {user.is_admin && (
                       <Link to="/admin" className="block px-4 py-2 text-gray-700 hover:bg-gray-50" data-testid="nav-admin" role="menuitem">Admin Dashboard</Link>
                     )}
+                    <button 
+                      onClick={handleMusicToggle} 
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50 flex items-center justify-between" 
+                      role="menuitem" 
+                      type="button"
+                      title={musicEnabled ? "Mute background music" : "Enable background music"}
+                    >
+                      <span>Background Music</span>
+                      {musicEnabled ? (
+                        <Volume2 className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <VolumeX className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
                     <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50" data-testid="logout-button" role="menuitem" type="button">
                       Logout
                     </button>
@@ -145,6 +215,7 @@ export default function Navbar() {
           <div className="px-4 py-4 space-y-3">
             <Link to="/" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Home</Link>
             <Link to="/products" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Products</Link>
+            <Link to="/astro" className="block py-2 text-purple-600 hover:text-purple-800 font-medium" onClick={() => setMobileMenuOpen(false)} role="menuitem">🔮 Astro</Link>
             <Link to="/cart" className="block py-2 text-gray-700 hover:text-primary" onClick={() => setMobileMenuOpen(false)} role="menuitem">Cart</Link>
             {user ? (
               <>
@@ -162,5 +233,6 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    </>
   );
 }

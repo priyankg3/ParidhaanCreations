@@ -4,6 +4,7 @@ import axios from "axios";
 import { API } from "@/App";
 import { Trash2, ShoppingBag, Heart } from "lucide-react";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
 
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState({ product_ids: [] });
@@ -81,6 +82,7 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen py-12">
+      <SEO title="My Wishlist" noindex={true} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="wishlist-title">My Wishlist</h1>
 

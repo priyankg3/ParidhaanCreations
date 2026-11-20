@@ -9,49 +9,49 @@ const ProductBadge = ({ type, className = "" }) => {
       label: 'NEW ARRIVAL',
       bgColor: 'bg-gradient-to-r from-green-500 to-emerald-600',
       icon: Sparkles,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'hot': {
       label: 'HOT',
       bgColor: 'bg-gradient-to-r from-red-500 to-orange-600',
       icon: Flame,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'trending': {
       label: 'TRENDING',
       bgColor: 'bg-gradient-to-r from-purple-500 to-pink-600',
       icon: TrendingUp,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'limited': {
       label: 'LIMITED',
       bgColor: 'bg-gradient-to-r from-amber-500 to-yellow-600',
       icon: Clock,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'out-of-stock': {
       label: 'OUT OF STOCK',
       bgColor: 'bg-gray-500',
       icon: XCircle,
-      position: 'top-4 right-4'
+      position: 'top-2 right-2'
     },
     'featured': {
       label: 'FEATURED',
       bgColor: 'bg-gradient-to-r from-secondary to-accent',
       icon: Star,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'bestseller': {
       label: 'BESTSELLER',
       bgColor: 'bg-gradient-to-r from-blue-500 to-indigo-600',
       icon: Award,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     },
     'sale': {
       label: 'SALE',
       bgColor: 'bg-gradient-to-r from-rose-500 to-red-600',
       icon: Tag,
-      position: 'top-4 left-4'
+      position: 'top-2 left-2'
     }
   };
 

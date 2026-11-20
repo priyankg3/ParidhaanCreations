@@ -13,12 +13,12 @@ certifi==2026.1.4
 cffi==2.0.0
 charset-normalizer==3.4.4
 click==8.3.1
+cloudinary==1.44.1
 cryptography==46.0.3
 distro==1.9.0
 dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
-cloudinary==1.44.0
 et_xmlfile==2.0.0
 fastapi==0.110.1
 fastuuid==0.14.0
@@ -127,4 +127,5 @@ watchfiles==1.1.1
 websockets==15.0.1
 yarl==1.22.0
 zipp==3.23.0
-Pillow>=10.0.0
+python-barcode==0.16.1
+qrcode==8.2

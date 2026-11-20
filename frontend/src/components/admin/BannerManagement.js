@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { 
   Plus, Trash2, Edit2, Eye, EyeOff, Upload, Monitor, Smartphone, 
   Calendar, Users, MousePointer, BarChart3, Video, Code, Image,
-  ChevronDown, ChevronUp, GripVertical, X, Check, Pause, Play
+  ChevronDown, ChevronUp, GripVertical, X, Check, Pause, Play, Sparkles
 } from "lucide-react";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -52,6 +52,7 @@ const BannerManagement = () => {
   const [filterPlacement, setFilterPlacement] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [uploading, setUploading] = useState({ desktop: false, mobile: false });
+  const [collections, setCollections] = useState([]); // NEW: Collections for linking
   const desktopFileRef = useRef(null);
   const mobileFileRef = useRef(null);
   
@@ -63,6 +64,7 @@ const BannerManagement = () => {
     link: "",
     link_type: "internal",
     cta_text: "",
+    collection_id: "", // NEW: Link to collection
     category: "",
     target_audience: "all",
     target_device: "all",
@@ -80,6 +82,7 @@ const BannerManagement = () => {
   useEffect(() => {
     fetchBanners();
     fetchStats();
+    fetchCollections(); // NEW: Fetch collections
   }, []);
 
   const fetchBanners = async () => {
@@ -97,6 +100,16 @@ const BannerManagement = () => {
       setStats(response.data);
     } catch (error) {
       console.error("Failed to fetch stats");
+    }
+  };
+
+  // NEW: Fetch collections for linking
+  const fetchCollections = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/collections`, { withCredentials: true });
+      setCollections(response.data || []);
+    } catch (error) {
+      console.error("Failed to fetch collections");
     }
   };
 
@@ -204,12 +217,13 @@ const BannerManagement = () => {
     setEditingBanner(banner);
     setFormData({
       title: banner.title || "",
-      image_desktop: banner.image_desktop || banner.image || "",
-      image_mobile: banner.image_mobile || "",
+      image_desktop: banner.image_desktop || banner.image_url || banner.image || "",
+      image_mobile: banner.image_mobile || banner.mobile_image_url || "",
       placement: banner.placement || banner.banner_type || "hero",
       link: banner.link || "",
       link_type: banner.link_type || "internal",
       cta_text: banner.cta_text || "",
+      collection_id: banner.collection_id || "", // NEW
       category: banner.category || "",
       target_audience: banner.target_audience || "all",
       target_device: banner.target_device || "all",
@@ -235,6 +249,7 @@ const BannerManagement = () => {
       link: "",
       link_type: "internal",
       cta_text: "",
+      collection_id: "", // NEW
       category: "",
       target_audience: "all",
       target_device: "all",
@@ -555,25 +570,60 @@ const BannerManagement = () => {
                 <label className="block text-sm font-medium mb-2">Link Type</label>
                 <select
                   value={formData.link_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, link_type: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, link_type: e.target.value, collection_id: e.target.value === 'collection' ? prev.collection_id : '' }))}
                   className="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="internal">Internal Page</option>
                   <option value="external">External URL</option>
                   <option value="category">Category Page</option>
                   <option value="product">Product Page</option>
+                  <option value="collection">🎉 Collection (Festival/Seasonal)</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Link URL</label>
-                <input
-                  type="text"
-                  value={formData.link}
-                  onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="/products or https://..."
-                />
-              </div>
+              
+              {/* Show Collection Selector when link_type is collection */}
+              {formData.link_type === 'collection' ? (
+                <div>
+                  <label className="block text-sm font-medium mb-2 flex items-center gap-1">
+                    <Sparkles className="w-4 h-4 text-orange-500" />
+                    Select Collection
+                  </label>
+                  <select
+                    value={formData.collection_id}
+                    onChange={(e) => {
+                      const selectedCollection = collections.find(c => c.collection_id === e.target.value);
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        collection_id: e.target.value,
+                        link: selectedCollection ? `/collection/${selectedCollection.slug}` : ''
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg bg-orange-50 border-orange-200"
+                  >
+                    <option value="">-- Select Collection --</option>
+                    {collections.map(coll => (
+                      <option key={coll.collection_id} value={coll.collection_id}>
+                        {coll.name} ({coll.collection_type})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Banner will link to selected collection page
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Link URL</label>
+                  <input
+                    type="text"
+                    value={formData.link}
+                    onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="/products or https://..."
+                  />
+                </div>
+              )}
+              
               <div>
                 <label className="block text-sm font-medium mb-2">CTA Button Text</label>
                 <input
@@ -728,9 +778,9 @@ const BannerManagement = () => {
               <div key={banner.banner_id} className="p-4 hover:bg-gray-50 flex items-center gap-4">
                 {/* Thumbnail */}
                 <div className="w-24 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                  {(banner.image_desktop || banner.image) ? (
+                  {(banner.image_desktop || banner.image_url || banner.image) ? (
                     <img 
-                      src={(banner.image_desktop || banner.image).startsWith('/api') ? `${API.replace('/api', '')}${banner.image_desktop || banner.image}` : (banner.image_desktop || banner.image)} 
+                      src={(banner.image_desktop || banner.image_url || banner.image).startsWith('/api') ? `${API.replace('/api', '')}${banner.image_desktop || banner.image_url || banner.image}` : (banner.image_desktop || banner.image_url || banner.image)} 
                       alt={banner.title}
                       className="w-full h-full object-cover"
                     />
@@ -755,6 +805,13 @@ const BannerManagement = () => {
                     }`}>
                       {banner.status || 'active'}
                     </span>
+                    {/* Collection Link Badge - NEW */}
+                    {banner.collection_id && (
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        {banner.collection_name || 'Collection'}
+                      </span>
+                    )}
                     {banner.category && (
                       <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
                         {banner.category}

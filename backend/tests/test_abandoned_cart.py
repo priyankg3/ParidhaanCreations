@@ -15,7 +15,7 @@ import os
 import time
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://pooja-creations.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://paridhaan-crafts-3.preview.emergentagent.com')
 
 # Test session for reuse
 session = requests.Session()

@@ -1,14 +1,27 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { API } from "@/App";
-import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle, Tag, Calendar, Percent, Image, X, Settings, Truck } from "lucide-react";
+import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, TrendingUp, AlertTriangle, Tag, Calendar, Percent, Image, X, Settings, Truck, Sparkles, Database, Download, RefreshCw, CheckCircle, Clock, Play, Video } from "lucide-react";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import BannerManagement from "../components/admin/BannerManagement";
+import MusicManagement from "../components/admin/MusicManagement";
+import InstagramManagement from "../components/admin/InstagramManagement";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("analytics");
-  const [analytics, setAnalytics] = useState(null);
+  const [analytics, setAnalytics] = useState({
+    total_orders: 0,
+    total_revenue: 0,
+    total_products: 0,
+    total_users: 0,
+    order_statuses: {},
+    payment_statuses: {},
+    monthly_revenue: [],
+    category_breakdown: [],
+    recent_orders: [],
+    low_stock_products: []
+  });
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -26,7 +39,13 @@ export default function AdminDashboard() {
   const [categoryData, setCategoryData] = useState([]);
   const [showProductForm, setShowProductForm] = useState(false);
   const [showBulkUpdate, setShowBulkUpdate] = useState(false);
-  const [customerInsights, setCustomerInsights] = useState(null);
+  const [customerInsights, setCustomerInsights] = useState({
+    repeat_rate: 0,
+    avg_order_value: 0,
+    top_customers: [],
+    top_categories: {},
+    vip_customers: []
+  });
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [showBannerForm, setShowBannerForm] = useState(false);
   const [showCouponForm, setShowCouponForm] = useState(false);
@@ -34,11 +53,19 @@ export default function AdminDashboard() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   
+  // Pagination states
+  const [productPage, setProductPage] = useState(1);
+  const [lowStockPage, setLowStockPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 10;
+  const LOW_STOCK_PER_PAGE = 5;
+  
   const [productForm, setProductForm] = useState({
     name: "",
     description: "",
     price: "",
+    mrp: "",  // Original price (compare_at_price) for discount display
     category: "",
+    subcategory: "",  // Sub-category slug
     images: [""],
     stock: "",
     featured: false,
@@ -60,7 +87,9 @@ export default function AdminDashboard() {
     laddu_gopal_sizes: [],  // ["0", "1", "2"] etc.
     // GST fields
     gst_rate: "",
-    hsn_code: ""
+    hsn_code: "",
+    // Color variants
+    variants: []  // [{color_name, color_code, images[], stock, price, mrp}]
   });
 
   const ladduGopalSizeOptions = ["0", "1", "2", "3", "4", "5", "6", "6+"];
@@ -69,8 +98,10 @@ export default function AdminDashboard() {
     name: "",
     slug: "",
     description: "",
-    image: ""
+    image: "",
+    parent_id: null
   });
+  const [editingCategory, setEditingCategory] = useState(null);
 
   const [bannerForm, setBannerForm] = useState({
     title: "",
@@ -86,6 +117,17 @@ export default function AdminDashboard() {
   const [bannerUploading, setBannerUploading] = useState(false);
   const bannerFileInputRef = useRef(null);
 
+  // Ticker Messages state
+  const [tickerMessages, setTickerMessages] = useState([]);
+  const [showTickerForm, setShowTickerForm] = useState(false);
+  const [tickerForm, setTickerForm] = useState({
+    text: "",
+    icon: "✨",
+    is_active: true,
+    order: 0
+  });
+  const [editingTicker, setEditingTicker] = useState(null);
+
   // Shipping state
   const [shipments, setShipments] = useState([]);
   const [selectedOrderForShipping, setSelectedOrderForShipping] = useState(null);
@@ -94,9 +136,55 @@ export default function AdminDashboard() {
 
   // Abandoned Cart Recovery state
   const [abandonedCarts, setAbandonedCarts] = useState([]);
-  const [abandonedCartStats, setAbandonedCartStats] = useState(null);
+  const [abandonedCartStats, setAbandonedCartStats] = useState({
+    total: 0,
+    total_value: 0,
+    recovered: 0
+  });
   const [selectedAbandonedCart, setSelectedAbandonedCart] = useState(null);
   const [abandonedCartFilter, setAbandonedCartFilter] = useState(1); // hours threshold
+
+  // Collections state
+  const [collections, setCollections] = useState([]);
+  const [showCollectionForm, setShowCollectionForm] = useState(false);
+  const [editingCollection, setEditingCollection] = useState(null);
+  const [collectionForm, setCollectionForm] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    image: "",
+    collection_type: "festival",
+    start_date: "",
+    end_date: "",
+    product_ids: [],
+    is_active: true,
+    is_featured: false,
+    position: 0,
+    badge_text: "",
+    badge_color: "#ef4444"
+  });
+  const [collectionProductSearch, setCollectionProductSearch] = useState("");
+  const [collectionImageUploading, setCollectionImageUploading] = useState(false);
+  const collectionImageRef = useRef(null);
+
+  // Instagram Videos state
+  const [instagramVideos, setInstagramVideos] = useState([]);
+  const [showInstagramForm, setShowInstagramForm] = useState(false);
+  const [instagramUploading, setInstagramUploading] = useState(false);
+  const [instagramForm, setInstagramForm] = useState({
+    thumbnail_url: "",
+    video_url: "",
+    instagram_url: "",
+    caption: ""
+  });
+  const instagramFileRef = useRef(null);
+
+  // Background Music state
+  const [musicTracks, setMusicTracks] = useState([]);
+  const [showMusicForm, setShowMusicForm] = useState(false);
+  const [musicUploading, setMusicUploading] = useState(false);
+  const [musicForm, setMusicForm] = useState({ title: "", artist: "" });
+  const musicFileRef = useRef(null);
 
   // Banner size recommendations
   const bannerSizeRecommendations = {
@@ -210,17 +298,25 @@ export default function AdminDashboard() {
         const response = await axios.get(`${API}/admin/customer-insights`, { withCredentials: true });
         setCustomerInsights(response.data);
       } else if (activeTab === "products") {
-        const response = await axios.get(`${API}/products`);
-        setProducts(response.data);
+        // Fetch both products and hierarchical categories (with subcategories nested)
+        const [productsRes, categoriesRes] = await Promise.all([
+          axios.get(`${API}/products`),
+          axios.get(`${API}/categories`)
+        ]);
+        setProducts(productsRes.data);
+        setCategories(categoriesRes.data);
       } else if (activeTab === "categories") {
-        const response = await axios.get(`${API}/categories`);
+        const response = await axios.get(`${API}/categories/all`);
         setCategories(response.data);
       } else if (activeTab === "orders") {
         const response = await axios.get(`${API}/admin/orders`, { withCredentials: true });
         setOrders(response.data);
       } else if (activeTab === "banners") {
-        const response = await axios.get(`${API}/banners/all`, { withCredentials: true });
+        const response = await axios.get(`${API}/admin/banners`, { withCredentials: true });
         setBanners(response.data);
+      } else if (activeTab === "ticker") {
+        const response = await axios.get(`${API}/ticker/all`, { withCredentials: true });
+        setTickerMessages(response.data);
       } else if (activeTab === "coupons") {
         const response = await axios.get(`${API}/coupons`, { withCredentials: true });
         setCoupons(response.data);
@@ -265,6 +361,18 @@ export default function AdminDashboard() {
         ]);
         setAbandonedCarts(cartsRes.data.abandoned_carts || []);
         setAbandonedCartStats(statsRes.data);
+      } else if (activeTab === "collections") {
+        const collectionsRes = await axios.get(`${API}/admin/collections`, { withCredentials: true });
+        setCollections(collectionsRes.data || []);
+        // Also fetch products for the product selector
+        const productsRes = await axios.get(`${API}/admin/products`, { withCredentials: true });
+        setProducts(productsRes.data || []);
+      } else if (activeTab === "instagram") {
+        const videosRes = await axios.get(`${API}/instagram-videos`, { withCredentials: true });
+        setInstagramVideos(videosRes.data || []);
+      } else if (activeTab === "music") {
+        const musicRes = await axios.get(`${API}/admin/background-music`, { withCredentials: true });
+        setMusicTracks(musicRes.data || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -319,10 +427,12 @@ export default function AdminDashboard() {
       const productData = {
         name: productForm.name,
         description: productForm.description,
-        price: parseFloat(productForm.price),
+        price: productForm.price ? parseFloat(productForm.price) : null,
+        mrp: productForm.mrp ? parseFloat(productForm.mrp) : null,  // Original price for discount
         category: productForm.category,
+        subcategory: productForm.subcategory || null,  // Sub-category slug
         images: productForm.images.filter(url => url),
-        stock: parseInt(productForm.stock),
+        stock: productForm.stock ? parseInt(productForm.stock) : null,
         featured: productForm.featured,
         badge: productForm.badge || null,  // Product badge type
         // Advanced attributes
@@ -342,10 +452,26 @@ export default function AdminDashboard() {
         laddu_gopal_sizes: productForm.laddu_gopal_sizes.length > 0 ? productForm.laddu_gopal_sizes : null,
         // GST fields
         gst_rate: productForm.gst_rate ? parseFloat(productForm.gst_rate) : null,
-        hsn_code: productForm.hsn_code || null
+        hsn_code: productForm.hsn_code || null,
+        // Color variants with size options
+        variants: productForm.variants.length > 0 ? productForm.variants.map(v => ({
+          color_name: v.color_name,
+          color_code: v.color_code,
+          images: (v.images || []).filter(u => u),
+          // Size options for this color with dimensions
+          sizes: (v.sizes || []).length > 0 ? v.sizes.map(s => ({
+            size: s.size,
+            price: s.price ? parseFloat(s.price) : null,
+            mrp: s.mrp ? parseFloat(s.mrp) : null,
+            stock: parseInt(s.stock) || 0,
+            length: s.length ? parseFloat(s.length) : null,
+            breadth: s.breadth ? parseFloat(s.breadth) : null,
+            height: s.height ? parseFloat(s.height) : null
+          })) : null
+        })) : null
       };
       
-      await axios.post(`${API}/products`, productData, { withCredentials: true });
+      await axios.post(`${API}/admin/products`, productData, { withCredentials: true });
       toast.success("Product created successfully");
       setShowProductForm(false);
       resetProductForm();
@@ -360,29 +486,52 @@ export default function AdminDashboard() {
     if (!files || files.length === 0) return;
 
     setUploading(true);
-    const formData = new FormData();
-    
-    for (let i = 0; i < files.length; i++) {
-      formData.append('files', files[i]);
-    }
+    const uploadedUrls = [];
+    const errors = [];
 
     try {
-      const response = await axios.post(`${API}/upload/images`, formData, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      if (response.data.uploaded && response.data.uploaded.length > 0) {
-        const newUrls = response.data.uploaded.map(img => `${API}${img.url.replace('/api', '')}`);
-        setProductForm(prev => ({
-          ...prev,
-          images: [...prev.images.filter(url => url !== ""), ...newUrls]
-        }));
-        toast.success(`${response.data.uploaded.length} image(s) uploaded`);
+      toast.info(`Uploading ${files.length} image(s) to Cloudinary cloud...`);
+      
+      // Upload each file to Cloudinary (permanent cloud storage)
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        
+        try {
+          // Try Cloudinary first (permanent), fallback to MongoDB storage
+          let response;
+          try {
+            response = await axios.post(`${API}/cloudinary/upload?folder=paridhaan/products`, formData, {
+              withCredentials: true,
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+          } catch (cloudErr) {
+            // Fallback to MongoDB storage if Cloudinary not configured
+            console.log("Cloudinary not available, using MongoDB storage");
+            response = await axios.post(`${API}/images/upload?category=product`, formData, {
+              withCredentials: true,
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+          }
+          
+          if (response.data.url) {
+            uploadedUrls.push(response.data.url);
+          }
+        } catch (err) {
+          errors.push({ filename: files[i].name, error: err.response?.data?.detail || 'Upload failed' });
+        }
       }
 
-      if (response.data.errors && response.data.errors.length > 0) {
-        response.data.errors.forEach(err => toast.error(`${err.filename}: ${err.error}`));
+      if (uploadedUrls.length > 0) {
+        setProductForm(prev => ({
+          ...prev,
+          images: [...prev.images.filter(url => url !== ""), ...uploadedUrls]
+        }));
+        toast.success(`☁️ ${uploadedUrls.length} image(s) saved to cloud - permanent URLs!`);
+      }
+
+      if (errors.length > 0) {
+        errors.forEach(err => toast.error(`${err.filename}: ${err.error}`));
       }
     } catch (error) {
       toast.error("Failed to upload images");
@@ -399,11 +548,48 @@ export default function AdminDashboard() {
     }));
   };
 
+  // Upload images for a specific color variant
+  const handleVariantImageUpload = async (files, variantIndex, isEdit = false) => {
+    if (!files || files.length === 0) return;
+    const uploadedUrls = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        let response;
+        try {
+          response = await axios.post(`${API}/cloudinary/upload?folder=paridhaan/products`, formData, {
+            withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        } catch (cloudErr) {
+          response = await axios.post(`${API}/images/upload?category=product`, formData, {
+            withCredentials: true, headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
+        if (response.data.url) uploadedUrls.push(response.data.url);
+      }
+      if (uploadedUrls.length > 0) {
+        if (isEdit) {
+          const v = [...(editingProduct.variants || [])];
+          v[variantIndex] = { ...v[variantIndex], images: [...(v[variantIndex].images || []).filter(u => u), ...uploadedUrls] };
+          setEditingProduct({ ...editingProduct, variants: v });
+        } else {
+          const v = [...productForm.variants];
+          v[variantIndex] = { ...v[variantIndex], images: [...(v[variantIndex].images || []).filter(u => u), ...uploadedUrls] };
+          setProductForm({ ...productForm, variants: v });
+        }
+        toast.success(`${uploadedUrls.length} variant image(s) uploaded!`);
+      }
+    } catch (error) {
+      toast.error("Failed to upload variant image");
+    }
+  };
+
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     
     try {
-      await axios.delete(`${API}/products/${productId}`, { withCredentials: true });
+      await axios.delete(`${API}/admin/products/${productId}`, { withCredentials: true });
       toast.success("Product deleted");
       fetchData();
     } catch (error) {
@@ -424,29 +610,54 @@ export default function AdminDashboard() {
     if (!editingProduct) return;
     
     try {
+      // Ensure images is always an array
+      const productImages = Array.isArray(editingProduct.images) ? editingProduct.images : [];
+      
       const updateData = {
         name: editingProduct.name,
         description: editingProduct.description,
         price: parseFloat(editingProduct.price),
+        mrp: editingProduct.mrp ? parseFloat(editingProduct.mrp) : null,
         category: editingProduct.category,
-        images: editingProduct.images,
+        subcategory: editingProduct.subcategory || null,
+        images: productImages,
         stock: parseInt(editingProduct.stock),
         featured: editingProduct.featured,
         badge: editingProduct.badge || null,
         laddu_gopal_sizes: editingProduct.laddu_gopal_sizes?.length > 0 ? editingProduct.laddu_gopal_sizes : null,
         material: editingProduct.material || null,
         color: editingProduct.color || null,
-        sku: editingProduct.sku || null
+        sku: editingProduct.sku || null,
+        // GST fields
+        gst_rate: editingProduct.gst_rate ? parseFloat(editingProduct.gst_rate) : null,
+        hsn_code: editingProduct.hsn_code || null,
+        // Color variants with size options
+        variants: (editingProduct.variants || []).length > 0 ? editingProduct.variants.map(v => ({
+          color_name: v.color_name,
+          color_code: v.color_code,
+          images: (v.images || []).filter(u => u),
+          sizes: (v.sizes || []).length > 0 ? v.sizes.map(s => ({
+            size: s.size,
+            price: s.price ? parseFloat(s.price) : null,
+            mrp: s.mrp ? parseFloat(s.mrp) : null,
+            stock: parseInt(s.stock) || 0,
+            length: s.length ? parseFloat(s.length) : null,
+            breadth: s.breadth ? parseFloat(s.breadth) : null,
+            height: s.height ? parseFloat(s.height) : null
+          })) : null
+        })) : null
       };
       
-      await axios.put(`${API}/products/${editingProduct.product_id}`, updateData, { withCredentials: true });
-      toast.success("Product updated successfully!");
+      console.log("Updating product with data:", updateData);
+      
+      await axios.put(`${API}/admin/products/${editingProduct.product_id}`, updateData, { withCredentials: true });
+      toast.success(`Product updated! ${productImages.length} image(s) saved.`);
       setShowEditProductModal(false);
       setEditingProduct(null);
       fetchData();
     } catch (error) {
       toast.error("Failed to update product");
-      console.error(error);
+      console.error("Update error:", error);
     }
   };
 
@@ -461,6 +672,52 @@ export default function AdminDashboard() {
     } catch (error) {
       toast.error("Failed to create category");
     }
+  };
+
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory) {
+      toast.error("No category selected for editing");
+      return;
+    }
+    try {
+      await axios.put(`${API}/categories/${editingCategory.category_id}`, categoryForm, { withCredentials: true });
+      toast.success("Category updated successfully");
+      setEditingCategory(null);
+      setShowCategoryForm(false);
+      resetCategoryForm();
+      fetchData();
+    } catch (error) {
+      console.error("Update error:", error);
+      toast.error(error.response?.data?.detail || "Failed to update category");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!window.confirm("Are you sure you want to delete this category? This cannot be undone.")) return;
+    try {
+      await axios.delete(`${API}/categories/${categoryId}`, { withCredentials: true });
+      toast.success("Category deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete category");
+    }
+  };
+
+  const startEditCategory = (category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      name: category.name,
+      slug: category.slug,
+      description: category.description || "",
+      image: category.image || "",
+      parent_id: category.parent_id || null
+    });
+    setShowCategoryForm(true);
+    // Scroll to form
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleBannerImageUpload = async (e) => {
@@ -483,16 +740,41 @@ export default function AdminDashboard() {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${API}/upload/image`, formData, {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      toast.info("Uploading banner to Cloudinary cloud...");
+      
+      // Try Cloudinary first, fallback to MongoDB
+      let response;
+      try {
+        response = await axios.post(`${API}/cloudinary/upload?folder=paridhaan/banners`, formData, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } catch (cloudErr) {
+        console.log("Cloudinary error:", cloudErr.response?.data);
+        if (cloudErr.response?.status === 401) {
+          toast.error("Session expired. Please logout and login again.");
+          return;
+        }
+        console.log("Cloudinary not available, using MongoDB storage");
+        response = await axios.post(`${API}/images/upload?category=banner`, formData, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (response.data.url && !response.data.url.startsWith('http')) {
+          response.data.url = `${API}${response.data.url.replace('/api', '')}`;
+        }
+      }
+      
       // Use functional update to ensure we get the latest state
       setBannerForm(prev => ({ ...prev, image: response.data.url }));
-      toast.success("Image uploaded successfully");
+      toast.success("☁️ Banner saved to cloud - permanent URL!");
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error("Failed to upload image");
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please logout and login again.");
+      } else {
+        toast.error(error.response?.data?.detail || "Failed to upload image");
+      }
     } finally {
       setBannerUploading(false);
     }
@@ -521,8 +803,13 @@ export default function AdminDashboard() {
     
     try {
       const bannerData = {
-        ...bannerForm,
-        category: bannerForm.banner_type === 'hero' ? null : (bannerForm.category || null),
+        title: bannerForm.title || null,
+        image_url: bannerForm.image,  // Backend expects image_url
+        link_url: bannerForm.link || null,
+        position: bannerForm.position || 0,
+        is_active: bannerForm.active,
+        link_type: bannerForm.link ? "url" : "none",
+        link_category: bannerForm.banner_type !== 'hero' ? (bannerForm.category || null) : null,
         start_date: bannerForm.start_date ? new Date(bannerForm.start_date).toISOString() : null,
         end_date: bannerForm.end_date ? new Date(bannerForm.end_date).toISOString() : null
       };
@@ -532,7 +819,8 @@ export default function AdminDashboard() {
       resetBannerForm();
       fetchData();
     } catch (error) {
-      toast.error("Failed to create banner");
+      console.error("Banner creation error:", error.response?.data);
+      toast.error(error.response?.data?.detail || "Failed to create banner");
     }
   };
 
@@ -673,12 +961,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDownloadCombinedPDF = async (orderId) => {
+    try {
+      // Download combined Shipping Label + Tax Invoice PDF
+      window.open(`${API}/orders/${orderId}/combined-pdf`, '_blank');
+      toast.success("Combined PDF downloading!");
+    } catch (error) {
+      toast.error("Failed to download: " + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const resetProductForm = () => {
     setProductForm({
       name: "",
       description: "",
       price: "",
+      mrp: "",
       category: "",
+      subcategory: "",
       images: [""],
       stock: "",
       featured: false,
@@ -697,7 +997,8 @@ export default function AdminDashboard() {
       tags: "",
       laddu_gopal_sizes: [],
       gst_rate: "",
-      hsn_code: ""
+      hsn_code: "",
+      variants: []
     });
   };
 
@@ -706,7 +1007,8 @@ export default function AdminDashboard() {
       name: "",
       slug: "",
       description: "",
-      image: ""
+      image: "",
+      parent_id: null
     });
   };
 
@@ -883,7 +1185,7 @@ export default function AdminDashboard() {
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="admin-title">Admin Dashboard</h1>
 
         <div className="flex space-x-4 mb-8 overflow-x-auto">
-          {["analytics", "insights", "products", "categories", "orders", "shipping", "abandoned", "support", "banners", "coupons", "gst", "settings"].map((tab) => (
+          {["analytics", "insights", "products", "categories", "collections", "orders", "shipping", "abandoned", "support", "instagram", "music", "banners", "ticker", "coupons", "gst", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -894,7 +1196,7 @@ export default function AdminDashboard() {
               }`}
               data-testid={`tab-${tab}`}
             >
-              {tab === "gst" ? "GST & Invoice" : tab === "abandoned" ? "Abandoned Carts" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "gst" ? "GST & Invoice" : tab === "abandoned" ? "Abandoned Carts" : tab === "instagram" ? "Instagram" : tab === "music" ? "🎵 Music" : tab === "ticker" ? "📢 Ticker" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -906,7 +1208,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <ShoppingCart className="w-10 h-10 text-primary" />
                 </div>
-                <p className="text-3xl font-bold mb-2">{analytics.total_orders}</p>
+                <p className="text-3xl font-bold mb-2">{analytics?.total_orders || 0}</p>
                 <p className="text-muted-foreground">Total Orders</p>
               </div>
 
@@ -914,7 +1216,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <DollarSign className="w-10 h-10 text-accent" />
                 </div>
-                <p className="text-3xl font-bold mb-2">₹{analytics.total_revenue.toFixed(2)}</p>
+                <p className="text-3xl font-bold mb-2">₹{(analytics?.total_revenue || 0).toFixed(2)}</p>
                 <p className="text-muted-foreground">Total Revenue</p>
               </div>
 
@@ -922,7 +1224,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <Package className="w-10 h-10 text-secondary" />
                 </div>
-                <p className="text-3xl font-bold mb-2">{analytics.total_products}</p>
+                <p className="text-3xl font-bold mb-2">{analytics?.total_products || 0}</p>
                 <p className="text-muted-foreground">Total Products</p>
               </div>
 
@@ -930,19 +1232,23 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <Users className="w-10 h-10 text-primary" />
                 </div>
-                <p className="text-3xl font-bold mb-2">{analytics.total_users}</p>
+                <p className="text-3xl font-bold mb-2">{analytics?.total_users || 0}</p>
                 <p className="text-muted-foreground">Total Users</p>
               </div>
             </div>
 
             {lowStockProducts.length > 0 && (
               <div className="bg-amber-50 border border-amber-200 p-6">
-                <div className="flex items-center space-x-3 mb-4">
-                  <AlertTriangle className="w-6 h-6 text-amber-600" />
-                  <h3 className="text-xl font-heading font-bold text-amber-900">Low Stock Alert</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <AlertTriangle className="w-6 h-6 text-amber-600" />
+                    <h3 className="text-xl font-heading font-bold text-amber-900">Low Stock Alert ({lowStockProducts.length} items)</h3>
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  {lowStockProducts.map(product => (
+                  {lowStockProducts
+                    .slice((lowStockPage - 1) * LOW_STOCK_PER_PAGE, lowStockPage * LOW_STOCK_PER_PAGE)
+                    .map(product => (
                     <div key={product.product_id} className="flex items-center justify-between py-2 border-b border-amber-200 last:border-0">
                       <div className="flex items-center space-x-3">
                         <img src={product.images[0]} alt={product.name} className="w-12 h-12 object-cover" />
@@ -958,6 +1264,34 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                {/* Low Stock Pagination */}
+                {lowStockProducts.length > LOW_STOCK_PER_PAGE && (
+                  <div className="flex justify-center items-center mt-4 space-x-2">
+                    <button
+                      onClick={() => setLowStockPage(p => Math.max(1, p - 1))}
+                      disabled={lowStockPage === 1}
+                      className="px-2 py-1 text-sm border border-amber-300 rounded hover:bg-amber-100 disabled:opacity-50"
+                    >
+                      ←
+                    </button>
+                    {[...Array(Math.ceil(lowStockProducts.length / LOW_STOCK_PER_PAGE))].map((_, idx) => (
+                      <button
+                        key={idx + 1}
+                        onClick={() => setLowStockPage(idx + 1)}
+                        className={`w-7 h-7 text-sm rounded ${lowStockPage === idx + 1 ? 'bg-amber-500 text-white' : 'border border-amber-300 hover:bg-amber-100'}`}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setLowStockPage(p => Math.min(Math.ceil(lowStockProducts.length / LOW_STOCK_PER_PAGE), p + 1))}
+                      disabled={lowStockPage >= Math.ceil(lowStockProducts.length / LOW_STOCK_PER_PAGE)}
+                      className="px-2 py-1 text-sm border border-amber-300 rounded hover:bg-amber-100 disabled:opacity-50"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1024,7 +1358,7 @@ export default function AdminDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-3 border-b border-border">
                     <span className="text-muted-foreground">Average Order Value</span>
-                    <span className="text-xl font-bold">₹{analytics.total_orders > 0 ? (analytics.total_revenue / analytics.total_orders).toFixed(2) : 0}</span>
+                    <span className="text-xl font-bold">₹{analytics?.total_orders > 0 ? ((analytics?.total_revenue || 0) / analytics.total_orders).toFixed(2) : 0}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-border">
                     <span className="text-muted-foreground">Low Stock Items</span>
@@ -1032,7 +1366,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-border">
                     <span className="text-muted-foreground">Products per Category</span>
-                    <span className="text-xl font-bold">{analytics.total_products / categoryData.length || 0}</span>
+                    <span className="text-xl font-bold">{(analytics?.total_products || 0) / (categoryData?.length || 1)}</span>
                   </div>
                   <div className="flex justify-between items-center py-3">
                     <span className="text-muted-foreground">Total Categories</span>
@@ -1048,22 +1382,22 @@ export default function AdminDashboard() {
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white border border-border/40 p-6">
-                <p className="text-3xl font-bold mb-2">{customerInsights.total_customers}</p>
+                <p className="text-3xl font-bold mb-2">{customerInsights?.total_customers || 0}</p>
                 <p className="text-muted-foreground">Total Customers</p>
               </div>
 
               <div className="bg-white border border-border/40 p-6">
-                <p className="text-3xl font-bold mb-2">{customerInsights.repeat_customers}</p>
+                <p className="text-3xl font-bold mb-2">{customerInsights?.repeat_customers || 0}</p>
                 <p className="text-muted-foreground">Repeat Customers</p>
               </div>
 
               <div className="bg-white border border-border/40 p-6">
-                <p className="text-3xl font-bold mb-2">{customerInsights.repeat_rate.toFixed(1)}%</p>
+                <p className="text-3xl font-bold mb-2">{(customerInsights?.repeat_rate || 0).toFixed(1)}%</p>
                 <p className="text-muted-foreground">Repeat Rate</p>
               </div>
 
               <div className="bg-white border border-border/40 p-6">
-                <p className="text-3xl font-bold mb-2">₹{customerInsights.avg_order_value.toFixed(2)}</p>
+                <p className="text-3xl font-bold mb-2">₹{(customerInsights?.avg_order_value || 0).toFixed(2)}</p>
                 <p className="text-muted-foreground">Avg Order Value</p>
               </div>
             </div>
@@ -1072,7 +1406,7 @@ export default function AdminDashboard() {
               <div className="bg-white border border-border/40 p-6">
                 <h3 className="text-xl font-heading font-bold mb-6">Top Categories</h3>
                 <div className="space-y-3">
-                  {Object.entries(customerInsights.top_categories).map(([category, count]) => (
+                  {Object.entries(customerInsights?.top_categories || {}).map(([category, count]) => (
                     <div key={category} className="flex items-center justify-between">
                       <span className="capitalize font-medium">{category}</span>
                       <span className="text-lg font-bold text-primary">{count} sold</span>
@@ -1084,13 +1418,13 @@ export default function AdminDashboard() {
               <div className="bg-white border border-border/40 p-6">
                 <h3 className="text-xl font-heading font-bold mb-6">VIP Customers</h3>
                 <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {customerInsights.vip_customers.map((customer, index) => (
+                  {(customerInsights?.vip_customers || []).map((customer, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-background-paper">
                       <div>
-                        <p className="font-medium text-sm">{customer.customer_id.substring(0, 20)}...</p>
-                        <p className="text-xs text-muted-foreground">{customer.orders} orders</p>
+                        <p className="font-medium text-sm">{customer.name || customer.email || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{customer.total_orders || 0} orders</p>
                       </div>
-                      <p className="text-lg font-bold text-accent">₹{customer.total_spent.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-accent">₹{(customer.total_spent || 0).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
@@ -1100,7 +1434,7 @@ export default function AdminDashboard() {
             <div className="bg-white border border-border/40 p-6">
               <h3 className="text-xl font-heading font-bold mb-4">Recent Activity</h3>
               <p className="text-muted-foreground">
-                <strong>{customerInsights.recent_orders_30days}</strong> orders in the last 30 days
+                <strong>{customerInsights?.recent_orders_30days || 0}</strong> orders in the last 30 days
               </p>
             </div>
           </div>
@@ -1145,27 +1479,78 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Description *</label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium">Description *</label>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!productForm.name) {
+                            toast.error("Pehle product name daalein");
+                            return;
+                          }
+                          toast.loading("AI se description generate ho raha hai...");
+                          try {
+                            const response = await axios.post(`${API}/ai/generate-description`, {
+                              product_name: productForm.name,
+                              category: productForm.category || "general",
+                              material: productForm.material,
+                              color: productForm.color,
+                              size: productForm.sizes,
+                              price: productForm.price ? parseFloat(productForm.price) : null,
+                              additional_info: productForm.tags
+                            }, { withCredentials: true });
+                            setProductForm({...productForm, description: response.data.description});
+                            toast.dismiss();
+                            toast.success("Description generate ho gaya! ✨");
+                          } catch (error) {
+                            toast.dismiss();
+                            toast.error("Description generate nahi ho paya");
+                          }
+                        }}
+                        className="flex items-center gap-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full hover:opacity-90"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        AI Generate ✨
+                      </button>
+                    </div>
                     <textarea
                       required
                       value={productForm.description}
                       onChange={(e) => setProductForm({...productForm, description: e.target.value})}
                       className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                      rows="3"
+                      rows="4"
+                      placeholder="AI se generate karein ya khud likhein..."
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Price *</label>
+                      <label className="block text-sm font-medium mb-2">Selling Price</label>
                       <input
                         type="number"
                         step="0.01"
-                        required
                         value={productForm.price}
                         onChange={(e) => setProductForm({...productForm, price: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        placeholder="₹ Final price (optional if using variants)"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">MRP (Original Price)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={productForm.mrp}
+                        onChange={(e) => setProductForm({...productForm, mrp: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        placeholder="₹ MRP (for discount)"
+                      />
+                      {productForm.mrp && productForm.price && parseFloat(productForm.mrp) > parseFloat(productForm.price) && (
+                        <p className="text-xs text-green-600 mt-1">
+                          {Math.round(((parseFloat(productForm.mrp) - parseFloat(productForm.price)) / parseFloat(productForm.mrp)) * 100)}% OFF
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1173,24 +1558,41 @@ export default function AdminDashboard() {
                       <select
                         required
                         value={productForm.category}
-                        onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                        onChange={(e) => setProductForm({...productForm, category: e.target.value, subcategory: ""})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
                       >
                         <option value="">Select Category</option>
-                        <option value="handicrafts">Handicrafts</option>
-                        <option value="pooja">Pooja Items</option>
-                        <option value="artificial-jewellery">Artificial Jewellery</option>
+                        {categories.filter(c => !c.parent_id).map(cat => (
+                          <option key={cat.category_id} value={cat.slug}>{cat.name}</option>
+                        ))}
                       </select>
                     </div>
 
+                    {/* Sub-category dropdown - shows when parent category is selected */}
+                    {productForm.category && categories.find(c => c.slug === productForm.category)?.subcategories?.length > 0 && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Sub-category (Optional)</label>
+                        <select
+                          value={productForm.subcategory || ""}
+                          onChange={(e) => setProductForm({...productForm, subcategory: e.target.value})}
+                          className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        >
+                          <option value="">-- No Sub-category --</option>
+                          {categories.find(c => c.slug === productForm.category)?.subcategories?.map(sub => (
+                            <option key={sub.category_id} value={sub.slug}>{sub.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div>
-                      <label className="block text-sm font-medium mb-2">Stock *</label>
+                      <label className="block text-sm font-medium mb-2">Stock</label>
                       <input
                         type="number"
-                        required
                         value={productForm.stock}
                         onChange={(e) => setProductForm({...productForm, stock: e.target.value})}
                         className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                        placeholder="Optional if using variants"
                       />
                     </div>
                   </div>
@@ -1230,10 +1632,10 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Product Images</label>
+                    <label className="block text-sm font-medium mb-2">Product Images (Permanently Saved)</label>
                     
                     {/* Image Upload Area */}
-                    <div className="border-2 border-dashed border-border rounded-lg p-6 mb-4">
+                    <div className="border-2 border-dashed border-green-300 bg-green-50 rounded-lg p-6 mb-4">
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -1247,11 +1649,11 @@ export default function AdminDashboard() {
                         htmlFor="product-images" 
                         className="cursor-pointer flex flex-col items-center justify-center"
                       >
-                        <Upload className={`w-10 h-10 mb-2 ${uploading ? 'animate-pulse text-primary' : 'text-muted-foreground'}`} />
-                        <span className="text-sm text-muted-foreground">
-                          {uploading ? 'Uploading...' : 'Click to upload or drag & drop'}
+                        <Upload className={`w-10 h-10 mb-2 ${uploading ? 'animate-pulse text-primary' : 'text-green-600'}`} />
+                        <span className="text-sm text-green-700 font-medium">
+                          {uploading ? 'Uploading to permanent storage...' : '✅ Click to upload (permanently saved)'}
                         </span>
-                        <span className="text-xs text-muted-foreground mt-1">PNG, JPG, WebP up to 5MB</span>
+                        <span className="text-xs text-green-600 mt-1">PNG, JPG, WebP up to 5MB - Images will be saved permanently!</span>
                       </label>
                     </div>
 
@@ -1474,6 +1876,156 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
+                  {/* Color Variants Section */}
+                  <div className="border border-dashed border-primary/40 rounded-lg p-4 bg-primary/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-primary">Color & Size Variants (Optional)</h4>
+                      <button
+                        type="button"
+                        onClick={() => setProductForm({...productForm, variants: [...productForm.variants, {color_name: '', color_code: '#800000', images: [''], sizes: []}]})}
+                        className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/80"
+                        data-testid="add-variant-btn"
+                      >
+                        + Add Color
+                      </button>
+                    </div>
+                    {productForm.variants.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Add color variants with size options (Amazon/Flipkart style)</p>
+                    )}
+                    {productForm.variants.map((variant, vi) => (
+                      <div key={vi} className="border rounded p-3 mb-3 bg-white relative">
+                        <button type="button" onClick={() => {
+                          const updated = productForm.variants.filter((_, i) => i !== vi);
+                          setProductForm({...productForm, variants: updated});
+                        }} className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">✕</button>
+                        
+                        {/* Color Info Row */}
+                        <div className="grid grid-cols-3 gap-2 mb-3">
+                          <div>
+                            <label className="text-xs font-medium">Color Name *</label>
+                            <input type="text" placeholder="e.g. Red & Gold" value={variant.color_name}
+                              onChange={(e) => { const v = [...productForm.variants]; v[vi] = {...v[vi], color_name: e.target.value}; setProductForm({...productForm, variants: v}); }}
+                              className="w-full p-1.5 border rounded text-sm" />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium">Color Code</label>
+                            <div className="flex gap-1">
+                              <input type="color" value={variant.color_code}
+                                onChange={(e) => { const v = [...productForm.variants]; v[vi] = {...v[vi], color_code: e.target.value}; setProductForm({...productForm, variants: v}); }}
+                                className="w-10 h-9 border rounded cursor-pointer" />
+                              <input type="text" value={variant.color_code}
+                                onChange={(e) => { const v = [...productForm.variants]; v[vi] = {...v[vi], color_code: e.target.value}; setProductForm({...productForm, variants: v}); }}
+                                className="flex-1 p-1.5 border rounded text-sm" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium mb-1 block">Images</label>
+                            <div className="flex gap-1">
+                              {(variant.images || []).filter(u => u).slice(0,2).map((img, ii) => (
+                                <div key={ii} className="relative w-8 h-8 border rounded overflow-hidden">
+                                  <img src={img} alt="" className="w-full h-full object-cover" />
+                                </div>
+                              ))}
+                              <label className="w-8 h-8 border-2 border-dashed border-primary/40 rounded flex items-center justify-center cursor-pointer hover:bg-primary/5">
+                                <span className="text-primary text-sm">+</span>
+                                <input type="file" accept="image/*" multiple className="hidden"
+                                  onChange={(e) => handleVariantImageUpload(e.target.files, vi, false)} />
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Size Options for this Color */}
+                        <div className="border-t pt-2 mt-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <label className="text-xs font-medium text-gray-600">Size Options for {variant.color_name || 'this color'}</label>
+                            <button type="button" 
+                              onClick={() => {
+                                const v = [...productForm.variants];
+                                v[vi] = {...v[vi], sizes: [...(v[vi].sizes || []), {size: '', price: '', mrp: '', stock: '', length: '', breadth: '', height: ''}]};
+                                setProductForm({...productForm, variants: v});
+                              }}
+                              className="text-xs bg-secondary text-white px-2 py-0.5 rounded hover:bg-secondary/80">
+                              + Add Size
+                            </button>
+                          </div>
+                          
+                          {(!variant.sizes || variant.sizes.length === 0) && (
+                            <p className="text-xs text-gray-400 italic">No sizes added. Click "+ Add Size" to add size options with different prices.</p>
+                          )}
+                          
+                          {(variant.sizes || []).map((sizeOpt, si) => (
+                            <div key={si} className="bg-gray-50 p-2 rounded mb-2">
+                              <div className="flex items-center gap-2 mb-1">
+                                <input type="text" placeholder="Size" value={sizeOpt.size}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], size: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-16 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="Price ₹" value={sizeOpt.price}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], price: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-20 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="MRP ₹" value={sizeOpt.mrp || ''}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], mrp: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-20 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="Stock" value={sizeOpt.stock}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], stock: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-16 p-1 border rounded text-xs" />
+                                <button type="button" onClick={() => {
+                                  const v = [...productForm.variants];
+                                  v[vi].sizes = v[vi].sizes.filter((_, idx) => idx !== si);
+                                  setProductForm({...productForm, variants: v});
+                                }} className="text-red-500 hover:text-red-700 text-xs">✕</button>
+                              </div>
+                              {/* Dimensions L×B×H */}
+                              <div className="flex items-center gap-1 mt-1">
+                                <span className="text-[10px] text-gray-500">Dim:</span>
+                                <input type="number" placeholder="L" value={sizeOpt.length || ''}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], length: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-12 p-1 border rounded text-[10px]" title="Length (cm)" />
+                                <span className="text-gray-400">×</span>
+                                <input type="number" placeholder="B" value={sizeOpt.breadth || ''}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], breadth: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-12 p-1 border rounded text-[10px]" title="Breadth (cm)" />
+                                <span className="text-gray-400">×</span>
+                                <input type="number" placeholder="H" value={sizeOpt.height || ''}
+                                  onChange={(e) => {
+                                    const v = [...productForm.variants];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], height: e.target.value};
+                                    setProductForm({...productForm, variants: v});
+                                  }}
+                                  className="w-12 p-1 border rounded text-[10px]" title="Height (cm)" />
+                                <span className="text-[10px] text-gray-400">cm</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -1539,7 +2091,9 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
+                  {products
+                    .slice((productPage - 1) * PRODUCTS_PER_PAGE, productPage * PRODUCTS_PER_PAGE)
+                    .map((product) => (
                     <tr key={product.product_id} className="border-t border-border">
                       <td className="px-6 py-4">
                         <img src={product.images[0]} alt={product.name} className="w-16 h-16 object-cover" />
@@ -1598,6 +2152,40 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              
+              {/* Products Pagination */}
+              {products.length > PRODUCTS_PER_PAGE && (
+                <div className="flex justify-between items-center p-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {((productPage - 1) * PRODUCTS_PER_PAGE) + 1}-{Math.min(productPage * PRODUCTS_PER_PAGE, products.length)} of {products.length} products
+                  </p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setProductPage(p => Math.max(1, p - 1))}
+                      disabled={productPage === 1}
+                      className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      ← Prev
+                    </button>
+                    {[...Array(Math.ceil(products.length / PRODUCTS_PER_PAGE))].map((_, idx) => (
+                      <button
+                        key={idx + 1}
+                        onClick={() => setProductPage(idx + 1)}
+                        className={`w-8 h-8 rounded ${productPage === idx + 1 ? 'bg-primary text-white' : 'border hover:bg-gray-100'}`}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setProductPage(p => Math.min(Math.ceil(products.length / PRODUCTS_PER_PAGE), p + 1))}
+                      disabled={productPage >= Math.ceil(products.length / PRODUCTS_PER_PAGE)}
+                      className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Edit Product Modal */}
@@ -1613,7 +2201,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <form onSubmit={handleUpdateProduct} className="p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="block text-sm font-medium mb-1">Name</label>
                         <input
@@ -1624,13 +2212,28 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Price (₹)</label>
+                        <label className="block text-sm font-medium mb-1">Selling Price (₹)</label>
                         <input
                           type="number"
                           value={editingProduct.price}
                           onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})}
                           className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">MRP (₹)</label>
+                        <input
+                          type="number"
+                          value={editingProduct.mrp || ''}
+                          onChange={(e) => setEditingProduct({...editingProduct, mrp: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                          placeholder="Original price"
+                        />
+                        {editingProduct.mrp && editingProduct.price && parseFloat(editingProduct.mrp) > parseFloat(editingProduct.price) && (
+                          <p className="text-xs text-green-600 mt-1">
+                            {Math.round(((parseFloat(editingProduct.mrp) - parseFloat(editingProduct.price)) / parseFloat(editingProduct.mrp)) * 100)}% OFF
+                          </p>
+                        )}
                       </div>
                     </div>
                     
@@ -1649,12 +2252,27 @@ export default function AdminDashboard() {
                         <label className="block text-sm font-medium mb-1">Category</label>
                         <select
                           value={editingProduct.category}
-                          onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})}
+                          onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value, subcategory: ""})}
                           className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
                         >
-                          <option value="handicrafts">Handicrafts</option>
-                          <option value="pooja">Pooja Items</option>
-                          <option value="artificial-jewellery">Artificial Jewellery</option>
+                          <option value="">Select Category</option>
+                          {categories.map(cat => (
+                            <option key={cat.category_id} value={cat.slug}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Sub-category</label>
+                        <select
+                          value={editingProduct.subcategory || ""}
+                          onChange={(e) => setEditingProduct({...editingProduct, subcategory: e.target.value})}
+                          className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary"
+                          disabled={!editingProduct.category || !categories.find(c => c.slug === editingProduct.category)?.subcategories?.length}
+                        >
+                          <option value="">-- No Sub-category --</option>
+                          {categories.find(c => c.slug === editingProduct.category)?.subcategories?.map(sub => (
+                            <option key={sub.category_id} value={sub.slug}>{sub.name}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -1704,6 +2322,164 @@ export default function AdminDashboard() {
                       </div>
                     )}
 
+                    {/* GST & HSN Code Section */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <label className="block text-sm font-medium mb-3 text-blue-800">
+                        📋 GST & Tax Details (Product-specific)
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium mb-1 text-blue-700">HSN Code</label>
+                          <input
+                            type="text"
+                            value={editingProduct.hsn_code || ''}
+                            onChange={(e) => setEditingProduct({...editingProduct, hsn_code: e.target.value})}
+                            placeholder="e.g., 6117"
+                            className="w-full px-3 py-2 border border-blue-200 rounded focus:ring-2 focus:ring-blue-400 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1 text-blue-700">GST Rate (%)</label>
+                          <select
+                            value={editingProduct.gst_rate || ''}
+                            onChange={(e) => setEditingProduct({...editingProduct, gst_rate: e.target.value})}
+                            className="w-full px-3 py-2 border border-blue-200 rounded focus:ring-2 focus:ring-blue-400 text-sm"
+                          >
+                            <option value="">Select GST Rate</option>
+                            <option value="0">0% (Exempt)</option>
+                            <option value="5">5%</option>
+                            <option value="12">12%</option>
+                            <option value="18">18%</option>
+                            <option value="28">28%</option>
+                          </select>
+                        </div>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2">
+                        💡 Set product-specific GST rate for accurate tax calculation in invoices
+                      </p>
+                    </div>
+
+                    {/* Product Images Section */}
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <label className="block text-sm font-medium mb-3">
+                        🖼️ Product Images ({(editingProduct.images || []).length} images)
+                      </label>
+                      
+                      {/* Current Images */}
+                      <div className="grid grid-cols-4 gap-3 mb-4">
+                        {(editingProduct.images || []).map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img 
+                              src={img} 
+                              alt={`Product ${idx + 1}`}
+                              className="w-full h-20 object-cover rounded border"
+                              onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = [...editingProduct.images];
+                                newImages.splice(idx, 1);
+                                setEditingProduct({...editingProduct, images: newImages});
+                              }}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                              title="Remove image"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                        {(!editingProduct.images || editingProduct.images.length === 0) && (
+                          <div className="col-span-4 text-center py-4 text-gray-400">
+                            No images added yet
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Add New Image URL */}
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          placeholder="Enter image URL and click Add"
+                          id="newImageUrl"
+                          className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-primary text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const input = document.getElementById('newImageUrl');
+                            const url = input.value.trim();
+                            if (url) {
+                              const currentImages = editingProduct.images || [];
+                              setEditingProduct({...editingProduct, images: [...currentImages, url]});
+                              input.value = '';
+                            }
+                          }}
+                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      
+                      {/* Or Upload Image */}
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <label className="block text-xs text-gray-500 mb-2">Or upload an image (☁️ Cloudinary cloud):</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            try {
+                              toast.info("Uploading to Cloudinary cloud...");
+                              
+                              // Try Cloudinary first, fallback to MongoDB
+                              let response;
+                              try {
+                                response = await axios.post(`${API}/cloudinary/upload?folder=paridhaan/products`, formData, {
+                                  withCredentials: true,
+                                  headers: { 'Content-Type': 'multipart/form-data' }
+                                });
+                              } catch (cloudErr) {
+                                console.log("Cloudinary not available, using MongoDB");
+                                response = await axios.post(`${API}/images/upload?category=product`, formData, {
+                                  withCredentials: true,
+                                  headers: { 'Content-Type': 'multipart/form-data' }
+                                });
+                                if (response.data.url && !response.data.url.startsWith('http')) {
+                                  response.data.url = `${API}${response.data.url.replace('/api', '')}`;
+                                }
+                              }
+                              
+                              console.log("Upload response:", response.data);
+                              
+                              if (response.data.url) {
+                                const currentImages = Array.isArray(editingProduct.images) ? editingProduct.images : [];
+                                const newImages = [...currentImages, response.data.url];
+                                
+                                console.log("Adding cloud image:", response.data.url);
+                                
+                                setEditingProduct(prev => ({...prev, images: newImages}));
+                                toast.success(`☁️ Image saved to cloud! Total: ${newImages.length} images`);
+                              }
+                            } catch (error) {
+                              console.error("Upload error:", error);
+                              toast.error(error.response?.data?.detail || "Failed to upload image");
+                            }
+                            e.target.value = '';
+                          }}
+                          className="text-sm"
+                        />
+                        <p className="text-xs text-green-600 mt-1">
+                          ☁️ Images saved to Cloudinary cloud - permanent URLs!
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="flex items-center space-x-4">
                       <label className="flex items-center space-x-2">
                         <input
@@ -1715,6 +2491,124 @@ export default function AdminDashboard() {
                         <span className="text-sm">Featured Product</span>
                       </label>
                     </div>
+
+                    {/* Color Variants Section for Edit */}
+                    <div className="border border-dashed border-primary/40 rounded-lg p-4 bg-primary/5">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-primary">Color & Size Variants</h4>
+                        <button type="button"
+                          onClick={() => setEditingProduct({...editingProduct, variants: [...(editingProduct.variants || []), {color_name: '', color_code: '#800000', images: [''], sizes: []}]})}
+                          className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/80"
+                          data-testid="edit-add-variant-btn"
+                        >+ Add Color</button>
+                      </div>
+                      {(!editingProduct.variants || editingProduct.variants.length === 0) && (
+                        <p className="text-xs text-muted-foreground">No color variants. Add colors with size options (Amazon/Flipkart style).</p>
+                      )}
+                      {(editingProduct.variants || []).map((variant, vi) => (
+                        <div key={vi} className="border rounded p-3 mb-3 bg-white relative">
+                          <button type="button" onClick={() => {
+                            const updated = (editingProduct.variants || []).filter((_, i) => i !== vi);
+                            setEditingProduct({...editingProduct, variants: updated});
+                          }} className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xs font-bold">✕</button>
+                          
+                          {/* Color Info */}
+                          <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div>
+                              <label className="text-xs font-medium">Color Name *</label>
+                              <input type="text" placeholder="e.g. Red & Gold" value={variant.color_name || ''}
+                                onChange={(e) => { const v = [...(editingProduct.variants||[])]; v[vi] = {...v[vi], color_name: e.target.value}; setEditingProduct({...editingProduct, variants: v}); }}
+                                className="w-full p-1.5 border rounded text-sm" />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium">Color Code</label>
+                              <div className="flex gap-1">
+                                <input type="color" value={variant.color_code || '#800000'}
+                                  onChange={(e) => { const v = [...(editingProduct.variants||[])]; v[vi] = {...v[vi], color_code: e.target.value}; setEditingProduct({...editingProduct, variants: v}); }}
+                                  className="w-10 h-9 border rounded cursor-pointer" />
+                                <input type="text" value={variant.color_code || ''}
+                                  onChange={(e) => { const v = [...(editingProduct.variants||[])]; v[vi] = {...v[vi], color_code: e.target.value}; setEditingProduct({...editingProduct, variants: v}); }}
+                                  className="flex-1 p-1.5 border rounded text-sm" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium mb-1 block">Images</label>
+                              <div className="flex gap-1">
+                                {(variant.images || []).filter(u => u).slice(0,2).map((img, ii) => (
+                                  <div key={ii} className="relative w-8 h-8 border rounded overflow-hidden">
+                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                                <label className="w-8 h-8 border-2 border-dashed border-primary/40 rounded flex items-center justify-center cursor-pointer hover:bg-primary/5">
+                                  <span className="text-primary text-sm">+</span>
+                                  <input type="file" accept="image/*" multiple className="hidden"
+                                    onChange={(e) => handleVariantImageUpload(e.target.files, vi, true)} />
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Size Options */}
+                          <div className="border-t pt-2 mt-2">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs font-medium text-gray-600">Size Options for {variant.color_name || 'this color'}</label>
+                              <button type="button" 
+                                onClick={() => {
+                                  const v = [...(editingProduct.variants||[])];
+                                  v[vi] = {...v[vi], sizes: [...(v[vi].sizes || []), {size: '', price: '', mrp: '', stock: ''}]};
+                                  setEditingProduct({...editingProduct, variants: v});
+                                }}
+                                className="text-xs bg-secondary text-white px-2 py-0.5 rounded hover:bg-secondary/80">
+                                + Add Size
+                              </button>
+                            </div>
+                            
+                            {(!variant.sizes || variant.sizes.length === 0) && (
+                              <p className="text-xs text-gray-400 italic">No sizes. Click "+ Add Size" to add size options with different prices.</p>
+                            )}
+                            
+                            {(variant.sizes || []).map((sizeOpt, si) => (
+                              <div key={si} className="flex items-center gap-2 mb-1 bg-gray-50 p-2 rounded">
+                                <input type="text" placeholder="Size" value={sizeOpt.size || ''}
+                                  onChange={(e) => {
+                                    const v = [...(editingProduct.variants||[])];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], size: e.target.value};
+                                    setEditingProduct({...editingProduct, variants: v});
+                                  }}
+                                  className="w-20 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="Price ₹" value={sizeOpt.price || ''}
+                                  onChange={(e) => {
+                                    const v = [...(editingProduct.variants||[])];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], price: e.target.value};
+                                    setEditingProduct({...editingProduct, variants: v});
+                                  }}
+                                  className="w-20 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="MRP ₹" value={sizeOpt.mrp || ''}
+                                  onChange={(e) => {
+                                    const v = [...(editingProduct.variants||[])];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], mrp: e.target.value};
+                                    setEditingProduct({...editingProduct, variants: v});
+                                  }}
+                                  className="w-20 p-1 border rounded text-xs" />
+                                <input type="number" placeholder="Stock" value={sizeOpt.stock || ''}
+                                  onChange={(e) => {
+                                    const v = [...(editingProduct.variants||[])];
+                                    v[vi].sizes[si] = {...v[vi].sizes[si], stock: e.target.value};
+                                    setEditingProduct({...editingProduct, variants: v});
+                                  }}
+                                  className="w-16 p-1 border rounded text-xs" />
+                                <button type="button" onClick={() => {
+                                  const v = [...(editingProduct.variants||[])];
+                                  v[vi].sizes = v[vi].sizes.filter((_, idx) => idx !== si);
+                                  setEditingProduct({...editingProduct, variants: v});
+                                }} className="text-red-500 hover:text-red-700 text-xs">✕</button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
 
                     <div className="flex justify-end space-x-3 pt-4 border-t">
                       <button
@@ -1743,7 +2637,11 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-heading font-bold">Categories Management</h2>
               <button
-                onClick={() => setShowCategoryForm(!showCategoryForm)}
+                onClick={() => {
+                  setEditingCategory(null);
+                  resetCategoryForm();
+                  setShowCategoryForm(!showCategoryForm);
+                }}
                 className="bg-primary text-primary-foreground px-6 py-3 flex items-center space-x-2 hover:bg-primary/90 transition-all"
                 data-testid="add-category-button"
               >
@@ -1754,7 +2652,26 @@ export default function AdminDashboard() {
 
             {showCategoryForm && (
               <div className="bg-white border border-border/40 p-6 mb-6">
-                <form onSubmit={handleCreateCategory} className="space-y-4">
+                <h3 className="text-lg font-semibold mb-4">
+                  {editingCategory ? `Edit: ${editingCategory.name}` : "Create New Category"}
+                </h3>
+                <form onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory} className="space-y-4">
+                  {/* Parent Category Selector */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Parent Category (leave empty for main category)</label>
+                    <select
+                      value={categoryForm.parent_id || ""}
+                      onChange={(e) => setCategoryForm({...categoryForm, parent_id: e.target.value || null})}
+                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                    >
+                      <option value="">-- Main Category (No Parent) --</option>
+                      {categories.filter(c => !c.parent_id && c.category_id !== editingCategory?.category_id).map(cat => (
+                        <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">Select a parent to create a sub-category</p>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Category Name *</label>
                     <input
@@ -1774,7 +2691,9 @@ export default function AdminDashboard() {
                       value={categoryForm.slug}
                       onChange={(e) => setCategoryForm({...categoryForm, slug: e.target.value})}
                       className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      disabled={editingCategory !== null}
                     />
+                    {editingCategory && <p className="text-xs text-gray-500 mt-1">Slug cannot be changed after creation</p>}
                   </div>
 
                   <div>
@@ -1789,14 +2708,61 @@ export default function AdminDashboard() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Image URL *</label>
-                    <input
-                      type="url"
-                      required
-                      value={categoryForm.image}
-                      onChange={(e) => setCategoryForm({...categoryForm, image: e.target.value})}
-                      className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
-                    />
+                    <label className="block text-sm font-medium mb-2">Category Image (Optional)</label>
+                    
+                    {/* Upload Option */}
+                    <div className="mb-3">
+                      <label className="block text-xs text-gray-500 mb-1">Upload Image</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            try {
+                              toast.info("Uploading image...");
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              const response = await axios.post(`${API}/cloudinary/upload?folder=paridhaan/categories`, formData, {
+                                headers: { 'Content-Type': 'multipart/form-data' },
+                                withCredentials: true
+                              });
+                              setCategoryForm(prev => ({...prev, image: response.data.url}));
+                              toast.success("Image uploaded!");
+                            } catch (error) {
+                              toast.error("Upload failed");
+                            }
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
+                      />
+                    </div>
+                    
+                    {/* OR Divider */}
+                    <div className="flex items-center gap-2 my-2">
+                      <div className="flex-1 h-px bg-gray-200"></div>
+                      <span className="text-xs text-gray-400">OR</span>
+                      <div className="flex-1 h-px bg-gray-200"></div>
+                    </div>
+                    
+                    {/* URL Option */}
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Paste Image URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/image.jpg"
+                        value={categoryForm.image}
+                        onChange={(e) => setCategoryForm({...categoryForm, image: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+                    
+                    {/* Preview */}
+                    {categoryForm.image && (
+                      <div className="mt-2">
+                        <img src={categoryForm.image} alt="Preview" className="w-20 h-20 object-cover rounded border" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex space-x-4">
@@ -1804,12 +2770,13 @@ export default function AdminDashboard() {
                       type="submit"
                       className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90 transition-all"
                     >
-                      Create Category
+                      {editingCategory ? "Update Category" : "Create Category"}
                     </button>
                     <button
                       type="button"
                       onClick={() => {
                         setShowCategoryForm(false);
+                        setEditingCategory(null);
                         resetCategoryForm();
                       }}
                       className="bg-muted text-muted-foreground px-6 py-2 hover:bg-muted/80 transition-all"
@@ -1821,16 +2788,89 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {categories.map((category) => (
-                <div key={category.category_id} className="bg-white border border-border/40 overflow-hidden">
-                  <img src={category.image} alt={category.name} className="w-full h-48 object-cover" />
-                  <div className="p-4">
-                    <h3 className="text-xl font-heading font-semibold mb-2">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground">{category.description}</p>
+            {/* Main Categories Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Main Categories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categories.filter(c => !c.parent_id).map((category) => (
+                  <div key={category.category_id} className="bg-white border border-border/40 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    {category.image ? (
+                      <img src={category.image} alt={category.name} className="w-full h-40 object-cover" />
+                    ) : (
+                      <div className="w-full h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                        <span className="text-4xl">📁</span>
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-heading font-semibold">{category.name}</h3>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">Main</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{category.description}</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEditCategory(category)}
+                          className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 text-sm rounded hover:bg-blue-100 transition-colors"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category.category_id)}
+                          className="px-3 py-2 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 transition-colors"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Subcategories Section */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Subcategories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {categories.filter(c => c.parent_id).map((category) => {
+                  const parent = categories.find(p => p.category_id === category.parent_id);
+                  return (
+                    <div key={category.category_id} className="bg-white border border-border/40 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                      {category.image ? (
+                        <img src={category.image} alt={category.name} className="w-full h-32 object-cover" />
+                      ) : (
+                        <div className="w-full h-32 bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                          <span className="text-3xl">📦</span>
+                        </div>
+                      )}
+                      <div className="p-3">
+                        <div className="flex items-start justify-between mb-1">
+                          <h4 className="text-sm font-semibold line-clamp-1">{category.name}</h4>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">Under: {parent?.name || "Unknown"}</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => startEditCategory(category)}
+                            className="flex-1 px-2 py-1.5 bg-blue-50 text-blue-600 text-xs rounded hover:bg-blue-100 transition-colors"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(category.category_id)}
+                            className="px-2 py-1.5 bg-red-50 text-red-600 text-xs rounded hover:bg-red-100 transition-colors"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {categories.filter(c => c.parent_id).length === 0 && (
+                  <div className="col-span-full text-center py-8 text-gray-400">
+                    No subcategories yet. Create one by selecting a parent category above.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1924,17 +2964,17 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
                   <p className="text-sm text-amber-600 mb-1">🔥 Hot (1-24 hrs)</p>
-                  <p className="text-3xl font-bold text-amber-800">{abandonedCartStats.abandoned_24h - abandonedCartStats.abandoned_1h}</p>
+                  <p className="text-3xl font-bold text-amber-800">{(abandonedCartStats?.abandoned_24h || 0) - (abandonedCartStats?.abandoned_1h || 0)}</p>
                   <p className="text-xs text-amber-500">Best time to recover!</p>
                 </div>
                 <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
                   <p className="text-sm text-orange-600 mb-1">⏰ Warm (24-72 hrs)</p>
-                  <p className="text-3xl font-bold text-orange-800">{abandonedCartStats.abandoned_72h - abandonedCartStats.abandoned_24h}</p>
+                  <p className="text-3xl font-bold text-orange-800">{(abandonedCartStats?.abandoned_72h || 0) - (abandonedCartStats?.abandoned_24h || 0)}</p>
                   <p className="text-xs text-orange-500">Still recoverable</p>
                 </div>
                 <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
                   <p className="text-sm text-red-600 mb-1">❄️ Cold (72+ hrs)</p>
-                  <p className="text-3xl font-bold text-red-800">{abandonedCartStats.abandoned_7d - abandonedCartStats.abandoned_72h}</p>
+                  <p className="text-3xl font-bold text-red-800">{(abandonedCartStats?.abandoned_7d || 0) - (abandonedCartStats?.abandoned_72h || 0)}</p>
                   <p className="text-xs text-red-500">Low recovery chance</p>
                 </div>
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
@@ -2016,7 +3056,7 @@ export default function AdminDashboard() {
                           </p>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="font-bold text-lg text-primary">₹{cart.cart_total.toFixed(0)}</p>
+                          <p className="font-bold text-lg text-primary">₹{(cart.cart_total || 0).toFixed(0)}</p>
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -2130,7 +3170,7 @@ export default function AdminDashboard() {
                       <div className="flex justify-between items-center p-4 bg-primary/10 rounded-lg">
                         <span className="font-semibold">Cart Total:</span>
                         <span className="text-2xl font-bold text-primary">
-                          ₹{selectedAbandonedCart.cart_total.toFixed(2)}
+                          ₹{(selectedAbandonedCart?.cart_total || 0).toFixed(2)}
                         </span>
                       </div>
                       
@@ -2157,6 +3197,478 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Collections Tab */}
+        {activeTab === "collections" && (
+          <div data-testid="collections-tab">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-heading font-bold flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-orange-500" />
+                  Festival Collections
+                </h2>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Create and manage festival, seasonal, and curated collections
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingCollection(null);
+                  setCollectionForm({
+                    name: "",
+                    slug: "",
+                    description: "",
+                    image: "",
+                    collection_type: "festival",
+                    start_date: "",
+                    end_date: "",
+                    product_ids: [],
+                    is_active: true,
+                    is_featured: false,
+                    position: 0,
+                    badge_text: "",
+                    badge_color: "#ef4444"
+                  });
+                  setShowCollectionForm(true);
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-primary text-white hover:bg-primary/90 transition-all"
+                data-testid="add-collection-btn"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add Collection</span>
+              </button>
+            </div>
+
+            {/* Collection Types Legend */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {["festival", "occasion", "seasonal", "curated"].map((type) => (
+                <span
+                  key={type}
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    type === "festival" ? "bg-orange-100 text-orange-700" :
+                    type === "occasion" ? "bg-purple-100 text-purple-700" :
+                    type === "seasonal" ? "bg-blue-100 text-blue-700" :
+                    "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </span>
+              ))}
+            </div>
+
+            {collections.length === 0 ? (
+              <div className="bg-white border border-border/40 p-12 text-center rounded-lg">
+                <Sparkles className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-heading font-semibold mb-2">No Collections Yet</h3>
+                <p className="text-muted-foreground mb-4">Create your first collection to group products by festivals or occasions</p>
+                <button
+                  onClick={() => setShowCollectionForm(true)}
+                  className="px-6 py-2 bg-primary text-white hover:bg-primary/90 rounded-lg"
+                >
+                  Create First Collection
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {collections.map((collection) => (
+                  <div
+                    key={collection.collection_id}
+                    className="bg-white border border-border/40 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                    data-testid={`collection-card-${collection.collection_id}`}
+                  >
+                    {/* Image */}
+                    <div className="relative h-40 bg-gray-100">
+                      <img
+                        src={collection.image || 'https://placehold.co/400x200?text=' + encodeURIComponent(collection.name)}
+                        alt={collection.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://placehold.co/400x200?text=' + encodeURIComponent(collection.name);
+                        }}
+                      />
+                      {/* Status badges */}
+                      <div className="absolute top-2 left-2 flex gap-2">
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          collection.is_active ? "bg-green-500 text-white" : "bg-gray-500 text-white"
+                        }`}>
+                          {collection.is_active ? "Active" : "Inactive"}
+                        </span>
+                        {collection.is_featured && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-orange-500 text-white font-medium">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      {/* Type badge */}
+                      <span className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full ${
+                        collection.collection_type === "festival" ? "bg-orange-100 text-orange-700" :
+                        collection.collection_type === "occasion" ? "bg-purple-100 text-purple-700" :
+                        collection.collection_type === "seasonal" ? "bg-blue-100 text-blue-700" :
+                        "bg-green-100 text-green-700"
+                      }`}>
+                        {collection.collection_type}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold mb-1">{collection.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                        {collection.description || "No description"}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-sm mb-4">
+                        <span className="text-muted-foreground">
+                          {collection.product_count || 0} products
+                        </span>
+                        <span className="text-muted-foreground">
+                          Position: {collection.position}
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingCollection(collection);
+                            setCollectionForm({
+                              name: collection.name || "",
+                              slug: collection.slug || "",
+                              description: collection.description || "",
+                              image: collection.image || "",
+                              collection_type: collection.collection_type || "festival",
+                              start_date: collection.start_date ? collection.start_date.split('T')[0] : "",
+                              end_date: collection.end_date ? collection.end_date.split('T')[0] : "",
+                              product_ids: collection.product_ids || [],
+                              is_active: collection.is_active !== false,
+                              is_featured: collection.is_featured || false,
+                              position: collection.position || 0,
+                              badge_text: collection.badge_text || "",
+                              badge_color: collection.badge_color || "#ef4444"
+                            });
+                            setShowCollectionForm(true);
+                          }}
+                          className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium flex items-center justify-center gap-1"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`Delete "${collection.name}" collection?`)) {
+                              try {
+                                await axios.delete(`${API}/collections/${collection.collection_id}`, { withCredentials: true });
+                                toast.success("Collection deleted");
+                                setCollections(collections.filter(c => c.collection_id !== collection.collection_id));
+                              } catch (error) {
+                                toast.error("Failed to delete collection");
+                              }
+                            }
+                          }}
+                          className="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Collection Form Modal */}
+            {showCollectionForm && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                    <h3 className="text-xl font-bold">
+                      {editingCollection ? "Edit Collection" : "Create New Collection"}
+                    </h3>
+                    <button onClick={() => setShowCollectionForm(false)} className="text-gray-500 hover:text-gray-700">
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                  
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      try {
+                        const payload = {
+                          ...collectionForm,
+                          start_date: collectionForm.start_date || null,
+                          end_date: collectionForm.end_date || null,
+                          position: parseInt(collectionForm.position) || 0
+                        };
+                        
+                        if (editingCollection) {
+                          await axios.put(`${API}/collections/${editingCollection.collection_id}`, payload, { withCredentials: true });
+                          toast.success("Collection updated!");
+                        } else {
+                          await axios.post(`${API}/collections`, payload, { withCredentials: true });
+                          toast.success("Collection created!");
+                        }
+                        
+                        setShowCollectionForm(false);
+                        // Refresh collections
+                        const res = await axios.get(`${API}/admin/collections`, { withCredentials: true });
+                        setCollections(res.data || []);
+                      } catch (error) {
+                        toast.error(error.response?.data?.detail || "Failed to save collection");
+                      }
+                    }}
+                    className="p-4 space-y-4"
+                  >
+                    {/* Basic Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Name *</label>
+                        <input
+                          type="text"
+                          value={collectionForm.name}
+                          onChange={(e) => {
+                            const name = e.target.value;
+                            setCollectionForm({
+                              ...collectionForm,
+                              name,
+                              slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                            });
+                          }}
+                          className="w-full p-2 border rounded-lg"
+                          placeholder="e.g., Diwali Collection"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Slug</label>
+                        <input
+                          type="text"
+                          value={collectionForm.slug}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, slug: e.target.value })}
+                          className="w-full p-2 border rounded-lg bg-gray-50"
+                          placeholder="diwali-collection"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Description</label>
+                      <textarea
+                        value={collectionForm.description}
+                        onChange={(e) => setCollectionForm({ ...collectionForm, description: e.target.value })}
+                        className="w-full p-2 border rounded-lg"
+                        rows={2}
+                        placeholder="Describe this collection..."
+                      />
+                    </div>
+
+                    {/* Image Upload */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Collection Image</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={collectionForm.image}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, image: e.target.value })}
+                          className="flex-1 p-2 border rounded-lg"
+                          placeholder="Image URL or upload"
+                        />
+                        <input
+                          type="file"
+                          ref={collectionImageRef}
+                          className="hidden"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            setCollectionImageUploading(true);
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            try {
+                              const res = await axios.post(`${API}/cloudinary/upload`, formData, {
+                                withCredentials: true,
+                                headers: { 'Content-Type': 'multipart/form-data' }
+                              });
+                              setCollectionForm({ ...collectionForm, image: res.data.url });
+                              toast.success("Image uploaded!");
+                            } catch (error) {
+                              toast.error("Failed to upload image");
+                            } finally {
+                              setCollectionImageUploading(false);
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => collectionImageRef.current?.click()}
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
+                          disabled={collectionImageUploading}
+                        >
+                          <Upload className="w-4 h-4" />
+                          {collectionImageUploading ? "Uploading..." : "Upload"}
+                        </button>
+                      </div>
+                      {collectionForm.image && (
+                        <img src={collectionForm.image} alt="Preview" className="mt-2 h-24 object-cover rounded-lg" />
+                      )}
+                    </div>
+
+                    {/* Type & Settings */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Type</label>
+                        <select
+                          value={collectionForm.collection_type}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, collection_type: e.target.value })}
+                          className="w-full p-2 border rounded-lg"
+                        >
+                          <option value="festival">Festival</option>
+                          <option value="occasion">Occasion</option>
+                          <option value="seasonal">Seasonal</option>
+                          <option value="curated">Curated</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Position</label>
+                        <input
+                          type="number"
+                          value={collectionForm.position}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, position: e.target.value })}
+                          className="w-full p-2 border rounded-lg"
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Badge Text</label>
+                        <input
+                          type="text"
+                          value={collectionForm.badge_text}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, badge_text: e.target.value })}
+                          className="w-full p-2 border rounded-lg"
+                          placeholder="e.g., NEW, HOT"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Dates */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Start Date (Optional)</label>
+                        <input
+                          type="date"
+                          value={collectionForm.start_date}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, start_date: e.target.value })}
+                          className="w-full p-2 border rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">End Date (Optional)</label>
+                        <input
+                          type="date"
+                          value={collectionForm.end_date}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, end_date: e.target.value })}
+                          className="w-full p-2 border rounded-lg"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status Toggles */}
+                    <div className="flex gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={collectionForm.is_active}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, is_active: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Active</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={collectionForm.is_featured}
+                          onChange={(e) => setCollectionForm({ ...collectionForm, is_featured: e.target.checked })}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">Show on Homepage</span>
+                      </label>
+                    </div>
+
+                    {/* Product Selection */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Products in Collection</label>
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={collectionProductSearch}
+                        onChange={(e) => setCollectionProductSearch(e.target.value)}
+                        className="w-full p-2 border rounded-lg mb-2"
+                      />
+                      <div className="max-h-48 overflow-y-auto border rounded-lg">
+                        {products
+                          .filter(p => p.name.toLowerCase().includes(collectionProductSearch.toLowerCase()))
+                          .map((product) => (
+                            <label
+                              key={product.product_id}
+                              className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={collectionForm.product_ids.includes(product.product_id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setCollectionForm({
+                                      ...collectionForm,
+                                      product_ids: [...collectionForm.product_ids, product.product_id]
+                                    });
+                                  } else {
+                                    setCollectionForm({
+                                      ...collectionForm,
+                                      product_ids: collectionForm.product_ids.filter(id => id !== product.product_id)
+                                    });
+                                  }
+                                }}
+                                className="w-4 h-4"
+                              />
+                              <img
+                                src={product.images?.[0] || 'https://placehold.co/40x40'}
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{product.name}</p>
+                                <p className="text-xs text-muted-foreground">₹{product.price}</p>
+                              </div>
+                            </label>
+                          ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {collectionForm.product_ids.length} products selected
+                      </p>
+                    </div>
+
+                    {/* Submit */}
+                    <div className="flex gap-3 pt-4 border-t">
+                      <button
+                        type="button"
+                        onClick={() => setShowCollectionForm(false)}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                      >
+                        {editingCollection ? "Update Collection" : "Create Collection"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}
@@ -2202,14 +3714,28 @@ export default function AdminDashboard() {
                       data-testid={`support-ticket-${ticket.ticket_id}`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          ticket.status === "open" ? "bg-yellow-100 text-yellow-700" :
-                          ticket.status === "in_progress" ? "bg-blue-100 text-blue-700" :
-                          ticket.status === "resolved" ? "bg-green-100 text-green-700" :
-                          "bg-gray-100 text-gray-700"
-                        }`}>
-                          {ticket.status.replace("_", " ").toUpperCase()}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            ticket.status === "open" ? "bg-yellow-100 text-yellow-700" :
+                            ticket.status === "in_progress" ? "bg-blue-100 text-blue-700" :
+                            ticket.status === "resolved" ? "bg-green-100 text-green-700" :
+                            "bg-gray-100 text-gray-700"
+                          }`}>
+                            {ticket.status.replace("_", " ").toUpperCase()}
+                          </span>
+                          {ticket.is_return_request && (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700 flex items-center gap-1">
+                              <RefreshCw className="w-3 h-3" />
+                              Return
+                            </span>
+                          )}
+                          {ticket.images && ticket.images.length > 0 && (
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700 flex items-center gap-1">
+                              <Image className="w-3 h-3" />
+                              {ticket.images.length}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-muted-foreground">
                           {new Date(ticket.created_at).toLocaleDateString()}
                         </span>
@@ -2248,6 +3774,87 @@ export default function AdminDashboard() {
                         <p>Email: {selectedTicket.guest_email || "N/A"}</p>
                         {selectedTicket.order_id && <p>Order: {selectedTicket.order_id}</p>}
                       </div>
+                      
+                      {/* Return Request Badge */}
+                      {selectedTicket.is_return_request && (
+                        <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <RefreshCw className="w-4 h-4 text-orange-600" />
+                            <span className="font-medium text-orange-800">Return Request</span>
+                          </div>
+                          {selectedTicket.return_reason && (
+                            <p className="text-sm text-orange-700">
+                              <strong>Reason:</strong> {selectedTicket.return_reason.replace(/_/g, ' ')}
+                            </p>
+                          )}
+                          {selectedTicket.return_status && (
+                            <p className="text-sm mt-1">
+                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                selectedTicket.return_status === 'approved' ? 'bg-green-100 text-green-700' :
+                                selectedTicket.return_status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-yellow-100 text-yellow-700'
+                              }`}>
+                                Return: {selectedTicket.return_status.replace(/_/g, ' ').toUpperCase()}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Customer Uploaded Images */}
+                      {selectedTicket.images && selectedTicket.images.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-2 flex items-center gap-1">
+                            <Image className="w-4 h-4" />
+                            Customer Images ({selectedTicket.images.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedTicket.images.map((img, idx) => (
+                              <a 
+                                key={idx} 
+                                href={img} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block"
+                              >
+                                <img 
+                                  src={img} 
+                                  alt={`Upload ${idx + 1}`} 
+                                  className="w-16 h-16 object-cover rounded border hover:opacity-75 transition-opacity"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Customer Uploaded Videos */}
+                      {selectedTicket.videos && selectedTicket.videos.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm font-medium mb-2 flex items-center gap-1 text-red-700">
+                            <Play className="w-4 h-4" />
+                            Video Proof ({selectedTicket.videos.length})
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedTicket.videos.map((video, idx) => (
+                              <a 
+                                key={idx} 
+                                href={video} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="block relative group"
+                              >
+                                <div className="w-20 h-20 bg-gray-900 rounded border overflow-hidden">
+                                  <video src={video} className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/60 transition-all">
+                                    <Play className="w-6 h-6 text-white" />
+                                  </div>
+                                </div>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex-1 p-4 overflow-y-auto space-y-3">
@@ -2302,10 +3909,223 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Instagram Videos Management */}
+        {activeTab === "instagram" && (
+          <InstagramManagement instagramVideos={instagramVideos} fetchData={fetchData} />
+        )}
+
+        {/* Background Music Management */}
+        {activeTab === "music" && (
+          <MusicManagement musicTracks={musicTracks} fetchData={fetchData} />
+        )}
+
         {activeTab === "banners" && (
           <div>
             <h2 className="text-2xl font-heading font-bold mb-6">Advanced Banner Management</h2>
             <BannerManagement />
+          </div>
+        )}
+
+        {/* Ticker Messages Management */}
+        {activeTab === "ticker" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-heading font-bold flex items-center gap-2">
+                  📢 Ticker Messages
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">Manage scrolling announcements shown at the top of your website</p>
+              </div>
+              <button
+                onClick={() => {
+                  setTickerForm({ text: "", icon: "✨", is_active: true, order: tickerMessages.length });
+                  setEditingTicker(null);
+                  setShowTickerForm(!showTickerForm);
+                }}
+                className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Message</span>
+              </button>
+            </div>
+
+            {/* Preview Bar */}
+            <div className="bg-gradient-to-r from-[#8B1538] via-[#D4AF37] to-[#8B1538] text-white py-2 text-sm overflow-hidden rounded-lg mb-6">
+              <div className="animate-marquee whitespace-nowrap inline-flex">
+                {[...tickerMessages.filter(m => m.is_active), ...tickerMessages.filter(m => m.is_active)].map((msg, idx) => (
+                  <span key={idx} className="font-medium tracking-wide mx-8">
+                    {msg.icon} {msg.text} {msg.icon}
+                  </span>
+                ))}
+                {tickerMessages.filter(m => m.is_active).length === 0 && (
+                  <span className="mx-8 opacity-50">No active messages - add some above!</span>
+                )}
+              </div>
+            </div>
+
+            {showTickerForm && (
+              <div className="bg-white border border-border/40 p-6 mb-6">
+                <h3 className="text-lg font-semibold mb-4">{editingTicker ? "Edit Message" : "Add New Message"}</h3>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    if (editingTicker) {
+                      await axios.put(`${API}/ticker/${editingTicker.message_id}`, tickerForm, { withCredentials: true });
+                      toast.success("Message updated!");
+                    } else {
+                      await axios.post(`${API}/ticker`, tickerForm, { withCredentials: true });
+                      toast.success("Message added!");
+                    }
+                    setShowTickerForm(false);
+                    setEditingTicker(null);
+                    fetchData();
+                  } catch (error) {
+                    toast.error("Failed to save message");
+                  }
+                }} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-medium mb-2">Message Text *</label>
+                      <input
+                        type="text"
+                        required
+                        value={tickerForm.text}
+                        onChange={(e) => setTickerForm({...tickerForm, text: e.target.value})}
+                        placeholder="e.g., Free Shipping on Orders Above ₹999"
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Icon</label>
+                      <select
+                        value={tickerForm.icon}
+                        onChange={(e) => setTickerForm({...tickerForm, icon: e.target.value})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      >
+                        <option value="✨">✨ Sparkle</option>
+                        <option value="🎁">🎁 Gift</option>
+                        <option value="🙏">🙏 Namaste</option>
+                        <option value="🪔">🪔 Diya</option>
+                        <option value="💰">💰 Money</option>
+                        <option value="🚚">🚚 Shipping</option>
+                        <option value="🏷️">🏷️ Tag</option>
+                        <option value="⭐">⭐ Star</option>
+                        <option value="❤️">❤️ Heart</option>
+                        <option value="🔥">🔥 Fire</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Display Order</label>
+                      <input
+                        type="number"
+                        value={tickerForm.order}
+                        onChange={(e) => setTickerForm({...tickerForm, order: parseInt(e.target.value) || 0})}
+                        className="w-full px-3 py-2 border border-input bg-transparent focus:outline-none focus:ring-1 focus:ring-secondary"
+                      />
+                    </div>
+                    <div className="flex items-center">
+                      <label className="flex items-center gap-2 cursor-pointer mt-6">
+                        <input
+                          type="checkbox"
+                          checked={tickerForm.is_active}
+                          onChange={(e) => setTickerForm({...tickerForm, is_active: e.target.checked})}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm font-medium">Active (Show on website)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-4">
+                    <button type="submit" className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90">
+                      {editingTicker ? "Update Message" : "Add Message"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowTickerForm(false); setEditingTicker(null); }}
+                      className="bg-muted text-muted-foreground px-6 py-2 hover:bg-muted/80"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Messages List */}
+            <div className="bg-white border border-border/40 overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Order</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Icon</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Message</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickerMessages.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-8 text-center text-muted-foreground">
+                        No ticker messages yet. Add your first announcement!
+                      </td>
+                    </tr>
+                  ) : (
+                    tickerMessages.map((msg) => (
+                      <tr key={msg.message_id} className="border-t border-border hover:bg-muted/30">
+                        <td className="px-4 py-3 text-sm">{msg.order}</td>
+                        <td className="px-4 py-3 text-2xl">{msg.icon}</td>
+                        <td className="px-4 py-3">{msg.text}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 text-xs rounded ${msg.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {msg.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                setTickerForm({
+                                  text: msg.text,
+                                  icon: msg.icon,
+                                  is_active: msg.is_active,
+                                  order: msg.order
+                                });
+                                setEditingTicker(msg);
+                                setShowTickerForm(true);
+                              }}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (window.confirm("Delete this message?")) {
+                                  try {
+                                    await axios.delete(`${API}/ticker/${msg.message_id}`, { withCredentials: true });
+                                    toast.success("Message deleted");
+                                    fetchData();
+                                  } catch (error) {
+                                    toast.error("Failed to delete");
+                                  }
+                                }
+                              }}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -2737,6 +4557,189 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Return Policy Settings */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+                <RefreshCw className="w-6 h-6 text-orange-600" />
+                Return Policy Settings
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Configure return policy requirements. Video proof helps prevent fraudulent returns and speeds up genuine return processing.
+              </p>
+              
+              <div className="space-y-6">
+                {/* Video Required Toggle */}
+                <div className="flex items-center justify-between p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                  <div>
+                    <h3 className="font-semibold text-orange-800">Require Video Proof for Returns</h3>
+                    <p className="text-sm text-orange-600 mt-1">
+                      When enabled, customers must upload a video showing the product issue to request a return.
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={siteSettings?.video_required_for_returns !== false}
+                      onChange={async (e) => {
+                        try {
+                          await axios.put(`${API}/admin/settings`, {
+                            video_required_for_returns: e.target.checked
+                          }, { withCredentials: true });
+                          setSiteSettings(prev => ({ ...prev, video_required_for_returns: e.target.checked }));
+                          toast.success(e.target.checked ? "Video proof now required for returns" : "Video proof no longer required");
+                        } catch (error) {
+                          toast.error("Failed to update setting");
+                        }
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                  </label>
+                </div>
+
+                {/* Return Window Days */}
+                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div>
+                    <h3 className="font-semibold">Return Window (Days)</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Number of days after delivery within which customers can request returns.
+                    </p>
+                  </div>
+                  <select
+                    value={siteSettings?.return_window_days || 7}
+                    onChange={async (e) => {
+                      try {
+                        await axios.put(`${API}/admin/settings`, {
+                          return_window_days: parseInt(e.target.value)
+                        }, { withCredentials: true });
+                        setSiteSettings(prev => ({ ...prev, return_window_days: parseInt(e.target.value) }));
+                        toast.success(`Return window set to ${e.target.value} days`);
+                      } catch (error) {
+                        toast.error("Failed to update setting");
+                      }
+                    }}
+                    className="px-4 py-2 border border-input rounded-lg bg-white focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="3">3 Days</option>
+                    <option value="5">5 Days</option>
+                    <option value="7">7 Days</option>
+                    <option value="10">10 Days</option>
+                    <option value="15">15 Days</option>
+                    <option value="30">30 Days</option>
+                  </select>
+                </div>
+
+                {/* Tips */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">💡 Why Video Proof Helps</h4>
+                  <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                    <li>Prevents fake return claims - customers can't falsify video evidence easily</li>
+                    <li>Speeds up genuine returns - clear evidence = faster processing</li>
+                    <li>Better documentation - videos show exact condition of products</li>
+                    <li>Reduces disputes - both parties have clear proof</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Database Backup Section */}
+            <div className="bg-white border border-border/40 p-6">
+              <h2 className="text-2xl font-heading font-bold mb-6 flex items-center gap-2">
+                <Database className="w-6 h-6 text-green-600" />
+                Database Backup & Restore
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                <strong className="text-red-600">Important:</strong> Your product data is stored locally and may be lost during updates. 
+                Create backups regularly to keep your data safe. Backups are stored permanently in Cloudinary.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Backup Section */}
+                <div className="border border-green-200 bg-green-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-green-800">
+                    <Upload className="w-5 h-5" />
+                    Create Backup
+                  </h3>
+                  <p className="text-sm text-green-700 mb-4">
+                    Save all your products, categories, banners, and collections to cloud storage.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const btn = document.getElementById('backup-btn');
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="animate-spin">⏳</span> Creating backup...';
+                        
+                        const res = await axios.post(`${API}/admin/backup`, {}, { withCredentials: true });
+                        
+                        if (res.data.success) {
+                          toast.success(`Backup created! ${res.data.total_documents} documents saved.`);
+                        }
+                        
+                        btn.disabled = false;
+                        btn.innerHTML = '💾 Create Backup Now';
+                      } catch (error) {
+                        toast.error('Backup failed: ' + (error.response?.data?.detail || error.message));
+                        document.getElementById('backup-btn').disabled = false;
+                        document.getElementById('backup-btn').innerHTML = '💾 Create Backup Now';
+                      }
+                    }}
+                    id="backup-btn"
+                    className="w-full bg-green-600 text-white py-3 font-medium hover:bg-green-700 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    💾 Create Backup Now
+                  </button>
+                </div>
+
+                {/* Restore Section */}
+                <div className="border border-blue-200 bg-blue-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-blue-800">
+                    <Download className="w-5 h-5" />
+                    Restore from Backup
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Restore your data from the last backup. This will replace current data.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm('⚠️ Warning: This will replace ALL current data with the backup. Are you sure?')) return;
+                      
+                      try {
+                        const btn = document.getElementById('restore-btn');
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="animate-spin">⏳</span> Restoring...';
+                        
+                        const res = await axios.post(`${API}/admin/backup/restore`, {}, { withCredentials: true });
+                        
+                        if (res.data.success) {
+                          toast.success(`Restored ${res.data.total_restored} documents from backup!`);
+                          window.location.reload();
+                        }
+                        
+                        btn.disabled = false;
+                        btn.innerHTML = '📥 Restore from Backup';
+                      } catch (error) {
+                        toast.error('Restore failed: ' + (error.response?.data?.detail || error.message));
+                        document.getElementById('restore-btn').disabled = false;
+                        document.getElementById('restore-btn').innerHTML = '📥 Restore from Backup';
+                      }
+                    }}
+                    id="restore-btn"
+                    className="w-full bg-blue-600 text-white py-3 font-medium hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    📥 Restore from Backup
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>💡 Pro Tip:</strong> Create a backup after adding new products or making important changes. 
+                  The system will automatically restore from backup when the database is empty (e.g., after a fork).
+                </p>
               </div>
             </div>
 
@@ -3226,7 +5229,7 @@ TWILIO_PHONE_NUMBER=+1234567890</pre>
                       <tr key={order.order_id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 font-mono text-sm">{order.order_id}</td>
                         <td className="px-4 py-3">{order.shipping_address?.full_name}</td>
-                        <td className="px-4 py-3 font-medium">₹{order.total_amount.toFixed(2)}</td>
+                        <td className="px-4 py-3 font-medium">₹{(order.total_amount || 0).toFixed(2)}</td>
                         <td className="px-4 py-3">
                           <span className={`text-xs px-2 py-1 ${
                             order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
@@ -3412,6 +5415,16 @@ TWILIO_PHONE_NUMBER=+1234567890</pre>
                           {shipment.shipping_rate ? `₹${shipment.shipping_rate}` : '-'}
                         </td>
                         <td className="px-4 py-3 space-x-2">
+                          {/* Combined PDF - Shipping Label + Invoice */}
+                          {shipment.awb_number && (
+                            <button
+                              onClick={() => handleDownloadCombinedPDF(shipment.order_id)}
+                              className="text-xs bg-green-100 text-green-700 px-2 py-1 hover:bg-green-200"
+                              data-testid={`combined-pdf-${shipment.order_id}`}
+                            >
+                              📦 Combined PDF
+                            </button>
+                          )}
                           {shipment.label_url && (
                             <a 
                               href={shipment.label_url} 

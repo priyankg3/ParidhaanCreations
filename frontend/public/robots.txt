@@ -1,32 +1,45 @@
 # Robots.txt for Paridhaan Creations
-# https://pooja-creations.preview.emergentagent.com
+# https://paridhaancreations.com
 
 User-agent: *
 Allow: /
 Allow: /products
 Allow: /products/*
-Allow: /cart
-Allow: /checkout
+Allow: /collection/*
+Allow: /astro
+Allow: /terms
+Allow: /support
+Allow: /refund-policy
+Allow: /shipping-policy
 
-# Disallow admin and auth pages
+# Disallow admin, auth, and private pages
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /login
-Disallow: /auth/*
+Disallow: /checkout
+Disallow: /cart
+Disallow: /my-orders
+Disallow: /wishlist
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1
 
 # Sitemap location
-Sitemap: https://pooja-creations.preview.emergentagent.com/sitemap.xml
+Sitemap: https://paridhaancreations.com/api/sitemap.xml
 
-# Specific bot instructions
+# Google specific
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 0
 
+User-agent: Googlebot-Image
+Allow: /
+
+# Bing specific
 User-agent: Bingbot
 Allow: /
 
+# Yandex
 User-agent: Yandex
 Allow: /
 Crawl-delay: 2
