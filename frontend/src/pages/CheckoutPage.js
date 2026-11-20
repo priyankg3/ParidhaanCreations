@@ -4,7 +4,7 @@ import axios from "axios";
 import { API } from "@/App";
 import { toast } from "sonner";
 import { useRazorpay } from "react-razorpay";
-import { Check, CreditCard, Smartphone, MapPin, Package, ShieldCheck, Truck, Tag, X } from "lucide-react";
+import { Check, CreditCard, Smartphone, MapPin, Package, ShieldCheck, Truck, Tag, X, ChevronRight } from "lucide-react";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   
   const [shippingAddress, setShippingAddress] = useState({
     full_name: "",
@@ -35,6 +36,7 @@ export default function CheckoutPage() {
   const [gstSettings, setGstSettings] = useState(null);
   const [gstBreakdown, setGstBreakdown] = useState(null);
   const [indianStates, setIndianStates] = useState([]);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -125,12 +127,16 @@ export default function CheckoutPage() {
     let totalCgst = 0;
     let totalSgst = 0;
     let totalIgst = 0;
+    
+    // Product-wise GST breakdown
+    const productGstDetails = [];
 
     cart.items.forEach(item => {
       const product = products[item.product_id];
       if (!product) return;
 
       const gstRate = product.gst_rate || gstSettings.default_gst_rate || 18;
+      const hsnCode = product.hsn_code || "-";
       const itemTotal = product.price * item.quantity;
       
       // If prices include GST (MRP style)
@@ -141,13 +147,30 @@ export default function CheckoutPage() {
         taxableAmount = itemTotal;
       }
 
+      let itemCgst = 0, itemSgst = 0, itemIgst = 0;
       if (isInterState) {
-        totalIgst += taxableAmount * gstRate / 100;
+        itemIgst = taxableAmount * gstRate / 100;
+        totalIgst += itemIgst;
       } else {
-        totalCgst += taxableAmount * (gstRate / 2) / 100;
-        totalSgst += taxableAmount * (gstRate / 2) / 100;
+        itemCgst = taxableAmount * (gstRate / 2) / 100;
+        itemSgst = taxableAmount * (gstRate / 2) / 100;
+        totalCgst += itemCgst;
+        totalSgst += itemSgst;
       }
       totalTaxable += taxableAmount;
+
+      // Add to product-wise breakdown
+      productGstDetails.push({
+        name: product.name,
+        hsn: hsnCode,
+        gstRate: gstRate,
+        quantity: item.quantity,
+        taxableAmount: taxableAmount.toFixed(2),
+        cgst: itemCgst.toFixed(2),
+        sgst: itemSgst.toFixed(2),
+        igst: itemIgst.toFixed(2),
+        totalTax: (itemCgst + itemSgst + itemIgst).toFixed(2)
+      });
     });
 
     // Apply discount proportionally to taxable amount
@@ -166,7 +189,7 @@ export default function CheckoutPage() {
       sgst: totalSgst.toFixed(2),
       igst: totalIgst.toFixed(2),
       totalGst: (totalCgst + totalSgst + totalIgst).toFixed(2),
-      gstRate: gstSettings.default_gst_rate || 18
+      productDetails: productGstDetails
     });
   }, [gstSettings, shippingAddress.state, indianStates, cart.items, products, discount, subtotal]);
 
@@ -272,16 +295,23 @@ export default function CheckoutPage() {
         image: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=100",
         handler: async (response) => {
           try {
-            await axios.post(`${API}/payments/razorpay/verify`, {
+            setPlacingOrder(true);
+            const verifyRes = await axios.post(`${API}/payments/razorpay/verify`, {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
-            await axios.post(`${API}/cart/clear`, {}, { withCredentials: true });
-            toast.success("Payment successful!");
-            navigate(`/order-success?order_id=${orderId}`);
+            
+            if (verifyRes.data.status === "success") {
+              await axios.post(`${API}/cart/clear`, {}, { withCredentials: true });
+              toast.success("🎉 Payment successful! Order placed.");
+              navigate(`/order-success?order_id=${orderId}`);
+            }
           } catch (error) {
-            toast.error("Payment verification failed");
+            console.error("Payment verification error:", error);
+            toast.error("Payment verification failed. Please contact support with Order ID: " + orderId);
+          } finally {
+            setPlacingOrder(false);
           }
         },
         prefill: {
@@ -331,7 +361,19 @@ export default function CheckoutPage() {
     }
   };
 
-  // Stripe handler removed in Phase 1 — Razorpay covers all India payments.
+  const handleStripePayment = async (orderId) => {
+    try {
+      const originUrl = window.location.origin;
+      const response = await axios.post(`${API}/payments/stripe/session?order_id=${orderId}&origin_url=${encodeURIComponent(originUrl)}`);
+      
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error("Stripe error:", error);
+      toast.error("Payment initialization failed");
+    }
+  };
 
   if (loading) {
     return (
@@ -665,7 +707,6 @@ export default function CheckoutPage() {
                         <p className="text-sm text-muted-foreground">Visa, Mastercard, Rupay & more</p>
                         <div className="flex items-center space-x-2 mt-2">
                           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1">All Cards</span>
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1">EMI Available</span>
                         </div>
                       </div>
                     </label>
@@ -694,10 +735,11 @@ export default function CheckoutPage() {
 
                     <button
                       type="button"
-                      onClick={() => setCurrentStep(3)}
-                      className="w-full bg-primary text-primary-foreground py-4 font-medium hover:bg-primary/90 transition-all"
+                      onClick={() => setShowReviewModal(true)}
+                      className="w-full bg-primary text-primary-foreground py-4 font-medium hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
                     >
                       Review Order
+                      <ChevronRight className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
@@ -791,23 +833,42 @@ export default function CheckoutPage() {
                           <span className="font-medium">GST Breakdown</span>
                           <span className="text-primary">(Included in price)</span>
                         </div>
+                        
+                        {/* Product-wise GST Details */}
+                        {gstBreakdown.productDetails && gstBreakdown.productDetails.length > 0 && (
+                          <div className="space-y-2 pb-2 border-b border-gray-200">
+                            {gstBreakdown.productDetails.map((item, idx) => (
+                              <div key={idx} className="text-xs bg-white p-2 rounded border border-gray-100">
+                                <div className="flex justify-between mb-1">
+                                  <span className="font-medium text-gray-800 truncate flex-1 mr-2">{item.name}</span>
+                                  <span className="text-orange-600 font-semibold whitespace-nowrap">{item.gstRate}% GST</span>
+                                </div>
+                                <div className="flex justify-between text-muted-foreground">
+                                  <span>HSN: {item.hsn} | Qty: {item.quantity}</span>
+                                  <span>Tax: ₹{item.totalTax}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <span>Taxable Amount</span>
                           <span>₹{gstBreakdown.taxableAmount}</span>
                         </div>
                         {gstBreakdown.isInterState ? (
                           <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>IGST ({gstBreakdown.gstRate}%)</span>
+                            <span>IGST</span>
                             <span>₹{gstBreakdown.igst}</span>
                           </div>
                         ) : (
                           <>
                             <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>CGST ({gstBreakdown.gstRate/2}%)</span>
+                              <span>CGST</span>
                               <span>₹{gstBreakdown.cgst}</span>
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground">
-                              <span>SGST ({gstBreakdown.gstRate/2}%)</span>
+                              <span>SGST</span>
                               <span>₹{gstBreakdown.sgst}</span>
                             </div>
                           </>
@@ -865,6 +926,199 @@ export default function CheckoutPage() {
           </div>
         </form>
       </div>
+
+      {/* Review Order Modal */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowReviewModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary to-orange-500 text-white px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold">Review Your Order</h2>
+                <p className="text-sm text-white/80">Please confirm all details before placing order</p>
+              </div>
+              <button 
+                onClick={() => setShowReviewModal(false)}
+                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-6 space-y-6">
+              
+              {/* Shipping Address */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-800">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  Delivery Address
+                </h3>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p className="font-medium text-gray-900">{shippingAddress.full_name}</p>
+                  <p>{shippingAddress.address_line1}</p>
+                  {shippingAddress.address_line2 && <p>{shippingAddress.address_line2}</p>}
+                  <p>{shippingAddress.city}, {shippingAddress.state} - {shippingAddress.pincode}</p>
+                  <p className="text-primary">📱 {shippingAddress.phone}</p>
+                  {shippingAddress.email && <p>✉️ {shippingAddress.email}</p>}
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-800">
+                  <Package className="w-5 h-5 text-primary" />
+                  Order Items ({cart?.items?.length || 0})
+                </h3>
+                <div className="space-y-3">
+                  {cart?.items?.map((item) => {
+                    const product = products?.[item.product_id];
+                    if (!product) return null;
+                    return (
+                      <div key={item.product_id} className="flex items-center gap-4 bg-gray-50 rounded-lg p-3">
+                        <img 
+                          src={product.images?.[0] || 'https://placehold.co/80x80'} 
+                          alt={product.name}
+                          className="w-16 h-16 object-cover rounded-lg border"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{product.name}</p>
+                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          {product.gst_rate && (
+                            <p className="text-xs text-orange-600">GST: {product.gst_rate}%</p>
+                          )}
+                        </div>
+                        <p className="font-semibold text-primary">₹{(product.price * item.quantity).toLocaleString()}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="bg-blue-50 rounded-xl p-4">
+                <h3 className="font-semibold mb-2 flex items-center gap-2 text-gray-800">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  Payment Method
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {paymentMethod === 'razorpay' && '📲 UPI (GPay, PhonePe, Paytm)'}
+                  {paymentMethod === 'card' && '💳 Credit/Debit Card'}
+                  {paymentMethod === 'netbanking' && '🏦 Net Banking'}
+                  {paymentMethod === 'wallet' && '👛 Wallet'}
+                </p>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200">
+                <h3 className="font-semibold mb-3 text-gray-800">Price Details</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span>₹{(subtotal || 0).toLocaleString()}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount {appliedCoupon && `(${appliedCoupon.code})`}</span>
+                      <span>-₹{(discount || 0).toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Shipping</span>
+                    <span className="text-green-600">FREE</span>
+                  </div>
+                  
+                  {/* GST Breakdown in Modal */}
+                  {gstBreakdown && gstSettings?.gst_enabled && (
+                    <div className="pt-2 mt-2 border-t border-orange-200 space-y-1">
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>Taxable Amount</span>
+                        <span>₹{gstBreakdown.taxableAmount}</span>
+                      </div>
+                      {gstBreakdown.isInterState ? (
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>IGST</span>
+                          <span>₹{gstBreakdown.igst}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>CGST</span>
+                            <span>₹{gstBreakdown.cgst}</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>SGST</span>
+                            <span>₹{gstBreakdown.sgst}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between pt-3 mt-2 border-t border-orange-300 text-lg font-bold text-gray-900">
+                    <span>Total Amount</span>
+                    <span className="text-primary">₹{(total || 0).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="flex justify-center gap-6 text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  <span>Secure Payment</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Truck className="w-4 h-4 text-blue-600" />
+                  <span>Fast Delivery</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Package className="w-4 h-4 text-purple-600" />
+                  <span>Easy Returns</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer with Place Order Button */}
+            <div className="border-t bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+              <button
+                onClick={() => {
+                  setShowReviewModal(false);
+                  setCurrentStep(3);
+                  // Trigger place order
+                  setTimeout(() => {
+                    document.querySelector('[data-testid="place-order-button"]')?.click();
+                  }, 100);
+                }}
+                disabled={placingOrder}
+                className="w-full bg-gradient-to-r from-primary to-orange-500 text-white py-4 font-bold text-lg hover:from-primary/90 hover:to-orange-400 transition-all rounded-xl flex items-center justify-center gap-2 shadow-lg"
+              >
+                {placingOrder ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-5 h-5" />
+                    <span>Place Order - ₹{(total || 0).toLocaleString()}</span>
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-center text-gray-500 mt-2">
+                By placing this order, you agree to our Terms & Conditions
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,13 +10,22 @@ export const optimizeImageUrl = (url, width = 400, height = 400) => {
     return url;
   }
   
-  // Unsplash optimization - add WebP format and compression (q=50 for mobile performance)
-  if (url.includes('unsplash.com')) {
-    const baseUrl = url.split('?')[0];
-    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=50&fm=webp`;
+  // Cloudinary optimization - serve HD quality with auto format
+  if (url.includes('cloudinary.com') || url.includes('res.cloudinary')) {
+    // Add Cloudinary transformations for HD quality
+    if (url.includes('/upload/')) {
+      return url.replace('/upload/', `/upload/q_auto:best,f_auto,w_${width},c_limit/`);
+    }
+    return url;
   }
   
-  // Pexels optimization - use auto compress
+  // Unsplash optimization
+  if (url.includes('unsplash.com')) {
+    const baseUrl = url.split('?')[0];
+    return `${baseUrl}?w=${width}&h=${height}&fit=crop&q=80&fm=webp`;
+  }
+  
+  // Pexels optimization
   if (url.includes('pexels.com')) {
     const baseUrl = url.split('?')[0];
     return `${baseUrl}?auto=compress&cs=tinysrgb&w=${width}&h=${height}&fit=crop`;
@@ -31,9 +40,9 @@ export const optimizeImageUrl = (url, width = 400, height = 400) => {
  */
 export const getOptimizedProductImage = (imageUrl, size = 'medium') => {
   const sizes = {
-    small: { w: 200, h: 200 },
-    medium: { w: 300, h: 300 },
-    large: { w: 600, h: 600 }
+    small: { w: 300, h: 300 },
+    medium: { w: 500, h: 500 },
+    large: { w: 800, h: 800 }
   };
   const { w, h } = sizes[size] || sizes.medium;
   return optimizeImageUrl(imageUrl, w, h);

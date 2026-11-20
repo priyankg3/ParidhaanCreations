@@ -18,7 +18,6 @@ const translations = {
     "category.handicrafts": "Handicrafts",
     "category.pooja": "Pooja Items",
     "category.perfumes": "Perfumes",
-    "category.jewellery": "Jewellery",
     
     // Product
     "product.addToCart": "Add to Cart",
@@ -99,7 +98,6 @@ const translations = {
     "category.handicrafts": "हस्तशिल्प",
     "category.pooja": "पूजा सामग्री",
     "category.perfumes": "इत्र",
-    "category.jewellery": "आभूषण",
     
     // Product
     "product.addToCart": "कार्ट में डालें",

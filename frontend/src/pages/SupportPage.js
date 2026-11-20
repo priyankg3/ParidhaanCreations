@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { API } from "@/App";
 import { toast } from "sonner";
-import { MessageSquare, Clock, CheckCircle, AlertCircle, Send, ChevronRight, Headphones, Package, CreditCard, Truck, HelpCircle } from "lucide-react";
+import { MessageSquare, Clock, CheckCircle, AlertCircle, Send, ChevronRight, Headphones, Package, CreditCard, Truck, HelpCircle, Upload, Image, X, RefreshCw, Camera, Video, Play } from "lucide-react";
 import SEO from "@/components/SEO";
 import { getSupportWhatsAppLink } from "@/components/WhatsAppButton";
 
@@ -12,6 +12,7 @@ const TICKET_CATEGORIES = [
   { value: "product", label: "Product Query", icon: HelpCircle, description: "Questions about products" },
   { value: "payment", label: "Payment Issue", icon: CreditCard, description: "Payment related queries" },
   { value: "shipping", label: "Shipping & Delivery", icon: Truck, description: "Delivery concerns" },
+  { value: "return", label: "Return/Refund", icon: RefreshCw, description: "Return or refund requests" },
   { value: "other", label: "Other", icon: Headphones, description: "Any other queries" }
 ];
 
@@ -29,6 +30,13 @@ export default function SupportPage() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [replyMessage, setReplyMessage] = useState("");
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [uploadedVideos, setUploadedVideos] = useState([]);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [siteSettings, setSiteSettings] = useState(null);
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     subject: "",
@@ -36,7 +44,9 @@ export default function SupportPage() {
     message: "",
     order_id: "",
     guest_name: "",
-    guest_email: ""
+    guest_email: "",
+    is_return_request: false,
+    return_reason: ""
   });
 
   useEffect(() => {
@@ -48,6 +58,10 @@ export default function SupportPage() {
       const userRes = await axios.get(`${API}/auth/me`, { withCredentials: true }).catch(() => null);
       setUser(userRes?.data);
 
+      // Fetch site settings for video requirement
+      const settingsRes = await axios.get(`${API}/settings`).catch(() => null);
+      setSiteSettings(settingsRes?.data);
+
       if (userRes?.data) {
         const ticketsRes = await axios.get(`${API}/support/tickets`, { withCredentials: true });
         setTickets(ticketsRes.data);
@@ -57,6 +71,82 @@ export default function SupportPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (50MB max)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video too large! Maximum size is 50MB");
+      return;
+    }
+
+    setVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post(`${API}/support/upload-video`, formData, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          if (percent < 100) {
+            toast.loading(`Uploading video... ${percent}%`, { id: 'video-upload' });
+          }
+        }
+      });
+      
+      toast.dismiss('video-upload');
+      if (response.data.video_url) {
+        setUploadedVideos(prev => [...prev, response.data.video_url]);
+        toast.success("Video uploaded successfully!");
+      }
+    } catch (error) {
+      toast.dismiss('video-upload');
+      toast.error(error.response?.data?.detail || "Failed to upload video");
+    } finally {
+      setVideoUploading(false);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  };
+
+  const removeVideo = (index) => {
+    setUploadedVideos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setImageUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        
+        const response = await axios.post(`${API}/support/upload-image`, formData, {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        if (response.data.image_url) {
+          setUploadedImages(prev => [...prev, response.data.image_url]);
+        }
+      }
+      toast.success("Image(s) uploaded successfully!");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    } finally {
+      setImageUploading(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
+
+  const removeImage = (index) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -72,14 +162,37 @@ export default function SupportPage() {
       return;
     }
 
+    // For return requests, images are required
+    if (formData.category === "return" && uploadedImages.length === 0) {
+      toast.error("Please upload at least one image of the product for return requests");
+      return;
+    }
+
+    // Check if video is required for returns
+    const videoRequired = siteSettings?.video_required_for_returns !== false;
+    if (formData.category === "return" && videoRequired && uploadedVideos.length === 0) {
+      toast.error("Video proof is required for return requests. Please upload a video showing the product issue.");
+      return;
+    }
+
     try {
-      await axios.post(`${API}/support/tickets`, formData, { withCredentials: true });
+      const ticketData = {
+        ...formData,
+        images: uploadedImages,
+        videos: uploadedVideos,
+        is_return_request: formData.category === "return",
+        return_reason: formData.return_reason || null
+      };
+      
+      await axios.post(`${API}/support/tickets`, ticketData, { withCredentials: true });
       toast.success("Support ticket created successfully!");
       setShowForm(false);
-      setFormData({ subject: "", category: "order", message: "", order_id: "", guest_name: "", guest_email: "" });
+      setFormData({ subject: "", category: "order", message: "", order_id: "", guest_name: "", guest_email: "", is_return_request: false, return_reason: "" });
+      setUploadedImages([]);
+      setUploadedVideos([]);
       fetchData();
     } catch (error) {
-      toast.error("Failed to create ticket");
+      toast.error(error.response?.data?.detail || "Failed to create ticket");
     }
   };
 
@@ -228,17 +341,40 @@ export default function SupportPage() {
               </div>
 
               {/* Order ID (optional) */}
-              {formData.category === "order" && (
+              {(formData.category === "order" || formData.category === "return") && (
                 <div>
-                  <label className="block text-sm font-medium mb-2">Order ID (if applicable)</label>
+                  <label className="block text-sm font-medium mb-2">Order ID {formData.category === "return" ? "*" : "(if applicable)"}</label>
                   <input
                     type="text"
+                    required={formData.category === "return"}
                     value={formData.order_id}
                     onChange={(e) => setFormData({ ...formData, order_id: e.target.value })}
                     placeholder="e.g., order_abc123"
                     className="w-full px-4 py-3 border border-input bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
                     data-testid="order-id-input"
                   />
+                </div>
+              )}
+
+              {/* Return Reason (for return requests) */}
+              {formData.category === "return" && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Reason for Return *</label>
+                  <select
+                    required
+                    value={formData.return_reason}
+                    onChange={(e) => setFormData({ ...formData, return_reason: e.target.value })}
+                    className="w-full px-4 py-3 border border-input bg-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+                    data-testid="return-reason-select"
+                  >
+                    <option value="">Select a reason</option>
+                    <option value="damaged">Product is damaged</option>
+                    <option value="wrong_item">Wrong item received</option>
+                    <option value="quality_issue">Quality not as expected</option>
+                    <option value="size_issue">Size doesn't fit (Laddu Gopal dress)</option>
+                    <option value="not_as_described">Product not as described</option>
+                    <option value="other">Other reason</option>
+                  </select>
                 </div>
               )}
 
@@ -250,19 +386,156 @@ export default function SupportPage() {
                   rows={5}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Please describe your issue in detail..."
+                  placeholder={formData.category === "return" 
+                    ? "Please describe the issue with the product in detail. Include any visible defects, wrong size, etc."
+                    : "Please describe your issue in detail..."}
                   className="w-full px-4 py-3 border border-input bg-transparent focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                   data-testid="message-input"
                 />
               </div>
+
+              {/* Image Upload Section */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  {formData.category === "return" ? "Product Photos * (Required for returns)" : "Attach Images (optional)"}
+                </label>
+                <div className={`border-2 border-dashed rounded-lg p-4 ${formData.category === "return" ? "border-orange-300 bg-orange-50" : "border-gray-200"}`}>
+                  <input
+                    type="file"
+                    ref={imageInputRef}
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="support-images"
+                  />
+                  <label htmlFor="support-images" className="cursor-pointer flex flex-col items-center">
+                    {imageUploading ? (
+                      <>
+                        <Upload className="w-8 h-8 text-primary animate-pulse" />
+                        <span className="text-sm text-primary mt-2">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-8 h-8 text-gray-400" />
+                        <span className="text-sm text-gray-600 mt-2">Click to upload images</span>
+                        {formData.category === "return" && (
+                          <span className="text-xs text-orange-600 mt-1">📸 Clear photos help us process your return faster</span>
+                        )}
+                      </>
+                    )}
+                  </label>
+                </div>
+
+                {/* Uploaded Images Preview */}
+                {uploadedImages.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-3">
+                    {uploadedImages.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img src={url} alt={`Upload ${index + 1}`} className="w-20 h-20 object-cover rounded-lg border" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {formData.category === "return" && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800 font-medium">📷 Photo Guidelines for Returns:</p>
+                    <ul className="text-xs text-amber-700 mt-1 list-disc list-inside space-y-1">
+                      <li>Clear photos of the product showing the issue</li>
+                      <li>Include packaging if damaged during delivery</li>
+                      <li>Show any defects or quality issues clearly</li>
+                      <li>Upload at least 2-3 images from different angles</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Video Upload Section - Required for Returns */}
+              {formData.category === "return" && (
+                <div>
+                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                    <Video className="w-4 h-4 text-red-500" />
+                    Video Proof * (Required for Returns)
+                  </label>
+                  <div className="border-2 border-dashed border-red-300 rounded-lg p-4 bg-red-50/50">
+                    <input
+                      type="file"
+                      ref={videoInputRef}
+                      accept="video/mp4,video/quicktime,video/webm,video/x-msvideo"
+                      onChange={handleVideoUpload}
+                      className="hidden"
+                      id="support-video"
+                    />
+                    <label htmlFor="support-video" className="cursor-pointer flex flex-col items-center">
+                      {videoUploading ? (
+                        <>
+                          <Video className="w-8 h-8 text-red-500 animate-pulse" />
+                          <span className="text-sm text-red-600 mt-2">Uploading video...</span>
+                          <span className="text-xs text-red-500">Please wait, this may take a moment</span>
+                        </>
+                      ) : (
+                        <>
+                          <Video className="w-8 h-8 text-red-400" />
+                          <span className="text-sm text-red-600 mt-2">Click to upload video</span>
+                          <span className="text-xs text-red-500 mt-1">MP4, MOV, WebM (Max 50MB)</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+
+                  {/* Uploaded Videos Preview */}
+                  {uploadedVideos.length > 0 && (
+                    <div className="flex flex-wrap gap-3 mt-3">
+                      {uploadedVideos.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <div className="w-24 h-24 bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden">
+                            <video src={url} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                              <Play className="w-8 h-8 text-white" />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeVideo(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-800 font-medium">🎥 Video Guidelines for Returns:</p>
+                    <ul className="text-xs text-red-700 mt-1 list-disc list-inside space-y-1">
+                      <li><strong>Show the product clearly</strong> - unbox or display the item</li>
+                      <li><strong>Demonstrate the issue</strong> - show damage, defects, or wrong item</li>
+                      <li><strong>Show the invoice/packaging</strong> - if relevant to the issue</li>
+                      <li><strong>Keep it under 60 seconds</strong> - concise videos process faster</li>
+                      <li><strong>Good lighting</strong> - ensure the issue is visible</li>
+                    </ul>
+                    <p className="text-xs text-red-600 mt-2 font-medium">⚠️ Video proof helps prevent fraud and speeds up genuine return processing</p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex space-x-4">
                 <button
                   type="submit"
                   className="bg-primary text-primary-foreground px-8 py-3 font-medium hover:bg-primary/90 transition-all"
                   data-testid="submit-ticket-btn"
+                  disabled={videoUploading || imageUploading}
                 >
-                  Submit Ticket
+                  {(videoUploading || imageUploading) ? "Uploading..." : "Submit Ticket"}
                 </button>
                 <button
                   type="button"

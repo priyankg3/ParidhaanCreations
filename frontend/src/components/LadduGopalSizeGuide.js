@@ -188,23 +188,58 @@ export function LadduGopalSizeSelector() {
 
   return (
     <>
-      <section className="py-12 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+      <section className="py-12 lotus-pattern bg-gradient-to-br from-[#FFF8E7] via-[#F8BBD9]/20 to-[#FFF8E7]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-amber-200">
+          {/* Divine Divider */}
+          <div className="divine-divider mb-6">
+            <span className="text-2xl">🪷</span>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-[#D4AF37]/30">
             <div className="grid grid-cols-1 lg:grid-cols-2">
-              {/* Left - Image/Visual */}
-              <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-8 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="text-6xl mb-4">🙏</div>
-                  <h3 className="text-3xl font-bold mb-2">Laddu Gopal</h3>
-                  <p className="text-amber-100">Poshak Size Guide</p>
+              {/* Left - Krishna Hands with Flute and Peacock Feather */}
+              <div className="bg-gradient-to-br from-[#8B1538] via-[#C41E3A] to-[#D4AF37] p-6 flex items-center justify-center relative overflow-hidden min-h-[280px]">
+                {/* Decorative Mandala Pattern */}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="absolute top-4 left-4 w-24 h-24 border-2 border-white rounded-full"></div>
+                  <div className="absolute top-8 left-8 w-16 h-16 border-2 border-white rounded-full"></div>
+                  <div className="absolute bottom-4 right-4 w-28 h-28 border-2 border-white rounded-full"></div>
+                  <div className="absolute bottom-10 right-10 w-16 h-16 border-2 border-white rounded-full"></div>
+                </div>
+                <div className="text-center text-white relative z-10">
+                  {/* Krishna Hands with Flute Image */}
+                  <div className="mb-4">
+                    {/* Decorative panel - upload a custom image to /public/krishna-hands.png
+                        to replace the fallback emoji that renders when the file is missing. */}
+                    <img
+                      src="/krishna-hands.png"
+                      alt="Krishna Hands with Flute and Peacock Feather"
+                      className="w-32 h-32 mx-auto object-contain rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        const sibling = e.currentTarget.nextElementSibling;
+                        if (sibling) sibling.style.display = "block";
+                      }}
+                    />
+                    <div
+                      className="hidden w-32 h-32 mx-auto flex items-center justify-center text-6xl"
+                      aria-hidden="true"
+                    >🪈</div>
+                  </div>
+                  <h3 className="text-3xl font-bold mb-2 font-['Noto_Sans_Devanagari']">कान्हा जी</h3>
+                  <p className="text-base text-[#F8BBD9]">Poshak Size Guide</p>
+                  <div className="mt-3 flex justify-center gap-2">
+                    <span className="text-xl">🙏</span>
+                    <span className="text-sm text-white/80 font-['Noto_Sans_Devanagari']">श्री राधे</span>
+                    <span className="text-xl">🙏</span>
+                  </div>
                 </div>
               </div>
               
               {/* Right - Content */}
               <div className="p-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  अपने कान्हा जी के लिए Perfect पोशाक खोजें
+                  अपने कान्हा जी के लिए सटीक पोशाक खोजें
                 </h2>
                 <p className="text-gray-600 mb-6">
                   Tension mat lo ki "Kya ye poshak mere Kanha ko fit aayegi?" - 

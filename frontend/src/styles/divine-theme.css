@@ -1,0 +1,213 @@
+/* Divine Spiritual Theme Styles for Paridhaan Creations */
+/* Inspired by Vrindavan, Barsana, Radha-Krishna */
+
+/* ===== Divine Color Palette ===== */
+:root {
+  --divine-kesariya: #FF6B35;      /* Saffron - Main spiritual color */
+  --divine-gulabi: #E91E8C;        /* Pink - Radha Rani */
+  --divine-maroon: #8B1538;        /* Deep temple maroon */
+  --divine-gold: #D4AF37;          /* Sacred gold */
+  --divine-peacock: #1A535C;       /* Mor Pankh teal */
+  --divine-lotus-pink: #F8BBD9;    /* Soft lotus pink */
+  --divine-cream: #FFF8E7;         /* Sacred cream */
+  --divine-sandalwood: #E8DCCA;    /* Chandan color */
+}
+
+/* ===== Peacock Feather Pattern ===== */
+.mor-pankh-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-2 8-8 15-8 25s6 15 8 25c2-10 8-15 8-25S32 13 30 5z' fill='%231A535C' fill-opacity='0.03'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%23D4AF37' fill-opacity='0.1'/%3E%3C/svg%3E");
+}
+
+/* ===== Lotus Pattern Background ===== */
+.lotus-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 20c-5 0-10 8-10 15s5 15 10 15 10-8 10-15-5-15-10-15z' fill='%23F8BBD9' fill-opacity='0.15'/%3E%3Cpath d='M25 35c0-5 8-10 15-10s15 5 15 10-8 10-15 10-15-5-15-10z' fill='%23F8BBD9' fill-opacity='0.1'/%3E%3C/svg%3E");
+}
+
+/* ===== Temple Border Pattern ===== */
+.temple-border {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6l5-6h10l5 6-5 6H5L0 6zm20 0l5-6h10l5 6-5 6H25l-5-6z' fill='%23D4AF37' fill-opacity='0.3'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  height: 12px;
+}
+
+/* ===== Divine Gradient Backgrounds ===== */
+.divine-gradient-kesariya {
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 50%, #FFA552 100%);
+}
+
+.divine-gradient-radha {
+  background: linear-gradient(135deg, #E91E8C 0%, #F06292 50%, #F8BBD9 100%);
+}
+
+.divine-gradient-krishna {
+  background: linear-gradient(135deg, #1A535C 0%, #4ECDC4 100%);
+}
+
+.divine-gradient-temple {
+  background: linear-gradient(180deg, #FFF8E7 0%, #FFE4C4 50%, #E8DCCA 100%);
+}
+
+/* ===== Om Symbol Animation ===== */
+@keyframes divine-glow {
+  0%, 100% { 
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  50% { 
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 40px rgba(212, 175, 55, 0.5);
+  }
+}
+
+.divine-glow {
+  animation: divine-glow 3s ease-in-out infinite;
+}
+
+/* ===== Diya/Lamp Flicker Animation ===== */
+@keyframes diya-flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.diya-flicker {
+  animation: diya-flicker 2s ease-in-out infinite;
+}
+
+/* ===== Floating Petals Animation ===== */
+@keyframes float-petals {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.float-animation {
+  animation: float-petals 4s ease-in-out infinite;
+}
+
+/* ===== Divine Section Divider ===== */
+.divine-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.divine-divider::before,
+.divine-divider::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+}
+
+/* ===== Spiritual Card Style ===== */
+.spiritual-card {
+  background: linear-gradient(145deg, #FFF8E7, #FFFFFF);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+  transition: all 0.3s ease;
+}
+
+.spiritual-card:hover {
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+/* ===== Temple Bell Decoration ===== */
+.temple-bells {
+  position: relative;
+}
+
+.temple-bells::before {
+  content: '🔔';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.3;
+}
+
+.temple-bells::after {
+  content: '🔔';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(-1);
+  opacity: 0.3;
+}
+
+/* ===== Radhe Krishna Badge ===== */
+.radhe-badge {
+  background: linear-gradient(135deg, #E91E8C, #FF6B35);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ===== Divine Button Styles ===== */
+.btn-divine {
+  background: linear-gradient(135deg, #FF6B35, #E91E8C);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-divine:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+}
+
+.btn-divine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-divine:hover::before {
+  left: 100%;
+}
+
+/* ===== Sacred Text Styling ===== */
+.sacred-text {
+  font-family: 'Noto Sans Devanagari', serif;
+  color: var(--divine-maroon);
+}
+
+.mantra-text {
+  background: linear-gradient(135deg, #8B1538, #D4AF37);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Vrindavan Background ===== */
+.vrindavan-bg {
+  background-color: var(--divine-cream);
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(248, 187, 217, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(26, 83, 92, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+}
+
+/* ===== Barsana Theme ===== */
+.barsana-theme {
+  background: linear-gradient(180deg, 
+    rgba(248, 187, 217, 0.2) 0%, 
+    rgba(255, 248, 231, 1) 30%, 
+    rgba(255, 255, 255, 1) 100%
+  );
+}
