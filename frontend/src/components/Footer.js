@@ -9,19 +9,36 @@ const FOOTER_LOGO = "/logo-footer-v3.png";
 // WhatsApp QR Code (wa.me link encoded)
 const WHATSAPP_QR = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://wa.me/message/4TZ5RAVABY4HG1&bgcolor=ffffff&color=EA580C";
 
-// Payment method logos
-const PAYMENT_LOGOS = [
-  { name: "Visa", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png" },
-  { name: "Mastercard", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png" },
-  { name: "UPI", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/200px-UPI-Logo-vector.svg.png" },
-  { name: "PhonePe", src: "https://download.logo.wine/logo/PhonePe/PhonePe-Logo.wine.png" },
-];
+// Payment brand badges — rendered as inline brand-coloured text so we never
+// hotlink a third-party image URL (which was 404-ing in production).
+// Each entry describes a small pill the Footer draws itself; `component`
+// returns the inner content.
+const PaymentBadge = ({ label, color, bg = "bg-white", font = "font-bold" }) => (
+  <div className={`${bg} px-3 py-2 rounded-lg shadow h-10 flex items-center justify-center min-w-[64px]`}>
+    <span className={`${font} text-sm tracking-tight`} style={{ color }}>{label}</span>
+  </div>
+);
 
-// Marketplace logos (Available On)
-const MARKETPLACE_LOGOS = [
-  { name: "Meesho", src: "https://images.meesho.com/images/marketing/1631722939536.webp" },
-  { name: "Amazon", src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/200px-Amazon_logo.svg.png" },
-  { name: "Flipkart", src: "https://static-assets-web.flixcart.com/batman-returns/batman-returns/p/images/fkheaderlogo_exploreplus-44005d.svg" },
+const PAYMENT_BADGES = [
+  { key: "visa",       render: () => <PaymentBadge label="VISA"       color="#1A1F71" /> },
+  { key: "mastercard", render: () => (
+    <div className="bg-white px-3 py-2 rounded-lg shadow h-10 flex items-center gap-0.5">
+      <span className="w-4 h-4 rounded-full" style={{ background: "#EB001B" }} />
+      <span className="w-4 h-4 rounded-full -ml-1.5 mix-blend-multiply" style={{ background: "#F79E1B" }} />
+    </div>
+  )},
+  { key: "upi",        render: () => <PaymentBadge label="UPI" color="#0F8A4A" /> },
+  { key: "phonepe",    render: () => (
+    <div className="bg-[#5F259F] px-3 py-2 rounded-lg shadow h-10 flex items-center justify-center min-w-[72px]">
+      <span className="text-white font-bold text-sm">PhonePe</span>
+    </div>
+  )},
+  { key: "rupay",      render: () => (
+    <div className="bg-white px-3 py-2 rounded-lg shadow h-10 flex items-center gap-1">
+      <span className="font-extrabold text-sm" style={{ color: "#0071BC" }}>Ru</span>
+      <span className="font-extrabold text-sm" style={{ color: "#F37021" }}>Pay</span>
+    </div>
+  )},
 ];
 
 export default function Footer() {
@@ -155,15 +172,10 @@ export default function Footer() {
                   100% Payment Protection
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-4 flex-wrap">
-                {PAYMENT_LOGOS.map((payment) => (
-                  <div key={payment.name} className="bg-white p-2 rounded-lg shadow">
-                    <img 
-                      src={payment.src} 
-                      alt={payment.name} 
-                      className="h-6 w-auto object-contain"
-                      loading="lazy"
-                    />
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                {PAYMENT_BADGES.map((badge) => (
+                  <div key={badge.key} aria-label={badge.key}>
+                    {badge.render()}
                   </div>
                 ))}
               </div>
@@ -173,19 +185,16 @@ export default function Footer() {
             <div className="text-center">
               <h4 className="text-lg font-semibold mb-4">Also Available On</h4>
               <div className="flex items-center justify-center gap-3 flex-wrap">
-                <div className="bg-white px-4 py-2 rounded-lg shadow flex items-center gap-2">
-                  <span className="text-purple-600 font-bold text-sm">meesho</span>
+                <div className="bg-white px-4 py-2 rounded-lg shadow h-10 flex items-center">
+                  <span className="text-[#F43397] font-bold text-sm tracking-tight">meesho</span>
                 </div>
-                <div className="bg-white px-4 py-2 rounded-lg shadow">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/200px-Amazon_logo.svg.png" 
-                    alt="Amazon" 
-                    className="h-5 w-auto object-contain"
-                    loading="lazy"
-                  />
+                <div className="bg-[#232F3E] px-4 py-2 rounded-lg shadow h-10 flex items-end gap-0.5">
+                  <span className="text-white font-bold text-sm tracking-tight">amazon</span>
+                  <span className="text-[#FF9900] font-bold text-sm leading-none">.in</span>
                 </div>
-                <div className="bg-[#2874f0] px-4 py-2 rounded-lg shadow flex items-center gap-1">
+                <div className="bg-[#2874f0] px-4 py-2 rounded-lg shadow h-10 flex items-center gap-1">
                   <span className="text-white font-bold text-sm">Flipkart</span>
+                  <span className="text-[#FFE500] font-bold text-sm">✓</span>
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">Shop from your favorite platform</p>
