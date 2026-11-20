@@ -281,3 +281,16 @@ async def toggle_banner_status(
     )
     
     return {"message": f"Banner {'activated' if new_status else 'deactivated'}", "is_active": new_status}
+
+
+def init_router(*args, **kwargs):
+    """No-op initialiser.
+
+    server.py's uniform `init_router(db, require_admin)` loop expects every
+    router to accept dependencies by injection. This router predates that
+    convention: it pulls them at request time via `from db import get_database`
+    and `from auth import require_admin, get_current_user` (the `backend/db.py`
+    and `backend/auth.py` shims). Nothing to wire up here, so we just accept
+    the call and return.
+    """
+    return None
