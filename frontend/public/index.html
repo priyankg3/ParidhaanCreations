@@ -31,19 +31,19 @@
         <meta name="distribution" content="global" />
         
         <!-- Canonical URL -->
-        <link rel="canonical" href="https://paridhaancreations.com/" />
+        <link rel="canonical" href="https://paridhaancreations.xyz/" />
         
         <!-- Alternate Language -->
-        <link rel="alternate" hreflang="en-IN" href="https://paridhaancreations.com/" />
-        <link rel="alternate" hreflang="hi-IN" href="https://paridhaancreations.com/" />
-        <link rel="alternate" hreflang="x-default" href="https://paridhaancreations.com/" />
+        <link rel="alternate" hreflang="en-IN" href="https://paridhaancreations.xyz/" />
+        <link rel="alternate" hreflang="hi-IN" href="https://paridhaancreations.xyz/" />
+        <link rel="alternate" hreflang="x-default" href="https://paridhaancreations.xyz/" />
         
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://paridhaancreations.com/" />
+        <meta property="og:url" content="https://paridhaancreations.xyz/" />
         <meta property="og:title" content="Paridhaan Creations - Handicrafts, Pooja Articles & Traditional Decor" />
         <meta property="og:description" content="Shop authentic Indian handicrafts, brass pooja articles, laddu gopal dresses & traditional decor. Handcrafted treasures from Vrindavan & Barsana." />
-        <meta property="og:image" content="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" />
+        <meta property="og:image" content="https://paridhaancreations.xyz/logo-header.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Paridhaan Creations - Traditional Indian Handicrafts Store" />
@@ -53,10 +53,10 @@
         
         <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://paridhaancreations.com/" />
+        <meta name="twitter:url" content="https://paridhaancreations.xyz/" />
         <meta name="twitter:title" content="Paridhaan Creations - Handicrafts & Pooja Articles" />
         <meta name="twitter:description" content="Shop authentic Indian handicrafts, pooja articles & traditional decor. Handcrafted from Vrindavan." />
-        <meta name="twitter:image" content="https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png" />
+        <meta name="twitter:image" content="https://paridhaancreations.xyz/logo-header.png" />
         <meta name="twitter:image:alt" content="Paridhaan Creations Store" />
         
         <!-- Geo Tags for Local SEO -->
@@ -77,10 +77,9 @@
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
         
-        <!-- Favicon and Icons -->
-        <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+        <!-- Favicon and Icons (falls back to logo-header.png until dedicated sizes are generated) -->
+        <link rel="icon" type="image/png" href="%PUBLIC_URL%/logo-header.png" />
+        <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo-header.png" />
         <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
         
         <!-- Preconnect for Performance -->
@@ -96,21 +95,6 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap" media="print" onload="this.media='all'" />
         <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@400;600&display=swap" /></noscript>
         
-        <!-- Emergent Scripts -->
-        <script src="https://assets.emergent.sh/scripts/emergent-main.js" defer></script>
-        <script>
-            if (window.self !== window.top) {
-                var debugMonitorScript = document.createElement('script');
-                debugMonitorScript.src = 'https://assets.emergent.sh/scripts/debug-monitor.js';
-                document.head.appendChild(debugMonitorScript);
-                window.tailwind = window.tailwind || {};
-                tailwind.config = { corePlugins: { preflight: false } };
-                var tailwindScript = document.createElement('script');
-                tailwindScript.src = 'https://cdn.tailwindcss.com';
-                document.head.appendChild(tailwindScript);
-            }
-        </script>
-        
         <!-- JSON-LD: Organization Schema -->
         <script type="application/ld+json">
         {
@@ -118,8 +102,8 @@
             "@type": "Organization",
             "name": "Paridhaan Creations",
             "alternateName": ["Paridhaan", "परिधान क्रिएशन्स"],
-            "url": "https://paridhaancreations.com",
-            "logo": "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png",
+            "url": "https://paridhaancreations.xyz",
+            "logo": "https://paridhaancreations.xyz/logo-header.png",
             "description": "Shop authentic Indian handicrafts, pooja articles & traditional decor. Handcrafted treasures by skilled artisans from Vrindavan & Barsana.",
             "foundingDate": "2024",
             "contactPoint": {
@@ -133,7 +117,10 @@
                 "addressRegion": "Uttar Pradesh",
                 "addressCountry": "IN"
             },
-            "sameAs": []
+            "sameAs": [
+                "https://www.facebook.com/share/1HP4DzfcFi/",
+                "https://wa.me/919871819508"
+            ]
         }
         </script>
         
@@ -144,13 +131,13 @@
             "@type": "WebSite",
             "name": "Paridhaan Creations",
             "alternateName": "Paridhaan Handicrafts & Pooja Store",
-            "url": "https://paridhaancreations.com",
+            "url": "https://paridhaancreations.xyz",
             "inLanguage": ["en-IN", "hi-IN"],
             "potentialAction": {
                 "@type": "SearchAction",
                 "target": {
                     "@type": "EntryPoint",
-                    "urlTemplate": "https://paridhaancreations.com/products?search={search_term_string}"
+                    "urlTemplate": "https://paridhaancreations.xyz/products?search={search_term_string}"
                 },
                 "query-input": "required name=search_term_string"
             }
@@ -164,8 +151,8 @@
             "@type": "Store",
             "name": "Paridhaan Creations",
             "description": "Online store for traditional Indian handicrafts, pooja articles, laddu gopal dresses & temple decor items",
-            "url": "https://paridhaancreations.com",
-            "image": "https://customer-assets.emergentagent.com/job_pooja-treasures-1/artifacts/2mx3yxer_Untitled%20design.png",
+            "url": "https://paridhaancreations.xyz",
+            "image": "https://paridhaancreations.xyz/logo-header.png",
             "priceRange": "Rs.99 - Rs.9999",
             "paymentAccepted": "Cash on Delivery, Credit Card, Debit Card, UPI, Net Banking",
             "currenciesAccepted": "INR",
@@ -208,13 +195,13 @@
                     "@type": "ListItem",
                     "position": 1,
                     "name": "Home",
-                    "item": "https://paridhaancreations.com/"
+                    "item": "https://paridhaancreations.xyz/"
                 },
                 {
                     "@type": "ListItem",
                     "position": 2,
                     "name": "Products",
-                    "item": "https://paridhaancreations.com/products"
+                    "item": "https://paridhaancreations.xyz/products"
                 }
             ]
         }
@@ -278,7 +265,7 @@
         </noscript>
         <div id="root"></div>
         <a
-            href="https://wa.me/919999999999?text=Hi%20Paridhaan%20Creations!%20I%20have%20a%20query."
+            href="https://wa.me/919871819508?text=Hi%20Paridhaan%20Creations!%20I%20have%20a%20query."
             style="position:fixed;bottom:20px;right:20px;background:#25D366;padding:12px;border-radius:50%;box-shadow:0 4px 10px rgba(0,0,0,0.2);z-index:1000;display:none;"
             target="_blank"
             rel="noopener noreferrer"

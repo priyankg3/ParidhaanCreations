@@ -112,7 +112,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-heading font-bold mb-4">12. Contact Information</h2>
             <div className="text-muted-foreground leading-relaxed space-y-2">
               <p>If you have any questions about these Terms & Conditions, please contact us:</p>
-              <p><strong>Email:</strong> info@paridhaancreations.com</p>
+              <p><strong>Email:</strong> info@paridhaancreations.xyz</p>
               <p><strong>Phone:</strong> +91 XXXXXXXXXX</p>
               <p><strong>Address:</strong> India</p>
             </div>
