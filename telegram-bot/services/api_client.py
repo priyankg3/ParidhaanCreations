@@ -141,3 +141,52 @@ class ApiClient:
         await self._request(
             "POST", f"/internal/telegram/mark-posted/{queue_id}", internal=True,
         )
+
+    # ---------- Telegram order flow ----------
+
+    async def create_telegram_order(
+        self,
+        *,
+        telegram_user_id: int,
+        telegram_chat_id: int,
+        product_id: str,
+        quantity: int,
+        variant_color: Optional[str],
+        variant_size: Optional[str],
+        shipping: dict,
+    ) -> dict:
+        """
+        Returns {ok, order_id, total_amount, payment_link}.
+        Raises ApiError on validation / stock / pricing failures.
+        """
+        payload = {
+            "telegram_user_id": telegram_user_id,
+            "telegram_chat_id": telegram_chat_id,
+            "product_id": product_id,
+            "quantity": quantity,
+            "variant_color": variant_color,
+            "variant_size": variant_size,
+            "shipping": shipping,
+        }
+        return await self._request(
+            "POST", "/internal/telegram/orders/create",
+            json=payload, internal=True,
+        )
+
+    async def list_telegram_orders(self, telegram_user_id: int, limit: int = 20) -> list[dict]:
+        data = await self._request(
+            "GET", "/internal/telegram/orders/list",
+            params={"telegram_user_id": telegram_user_id, "limit": limit},
+            internal=True,
+        )
+        return data or []
+
+    async def get_telegram_order(self, order_id: str) -> Optional[dict]:
+        try:
+            return await self._request(
+                "GET", f"/internal/telegram/orders/{order_id}", internal=True,
+            )
+        except ApiError as e:
+            if e.status == 404:
+                return None
+            raise
