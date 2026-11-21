@@ -180,6 +180,8 @@ async def _send_product_card(
     product: dict,
 ) -> None:
     """Send a single product as a photo message with caption + buttons."""
+    settings = context.application.bot_data["settings"]
+
     name = product.get("name", "Product")
     price = float(product.get("price") or 0)
     compare_at = product.get("compare_at_price")
@@ -215,7 +217,9 @@ async def _send_product_card(
         caption = caption[:1020] + "…"
 
     pid = str(product.get("product_id") or product.get("id") or "")
-    markup = product_card_keyboard(pid, in_stock)
+    # Homepage link on every card — persistent brand touchpoint. Per-product
+    # URL still lives in the Details view only, as the user asked.
+    markup = product_card_keyboard(pid, in_stock, website_url=settings.web_base_url)
 
     images = product.get("images") or []
     try:
@@ -273,20 +277,30 @@ async def view_product_by_id(
     stock = int(product.get("stock") or 0)
     in_stock = stock > 0
 
-    price_line = f"<b>₹{price:,.0f}</b>"
+    # Price line — prominent, matches the catalog card style (💰 + bold).
+    price_line = f"💰 <b>₹{price:,.0f}</b>"
     if compare_at and compare_at > price:
         discount = round(100 * (compare_at - price) / compare_at)
-        price_line = f"<b>₹{price:,.0f}</b> <s>₹{compare_at:,.0f}</s> ({discount}% off)"
+        price_line += f"   <s>₹{compare_at:,.0f}</s>   <b>({discount}% off)</b>"
 
-    stock_line = "✅  In stock" if in_stock else "❌  Out of stock"
+    # Size variants — prefer `laddu_gopal_size`, otherwise join sizes[]
+    sizes = product.get("sizes") or []
+    lg_size = product.get("laddu_gopal_size")
+    size_display = lg_size or (", ".join(sizes) if sizes else "")
+
+    # Color variants
+    colors = product.get("colors") or []
+    color_display = ", ".join(colors) if colors else ""
+
+    stock_line = "✅ In stock" if in_stock else "❌ Out of stock"
 
     pid = str(product.get("product_id") or product.get("id") or product_id)
-    # Website URL for cross-checking on paridhaancreations.xyz
+    # Website URL for cross-checking this particular product on the site
     website_url = f"{settings.web_base_url}/products/{pid}" if pid else None
 
-    # Build the caption. Keep description short enough to leave room for the
-    # URL line and stay under Telegram's 1024-char photo caption cap.
-    desc_cap = 450
+    # Keep the description tight so the full card is scannable at a glance.
+    # Users can tap "View on Website" if they want the whole write-up.
+    desc_cap = 220
     desc_short = desc[:desc_cap] + ("…" if len(desc) > desc_cap else "")
 
     lines = [
@@ -295,12 +309,12 @@ async def view_product_by_id(
         price_line,
         stock_line,
     ]
+    if size_display:
+        lines.append(f"📏 <b>Size:</b> {size_display}")
+    if color_display:
+        lines.append(f"🎨 <b>Color:</b> {color_display}")
     if desc_short:
         lines += ["", desc_short]
-    if website_url:
-        # Shown as plain text so the user can read/copy the URL,
-        # and also as a tappable button below for one-tap opening.
-        lines += ["", f"🌐 <a href=\"{website_url}\">View on website</a>"]
 
     text = "\n".join(lines)
 
