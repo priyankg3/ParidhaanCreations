@@ -89,7 +89,7 @@ def product_card_keyboard(
         ]
     rows = [action_row]
     if website_url:
-        rows.append([InlineKeyboardButton("🌐  Visit paridhaancreations.xyz", url=website_url)])
+        rows.append([InlineKeyboardButton("🌐  Visit Website", url=website_url)])
     return InlineKeyboardMarkup(rows)
 
 
