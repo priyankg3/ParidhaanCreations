@@ -256,11 +256,10 @@ export default function ProductDetailPage() {
         )}
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Product Page Banner */}
+        {/* Product page banner — 4:1 aspect matches 800x200 recommended.
+            Narrow by design so it doesn't push product info below the fold.
+            Mobile 3:1 fallback for readability. */}
         {productBanner && (
-          {/* Product page banner — 4:1 aspect matches 800x200 recommended.
-              Narrow by design so it doesn't push product info below the fold.
-              Mobile 3:1 fallback for readability. */}
           <div className="mb-8" data-testid="product-page-banner">
             {productBanner.link ? (
               <a

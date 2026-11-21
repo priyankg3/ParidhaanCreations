@@ -399,10 +399,9 @@ export default function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-heading font-bold mb-12 text-center" data-testid="checkout-title">Secure Checkout</h1>
 
-        {/* Checkout Page Banner */}
+        {/* Checkout banner — 6:1 aspect matches 1200x200 recommended size.
+            Narrow by design to not distract from the payment flow. Mobile 3:1 fallback. */}
         {checkoutBanner && (
-          {/* Checkout banner — 6:1 aspect matches 1200x200 recommended size.
-              Narrow by design to not distract from the payment flow. Mobile 3:1 fallback. */}
           <div className="mb-8" data-testid="checkout-banner">
             {checkoutBanner.link ? (
               <a
