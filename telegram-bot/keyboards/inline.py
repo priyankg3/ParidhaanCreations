@@ -66,19 +66,31 @@ def categories_keyboard(categories: list[dict]) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(rows)
 
 
-def product_card_keyboard(product_id: str, in_stock: bool) -> InlineKeyboardMarkup:
-    """Inline keyboard shown under each product card (photo message)."""
+def product_card_keyboard(
+    product_id: str,
+    in_stock: bool,
+    website_url: str | None = None,
+) -> InlineKeyboardMarkup:
+    """Inline keyboard shown under each product card (photo message).
+
+    When `website_url` is supplied, a second row adds a "Visit Website"
+    button pointing to the storefront home — a persistent brand touchpoint
+    on every card, independent of the per-product URL in the detail view.
+    """
     if in_stock:
-        row = [
+        action_row = [
             InlineKeyboardButton("🛒  Add to Cart", callback_data=make_cb(CB_CART_ADD, product_id)),
             InlineKeyboardButton("👁️  Details", callback_data=make_cb(CB_PRODUCT_VIEW, product_id)),
         ]
     else:
-        row = [
+        action_row = [
             InlineKeyboardButton("❌  Out of stock", callback_data=CB_NOOP),
             InlineKeyboardButton("👁️  Details", callback_data=make_cb(CB_PRODUCT_VIEW, product_id)),
         ]
-    return InlineKeyboardMarkup([row])
+    rows = [action_row]
+    if website_url:
+        rows.append([InlineKeyboardButton("🌐  Visit paridhaancreations.xyz", url=website_url)])
+    return InlineKeyboardMarkup(rows)
 
 
 def pagination_keyboard(
