@@ -22,8 +22,6 @@ DB_NAME = os.environ.get("DB_NAME", "spiritual_bazaar")
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
-print(f"[ASTRO] Loaded EMERGENT_LLM_KEY: {EMERGENT_LLM_KEY[:20] if EMERGENT_LLM_KEY else 'None'}...")
 
 # Get current date info
 def get_current_date_info():
@@ -232,7 +230,6 @@ Be specific and mathematical. Reference actual degrees and positions."""
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"kundli_{user['user_id']}_{cache_key[:8]}",
             system_message=get_personalized_prompt(profile)
         ).with_model("gemini", "gemini-2.5-flash")
@@ -306,7 +303,6 @@ Make it SPECIFIC to my chart, not generic!"""
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"daily_{user['user_id']}_{today}",
             system_message=get_personalized_prompt(profile)
         ).with_model("gemini", "gemini-2.5-flash")  # FREE tier model
@@ -355,7 +351,6 @@ Always mention the current year {date_info['year']} when giving predictions."""
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=session_id,
             system_message=get_personalized_prompt(profile)
         ).with_model("gemini", "gemini-2.5-flash")
@@ -470,7 +465,6 @@ Remember: All predictions should be for {date_info['year']}, NOT any past year."
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"rashifal_{request.rashi_id}_{today}",
             system_message=get_rashifal_system_prompt()
         ).with_model("gemini", "gemini-2.5-flash")
@@ -510,7 +504,6 @@ Be specific and practical. Explain briefly why each is lucky for this rashi toda
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"lucky_{rashi_id}_{today}",
             system_message=RASHIFAL_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")  # FREE tier model
@@ -656,7 +649,6 @@ Format beautifully without using ** or ### symbols. Use emojis and clear section
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"numerology_{request.name}_{today}",
             system_message=NUMEROLOGY_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")
@@ -770,7 +762,6 @@ Make it deeply meaningful and connected to the person's life. Use Hinglish natur
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"tarot_{today}_{request.spread_type}",
             system_message=TAROT_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")
@@ -886,7 +877,6 @@ Make it accurate and practical for daily use."""
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"panchang_{panchang_date}_{request.location[:10]}",
             system_message=PANCHANG_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")
@@ -946,7 +936,6 @@ Make it specific to this person, not generic."""
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"my_numerology_{user['user_id']}",
             system_message=NUMEROLOGY_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")
@@ -1001,7 +990,6 @@ Connect the reading to their birth chart and life path. Make it deeply personal.
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"my_tarot_{user['user_id']}_{today}",
             system_message=TAROT_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")
