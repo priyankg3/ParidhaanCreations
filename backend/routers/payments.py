@@ -145,15 +145,22 @@ async def verify_razorpay_payment(
 
 @router.post("/razorpay/webhook")
 async def razorpay_webhook(request: Request):
-    """Handle Razorpay webhooks"""
+    """
+    Handle Razorpay webhooks.
+
+    Events handled:
+      - payment.captured    → website orders (existing behaviour)
+      - payment_link.paid   → Telegram-bot orders (payment link flow);
+                              also notifies the user in Telegram chat
+    """
     try:
         payload = await request.json()
         event = payload.get("event")
-        
+
         if event == "payment.captured":
             payment = payload.get("payload", {}).get("payment", {}).get("entity", {})
             order_id = payment.get("notes", {}).get("order_id")
-            
+
             if order_id:
                 await db.orders.update_one(
                     {"order_id": order_id},
@@ -164,8 +171,84 @@ async def razorpay_webhook(request: Request):
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
-        
+
+        elif event == "payment_link.paid":
+            # Telegram bot flow — Razorpay Payment Link was fully paid.
+            pl = payload.get("payload", {}).get("payment_link", {}).get("entity", {})
+            payment = payload.get("payload", {}).get("payment", {}).get("entity", {})
+            order_id = pl.get("reference_id") or pl.get("notes", {}).get("order_id")
+
+            if order_id:
+                # Mark the order paid + confirmed
+                await db.orders.update_one(
+                    {"order_id": order_id},
+                    {"$set": {
+                        "payment_status": "paid",
+                        "razorpay_payment_id": payment.get("id") if payment else None,
+                        "razorpay_payment_link_id": pl.get("id"),
+                        "status": "confirmed",
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
+                    }}
+                )
+
+                # Fetch the order to see if it was a Telegram order; if so,
+                # push a confirmation message into the user's Telegram chat.
+                order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+                if order and order.get("source") == "telegram" and order.get("telegram_chat_id"):
+                    await _notify_telegram_order_confirmed(order)
+
+                # Decrement stock exactly as the website verify flow does
+                if order:
+                    for item in order.get("items", []):
+                        await db.products.update_one(
+                            {"product_id": item["product_id"]},
+                            {"$inc": {"stock": -item.get("quantity", 1)}}
+                        )
+
         return {"status": "ok"}
     except Exception as e:
         logging.error(f"Webhook error: {str(e)}")
         return {"status": "error"}
+
+
+async def _notify_telegram_order_confirmed(order: dict) -> None:
+    """
+    Send an order-confirmation message into the user's Telegram chat
+    via the Bot API. Fails silently — a failure here must not break
+    the webhook response.
+    """
+    try:
+        # Lazy import so the backend still boots if the file is missing
+        # during a partial deploy.
+        from telegram_notify import send_telegram_message, inline_url_button
+
+        chat_id = order.get("telegram_chat_id")
+        if not chat_id:
+            return
+
+        items = order.get("items") or []
+        item_lines = []
+        for it in items:
+            qty = it.get("quantity", 1)
+            name = (it.get("name") or "Item")[:80]
+            vl = it.get("variant_label")
+            suffix = f" ({vl})" if vl else ""
+            item_lines.append(f"• {qty} × {name}{suffix}")
+
+        text = (
+            "✅ <b>Payment received — order confirmed!</b>\n\n"
+            f"<b>Order ID:</b> <code>{order.get('order_id')}</code>\n"
+            f"<b>Total paid:</b> ₹{float(order.get('total_amount') or 0):,.0f}\n\n"
+            + "\n".join(item_lines) + "\n\n"
+            "We’ll pack it carefully and share tracking details here as soon "
+            "as it ships. Thank you for shopping with Paridhaan Creations 🙏"
+        )
+
+        website_order_url = f"https://paridhaancreations.xyz/order-success?order_id={order.get('order_id')}"
+        reply_markup = inline_url_button("🌐 View on Website", website_order_url)
+
+        await send_telegram_message(
+            chat_id=chat_id, text=text, reply_markup=reply_markup
+        )
+    except Exception as e:
+        logging.warning("Telegram order confirmation send failed: %s", e)
