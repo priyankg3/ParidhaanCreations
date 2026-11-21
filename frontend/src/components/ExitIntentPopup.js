@@ -142,6 +142,7 @@ export default function ExitIntentPopup() {
         </button>
 
         {imageUrl ? (
+          /* 4:3 aspect matches admin-recommended 800x600 exit_popup upload */
           <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
             <img
               src={imageUrl}

@@ -401,17 +401,19 @@ export default function CheckoutPage() {
 
         {/* Checkout Page Banner */}
         {checkoutBanner && (
+          {/* Checkout banner — 6:1 aspect matches 1200x200 recommended size.
+              Narrow by design to not distract from the payment flow. Mobile 3:1 fallback. */}
           <div className="mb-8" data-testid="checkout-banner">
             {checkoutBanner.link ? (
-              <a 
+              <a
                 href={checkoutBanner.link}
                 onClick={() => axios.post(`${API}/banners/${checkoutBanner.banner_id}/click`).catch(() => {})}
-                className="block overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                className="block overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow aspect-[3/1] md:aspect-[6/1]"
               >
-                <img 
-                  src={getImageUrl(checkoutBanner)} 
+                <img
+                  src={getImageUrl(checkoutBanner)}
                   alt={checkoutBanner.title || 'Special offer'}
-                  className="w-full h-40 md:h-52 object-cover"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 {(checkoutBanner.title || checkoutBanner.cta_text) && (
@@ -426,11 +428,11 @@ export default function CheckoutPage() {
                 )}
               </a>
             ) : (
-              <div className="overflow-hidden rounded-lg shadow-md">
-                <img 
-                  src={getImageUrl(checkoutBanner)} 
+              <div className="overflow-hidden rounded-lg shadow-md aspect-[3/1] md:aspect-[6/1]">
+                <img
+                  src={getImageUrl(checkoutBanner)}
                   alt={checkoutBanner.title || 'Special offer'}
-                  className="w-full h-40 md:h-52 object-cover"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
                 {(checkoutBanner.title || checkoutBanner.cta_text) && (
