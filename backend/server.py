@@ -34,7 +34,7 @@ from routers import payments, media, admin, settings, coupons
 from routers import wishlist, reviews, collections, shipping, uploads
 from routers import invoices, backup, ticker, astro, ai_tools, seo
 from routers import telegram as telegram_module
-from routers import banners_v2 as banners  # New banner system
+from routers import banners  # unified banner router (see routers/banners.py)
 
 # ==================== SETUP ====================
 
