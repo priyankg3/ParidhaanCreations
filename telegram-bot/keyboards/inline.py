@@ -63,7 +63,8 @@ def categories_keyboard(categories: list[dict]) -> InlineKeyboardMarkup:
 def products_keyboard(products: list[dict], category_slug: str | None = None) -> InlineKeyboardMarkup:
     rows = []
     for p in products[:10]:
-        pid = str(p.get("id") or p.get("_id") or "")
+        # Backend products use `product_id` field; fall back for safety.
+        pid = str(p.get("product_id") or p.get("id") or p.get("_id") or "")
         name = p.get("name", "Product")[:40]
         price = p.get("price")
         price_str = f" — ₹{price:,.0f}" if price else ""

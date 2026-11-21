@@ -114,8 +114,9 @@ class ApiClient:
     # ---------- internal (service-to-service) ----------
 
     async def health(self) -> bool:
+        """Light sanity check: can we reach the categories endpoint?"""
         try:
-            await self._request("GET", "/")
+            await self._request("GET", "/categories")
             return True
         except ApiError:
             return False
