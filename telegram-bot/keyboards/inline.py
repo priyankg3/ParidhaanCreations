@@ -86,8 +86,13 @@ def pagination_keyboard(
     page: int,
     total: int,
     page_size: int = PAGE_SIZE,
+    website_url: str | None = None,
 ) -> InlineKeyboardMarkup:
-    """Navigation message shown AFTER a page of product cards."""
+    """Navigation message shown AFTER a page of product cards.
+
+    When `website_url` is supplied, a 'View on Website' link row is appended
+    at the bottom so users can cross-check the category on paridhaancreations.xyz.
+    """
     total_pages = max(1, (total + page_size - 1) // page_size)
     prev_page = page - 1
     next_page = page + 1
@@ -99,19 +104,28 @@ def pagination_keyboard(
     if next_page < total_pages:
         nav_row.append(InlineKeyboardButton("Next  ➡️", callback_data=make_cb(CB_CATEGORY_PAGE, slug, str(next_page))))
 
-    return InlineKeyboardMarkup([
+    rows = [
         nav_row,
         [
             InlineKeyboardButton("📚  All Categories", callback_data=CB_CATALOG_BROWSE),
             InlineKeyboardButton("🏠  Home", callback_data=CB_MAIN_MENU),
         ],
-    ])
+    ]
+    if website_url:
+        rows.append([InlineKeyboardButton("🌐  View on Website", url=website_url)])
+    return InlineKeyboardMarkup(rows)
 
 
-def product_detail_keyboard(product_id: str, in_stock: bool = True) -> InlineKeyboardMarkup:
+def product_detail_keyboard(
+    product_id: str,
+    in_stock: bool = True,
+    website_url: str | None = None,
+) -> InlineKeyboardMarkup:
     rows = []
     if in_stock:
         rows.append([InlineKeyboardButton("🛒  Add to Cart", callback_data=make_cb(CB_CART_ADD, product_id))])
+    if website_url:
+        rows.append([InlineKeyboardButton("🌐  View on Website", url=website_url)])
     rows.append([
         InlineKeyboardButton("⬅️  Back", callback_data=CB_CATALOG_BROWSE),
         InlineKeyboardButton("🏠  Home", callback_data=CB_MAIN_MENU),
