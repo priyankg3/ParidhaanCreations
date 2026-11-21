@@ -11,7 +11,6 @@ from llm_compat import LlmChat, UserMessage  # was: emergentintegrations (remove
 
 router = APIRouter(prefix="/ai", tags=["AI Tools"])
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 
 class DescriptionRequest(BaseModel):
     product_name: str
@@ -64,7 +63,6 @@ Write a compelling description that will make customers want to buy this product
 
     try:
         chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
             session_id=f"desc_{request.product_name[:20]}",
             system_message=DESCRIPTION_SYSTEM_PROMPT
         ).with_model("gemini", "gemini-2.5-flash")  # FREE tier model
