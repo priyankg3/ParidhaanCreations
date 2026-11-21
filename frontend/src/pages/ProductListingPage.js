@@ -283,11 +283,13 @@ export default function ProductListingPage() {
           ) : (
             <img src={getImageUrl(headerBanner)} alt={headerBanner.title || 'Category banner'} className="w-full h-full object-cover" loading="lazy" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center pointer-events-none">
+          {/* Neutral dark overlay — just enough for text contrast, image stays vivid.
+              (Replaced primary-color wash that turned the image muddy brown.) */}
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
             <div className="text-center text-white">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4">{headerBanner.title || categoryBanner?.title || 'Products'}</h1>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4 drop-shadow-lg">{headerBanner.title || categoryBanner?.title || 'Products'}</h1>
               {headerBanner.cta_text && (
-                <p className="text-lg md:text-xl">{headerBanner.cta_text}</p>
+                <p className="text-lg md:text-xl drop-shadow-md">{headerBanner.cta_text}</p>
               )}
             </div>
           </div>
@@ -296,10 +298,11 @@ export default function ProductListingPage() {
         /* Same 4:1 aspect as header banner for consistency with hard-coded fallbacks. */
         <div className="relative w-full aspect-[2/1] md:aspect-[4/1] overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
           <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
+          {/* Neutral dark overlay (replaced primary-color wash) */}
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
             <div className="text-center text-white">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4">{categoryBanner.title}</h1>
-              <p className="text-lg md:text-xl">{categoryBanner.description}</p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-4 drop-shadow-lg">{categoryBanner.title}</h1>
+              <p className="text-lg md:text-xl drop-shadow-md">{categoryBanner.description}</p>
             </div>
           </div>
         </div>
