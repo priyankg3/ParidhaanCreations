@@ -43,6 +43,7 @@ const AstroPage = lazy(() => import("@/pages/AstroPage"));
 const AuthCallback = lazy(() => import("@/components/AuthCallback"));
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 const WhatsAppButton = lazy(() => import("@/components/WhatsAppButton"));
+const ExitIntentPopup = lazy(() => import("@/components/ExitIntentPopup"));
 
 // Backend URL is always read from REACT_APP_BACKEND_URL. In the Emergent
 // deployment the frontend and backend shared an origin, so a fallback to
@@ -130,6 +131,10 @@ function AppRouter() {
           <WhatsAppButton />
         </Suspense>
       )}
+      {/* Exit-intent popup — backend-driven, shows at most once per session */}
+      <Suspense fallback={null}>
+        <ExitIntentPopup />
+      </Suspense>
       <Toaster position="top-right" />
     </div>
   );

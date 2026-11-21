@@ -35,6 +35,7 @@ from routers import wishlist, reviews, collections, shipping, uploads
 from routers import invoices, backup, ticker, astro, ai_tools, seo
 from routers import telegram as telegram_module
 from routers import banners  # unified banner router (see routers/banners.py)
+from routers import usp  # USP strip router (static trust-signal items)
 
 # ==================== SETUP ====================
 
@@ -188,6 +189,9 @@ def initialize_routers():
     # Telegram internal router (service-to-service with the Telegram bot worker)
     telegram_module.init_router(db)
 
+    # USP strip router (static trust-signal items beneath the hero)
+    usp.init_router(require_admin)
+
 # ==================== CREATE APP ====================
 
 app = FastAPI(
@@ -224,6 +228,7 @@ app.include_router(astro.router, prefix="/api")
 app.include_router(ai_tools.router, prefix="/api")
 app.include_router(seo.router, prefix="/api")
 app.include_router(telegram_router, prefix="/api")
+app.include_router(usp.router, prefix="/api")
 
 # CORS middleware
 # CORS lockdown — the backend REFUSES to boot when CORS_ORIGINS is unset,

@@ -45,11 +45,12 @@ def init_router(database, admin_checker):
 
 # ---------- vocabularies ----------
 
-# Nine placement zones (matches what the admin UI already exposes)
+# Placement zones (matches what the admin UI exposes)
 PLACEMENTS = {
     "hero",             # Homepage hero slider
     "below_hero",       # Below hero slot
-    "popup",            # Modal popup
+    "popup",            # Modal popup on page load
+    "exit_popup",       # Modal popup on exit-intent (mouseleave top of viewport)
     "category_header",  # Top of category pages
     "category_sidebar", # Side banner on category pages
     "category_footer",  # Bottom of category pages

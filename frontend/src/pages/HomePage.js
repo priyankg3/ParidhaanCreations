@@ -8,6 +8,7 @@ import SEO from "@/components/SEO";
 import ProductBadge from "@/components/ProductBadge";
 import { optimizeImageUrl } from "@/utils/imageUtils";
 import { LadduGopalSizeSelector } from "@/components/LadduGopalSizeGuide";
+import USPStrip from "@/components/USPStrip";
 
 // Fallback hero images - Mobile optimized (500px, q=40) and Desktop (1200px)
 const fallbackHeroImages = [
@@ -305,6 +306,9 @@ export default function HomePage() {
           </>
         )}
       </section>
+
+      {/* USP / Trust Strip — backend-driven (admin: USP Strip tab) */}
+      <USPStrip />
 
       {/* Below Hero Banners */}
       {belowHeroBanners.length > 0 && (

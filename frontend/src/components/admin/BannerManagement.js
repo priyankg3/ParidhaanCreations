@@ -13,7 +13,8 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PLACEMENTS = [
   { value: "hero", label: "🏠 Homepage Hero Slider", size: "1920 x 600", description: "Main homepage banner slider" },
   { value: "below_hero", label: "📦 Homepage Below Hero", size: "1200 x 400", description: "Section below main slider" },
-  { value: "popup", label: "🎯 Homepage Popup", size: "600 x 400", description: "Modal popup on homepage" },
+  { value: "popup", label: "🎯 Homepage Popup (on entry)", size: "600 x 400", description: "Modal popup shown on page load" },
+  { value: "exit_popup", label: "🚪 Exit-Intent Popup", size: "600 x 500", description: "Modal popup shown when user tries to leave the site" },
   { value: "category_header", label: "📑 Category Page Header", size: "1200 x 250", description: "Top of category pages" },
   { value: "category_sidebar", label: "📐 Category Sidebar", size: "300 x 600", description: "Side banner on category pages" },
   { value: "category_footer", label: "📋 Category Footer", size: "1200 x 100", description: "Bottom of category pages" },

@@ -5,6 +5,7 @@ import { Package, Users, ShoppingCart, DollarSign, Plus, Edit, Trash2, Upload, T
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import BannerManagement from "../components/admin/BannerManagement";
+import USPManagement from "../components/admin/USPManagement";
 import MusicManagement from "../components/admin/MusicManagement";
 import InstagramManagement from "../components/admin/InstagramManagement";
 
@@ -1193,7 +1194,7 @@ export default function AdminDashboard() {
         <h1 className="text-5xl font-heading font-bold mb-12" data-testid="admin-title">Admin Dashboard</h1>
 
         <div className="flex space-x-4 mb-8 overflow-x-auto">
-          {["analytics", "insights", "products", "categories", "collections", "orders", "shipping", "abandoned", "support", "instagram", "music", "banners", "ticker", "coupons", "gst", "settings"].map((tab) => (
+          {["analytics", "insights", "products", "categories", "collections", "orders", "shipping", "abandoned", "support", "instagram", "music", "banners", "ticker", "usp", "coupons", "gst", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1204,7 +1205,7 @@ export default function AdminDashboard() {
               }`}
               data-testid={`tab-${tab}`}
             >
-              {tab === "gst" ? "GST & Invoice" : tab === "abandoned" ? "Abandoned Carts" : tab === "instagram" ? "Instagram" : tab === "music" ? "🎵 Music" : tab === "ticker" ? "📢 Ticker" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === "gst" ? "GST & Invoice" : tab === "abandoned" ? "Abandoned Carts" : tab === "instagram" ? "Instagram" : tab === "music" ? "🎵 Music" : tab === "ticker" ? "📢 Ticker" : tab === "usp" ? "🏆 USP Strip" : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
@@ -3950,6 +3951,13 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-2xl font-heading font-bold mb-6">Advanced Banner Management</h2>
             <BannerManagement />
+          </div>
+        )}
+
+        {/* USP Strip Management */}
+        {activeTab === "usp" && (
+          <div>
+            <USPManagement />
           </div>
         )}
 
