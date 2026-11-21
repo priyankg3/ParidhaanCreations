@@ -288,21 +288,48 @@ async def update_order_status(
     authorization: Optional[str] = Header(None),
     session_token: Optional[str] = Cookie(None)
 ):
-    """Update order status"""
+    """Update order status manually from admin panel.
+
+    When the admin uses this to mark a Telegram-sourced order as shipped,
+    delivered, or cancelled, we also push a status update into that user's
+    Telegram chat (same statuses the Shiprocket webhook hook handles), so
+    manual overrides stay in sync with the user's notifications.
+    """
     await require_admin(authorization, session_token)
-    
+
     valid_statuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status")
-    
-    result = await db.orders.update_one(
+
+    # Capture previous state so we only notify on real transitions.
+    prev_order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    if not prev_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    await db.orders.update_one(
         {"order_id": order_id},
         {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
     )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
+
+    # Notify the Telegram user on the useful transitions. Fails soft.
+    if prev_order.get("source") == "telegram" and status != prev_order.get("status"):
+        try:
+            from routers.shipping import _notify_telegram_shipment
+            shipment = await db.shipments.find_one({"order_id": order_id}, {"_id": 0}) or {}
+            # Use the shipment's tracking info when available.
+            await _notify_telegram_shipment(
+                {**prev_order, "status": status},
+                status=status,
+                tracking_url=shipment.get("tracking_url"),
+                awb=shipment.get("awb_number"),
+                courier_name=shipment.get("courier_name"),
+            )
+        except Exception as e:
+            logging.getLogger(__name__).warning(
+                "Telegram notify failed on manual status update for order %s: %s",
+                order_id, e,
+            )
+
     return {"message": f"Order status updated to {status}"}
 
 # ============ SUPPORT TICKETS ============
