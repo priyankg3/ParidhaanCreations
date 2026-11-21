@@ -89,7 +89,10 @@ export default function AdminDashboard() {
     gst_rate: "",
     hsn_code: "",
     // Color variants
-    variants: []  // [{color_name, color_code, images[], stock, price, mrp}]
+    variants: [],  // [{color_name, color_code, images[], stock, price, mrp}]
+    // Telegram channel posting mode — "now" / "digest" / "skip"
+    // Defaults to digest so new products are batched into the 7 PM IST post
+    channel_post_mode: "digest"
   });
 
   const ladduGopalSizeOptions = ["0", "1", "2", "3", "4", "5", "6", "6+"];
@@ -468,7 +471,11 @@ export default function AdminDashboard() {
             breadth: s.breadth ? parseFloat(s.breadth) : null,
             height: s.height ? parseFloat(s.height) : null
           })) : null
-        })) : null
+        })) : null,
+        // Telegram channel posting mode. Backend pops this field off before
+        // saving and uses it to enqueue the product into the channel-post
+        // queue (now / digest / skip).
+        channel_post_mode: productForm.channel_post_mode || "digest"
       };
       
       await axios.post(`${API}/admin/products`, productData, { withCredentials: true });
@@ -998,7 +1005,8 @@ export default function AdminDashboard() {
       laddu_gopal_sizes: [],
       gst_rate: "",
       hsn_code: "",
-      variants: []
+      variants: [],
+      channel_post_mode: "digest"
     });
   };
 
@@ -2053,6 +2061,25 @@ export default function AdminDashboard() {
                       <option value="sale">💰 SALE</option>
                       <option value="featured">⭐ FEATURED</option>
                     </select>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <label className="block text-sm font-medium mb-1">
+                      📢 Post to Telegram Channel
+                    </label>
+                    <select
+                      value={productForm.channel_post_mode}
+                      onChange={(e) => setProductForm({...productForm, channel_post_mode: e.target.value})}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-primary"
+                      data-testid="channel-post-mode-select"
+                    >
+                      <option value="digest">📦 Add to Daily Digest (default) — batched at 7 PM IST</option>
+                      <option value="now">🚀 Post Now — appears in channel within ~30 seconds</option>
+                      <option value="skip">🚫 Skip Channel — don't post this product</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Controls when @ParidhaanCreations channel subscribers see this product. Change the mode if you want an instant launch or want to keep this product out of the channel entirely.
+                    </p>
                   </div>
 
                   <div className="flex space-x-4">
