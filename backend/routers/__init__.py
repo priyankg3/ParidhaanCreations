@@ -20,6 +20,7 @@ from .shipping import router as shipping_router
 from .uploads import router as uploads_router
 from .invoices import router as invoices_router
 from .backup import router as backup_router
+from .telegram import router as telegram_router
 
 __all__ = [
     "auth_router",
@@ -40,5 +41,6 @@ __all__ = [
     "shipping_router",
     "uploads_router",
     "invoices_router",
-    "backup_router"
+    "backup_router",
+    "telegram_router"
 ]
