@@ -1,15 +1,19 @@
 """
-Catalog browsing: categories, product listings, product detail.
+Catalog browsing: categories, paginated photo-card listings, product detail.
 
-Wired to the real FastAPI backend via api_client.
+Pagination: `cat:open:<slug>:<page>` renders page N (0-indexed) of
+category `<slug>` as a sequence of photo cards followed by a nav message.
+`cat:page:<slug>:<page>` is an alias used by the Prev/Next buttons.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Optional
 
 from telegram import Update
 from telegram.constants import ParseMode
+from telegram.error import BadRequest, TelegramError
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -20,28 +24,32 @@ from telegram.ext import (
 from keyboards.inline import (
     CB_CATALOG_BROWSE,
     CB_CATEGORY_OPEN,
+    CB_CATEGORY_PAGE,
+    CB_NOOP,
     CB_PRODUCT_VIEW,
+    PAGE_SIZE,
     categories_keyboard,
+    pagination_keyboard,
+    product_card_keyboard,
     product_detail_keyboard,
-    products_keyboard,
 )
-from services.api_client import ApiClient, ApiError
 
 logger = logging.getLogger(__name__)
 
 
-def _api(context: ContextTypes.DEFAULT_TYPE) -> ApiClient:
+def _api(context: ContextTypes.DEFAULT_TYPE):
     return context.application.bot_data["api"]
 
 
-# ---------- browse categories ----------
+# ---------- categories ----------
 
 async def show_categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     api = _api(context)
     try:
         categories = await api.list_categories()
-    except ApiError as e:
-        await _send_or_edit(update, f"⚠️  Couldn't load categories: {e.message}")
+    except Exception as e:
+        logger.exception("list_categories failed")
+        await _send_or_edit(update, f"⚠️  Couldn't load categories: {e}")
         return
 
     if not categories:
@@ -61,38 +69,175 @@ async def cmd_catalog(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     await show_categories(update, context)
 
 
-# ---------- category → products ----------
+# ---------- category → paginated photo-card listing ----------
+
+def _parse_cat_cb(data: str) -> tuple[str, int]:
+    """Returns (slug, page_index). Accepts both 'cat:open:...' and 'cat:page:...'."""
+    parts = data.split(":")
+    # cat:open:<slug>[:<page>]   or   cat:page:<slug>:<page>
+    if len(parts) < 3:
+        return "", 0
+    slug = parts[2]
+    page = 0
+    if len(parts) >= 4:
+        try:
+            page = int(parts[3])
+        except ValueError:
+            page = 0
+    return slug, max(0, page)
+
 
 async def cb_category_open(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
-
-    # callback_data: "cat:open:<slug>"
-    _, _, slug = query.data.partition("cat:open:")
+    slug, page = _parse_cat_cb(query.data)
     if not slug:
         await query.edit_message_text("Invalid category.")
         return
+    await _render_category_page(update, context, slug, page, is_navigation=False)
 
+
+async def cb_category_page(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    slug, page = _parse_cat_cb(query.data)
+    if not slug:
+        return
+    await _render_category_page(update, context, slug, page, is_navigation=True)
+
+
+async def _render_category_page(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    slug: str,
+    page: int,
+    is_navigation: bool,
+) -> None:
+    """Fetch and render one page of product photo cards for a category."""
     api = _api(context)
+    skip = page * PAGE_SIZE
+
+    # Fetch page_size + 1 to detect if there's a next page without a count query.
+    # Backend has no count endpoint, so we approximate: if we got fewer items
+    # than page_size, there's no next page.
     try:
-        products = await api.list_products(category=slug, limit=10)
-    except ApiError as e:
-        await query.edit_message_text(f"⚠️  {e.message}")
+        products = await api.list_products(category=slug, limit=PAGE_SIZE, skip=skip)
+    except Exception as e:
+        logger.exception("list_products failed")
+        await _send_or_edit(update, f"⚠️  {e}")
         return
 
-    if not products:
-        await query.edit_message_text(
-            f"No products in <b>{slug}</b> yet. Check back soon!",
+    chat_id = update.effective_chat.id
+
+    if not products and page == 0:
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=f"No products in <b>{slug}</b> yet. Check back soon!",
             parse_mode=ParseMode.HTML,
-            reply_markup=products_keyboard([], category_slug=slug),
+            reply_markup=pagination_keyboard(slug, 0, 0),
         )
         return
 
-    await query.edit_message_text(
-        f"<b>{slug}</b> — {len(products)} product(s)\n\nTap one for details:",
+    if not products and page > 0:
+        # User clicked "Next" past the end — recover by sending page 0.
+        await _render_category_page(update, context, slug, 0, is_navigation=True)
+        return
+
+    # Send a small header for the first page only (keeps the chat uncluttered
+    # on Prev/Next navigation).
+    if page == 0 and not is_navigation:
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=f"🛍️  <b>{slug}</b>",
+            parse_mode=ParseMode.HTML,
+        )
+
+    # Send one photo card per product.
+    for p in products:
+        await _send_product_card(context, chat_id, p)
+        # Gentle throttle — Telegram's per-chat limit is ~1 msg/sec.
+        await asyncio.sleep(0.15)
+
+    # Approximate total: for the nav keyboard. We know at least (skip+len).
+    # If len == PAGE_SIZE, assume there's more; else this is the last page.
+    approx_total = skip + len(products) + (1 if len(products) == PAGE_SIZE else 0)
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text=f"Showing {skip + 1}–{skip + len(products)} · <b>{slug}</b>",
         parse_mode=ParseMode.HTML,
-        reply_markup=products_keyboard(products, category_slug=slug),
+        reply_markup=pagination_keyboard(slug, page, approx_total),
     )
+
+
+async def _send_product_card(
+    context: ContextTypes.DEFAULT_TYPE,
+    chat_id: int,
+    product: dict,
+) -> None:
+    """Send a single product as a photo message with caption + buttons."""
+    name = product.get("name", "Product")
+    price = float(product.get("price") or 0)
+    compare_at = product.get("compare_at_price")
+    stock = int(product.get("stock") or 0)
+    in_stock = stock > 0
+
+    # Price line with optional discount
+    price_line = f"💰 <b>₹{price:,.0f}</b>"
+    if compare_at and compare_at > price:
+        discount = round(100 * (compare_at - price) / compare_at)
+        price_line += f"   <s>₹{compare_at:,.0f}</s>  ({discount}% off)"
+
+    # Size: prefer explicit laddu_gopal_size for that product family,
+    # otherwise join the sizes array.
+    sizes = product.get("sizes") or []
+    lg_size = product.get("laddu_gopal_size")
+    size_display = lg_size or (", ".join(sizes) if sizes else "")
+
+    # Colors
+    colors = product.get("colors") or []
+    color_display = ", ".join(colors) if colors else ""
+
+    # Build caption (Telegram photo caption cap: 1024 chars)
+    lines = [f"🕉️  <b>{name}</b>", "", price_line]
+    if size_display:
+        lines.append(f"📏 Size: {size_display}")
+    if color_display:
+        lines.append(f"🎨 Color: {color_display}")
+    lines.append("✅ In stock" if in_stock else "❌ Out of stock")
+
+    caption = "\n".join(lines)
+    if len(caption) > 1024:
+        caption = caption[:1020] + "…"
+
+    pid = str(product.get("product_id") or product.get("id") or "")
+    markup = product_card_keyboard(pid, in_stock)
+
+    images = product.get("images") or []
+    try:
+        if images:
+            await context.bot.send_photo(
+                chat_id=chat_id,
+                photo=images[0],
+                caption=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup,
+            )
+        else:
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup,
+            )
+    except BadRequest as e:
+        # Image URL unreachable / malformed — fall back to text.
+        logger.warning("send_photo failed for %s: %s; falling back to text", pid, e)
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=caption,
+            parse_mode=ParseMode.HTML,
+            reply_markup=markup,
+        )
 
 
 # ---------- product detail ----------
@@ -105,8 +250,9 @@ async def view_product_by_id(
     api = _api(context)
     try:
         product = await api.get_product(product_id)
-    except ApiError as e:
-        await _send_or_edit(update, f"⚠️  {e.message}")
+    except Exception as e:
+        logger.exception("get_product failed")
+        await _send_or_edit(update, f"⚠️  {e}")
         return
 
     if not product:
@@ -118,13 +264,14 @@ async def view_product_by_id(
     price = float(product.get("price") or 0)
     compare_at = product.get("compare_at_price")
     stock = int(product.get("stock") or 0)
+    in_stock = stock > 0
 
     price_line = f"<b>₹{price:,.0f}</b>"
     if compare_at and compare_at > price:
         discount = round(100 * (compare_at - price) / compare_at)
         price_line = f"<b>₹{price:,.0f}</b> <s>₹{compare_at:,.0f}</s> ({discount}% off)"
 
-    stock_line = "✅  In stock" if stock > 0 else "❌  Out of stock"
+    stock_line = "✅  In stock" if in_stock else "❌  Out of stock"
 
     text = (
         f"🕉️  <b>{name}</b>\n\n"
@@ -135,23 +282,24 @@ async def view_product_by_id(
 
     pid = str(product.get("product_id") or product.get("id") or product_id)
     images = product.get("images") or []
-    markup = product_detail_keyboard(pid)
+    markup = product_detail_keyboard(pid, in_stock)
 
-    # When invoked from a callback, we can't easily edit a text msg to a photo;
-    # just reply with a new message.
     chat = update.effective_chat
     if images:
-        await context.bot.send_photo(
-            chat_id=chat.id,
-            photo=images[0],
-            caption=text,
-            parse_mode=ParseMode.HTML,
-            reply_markup=markup,
-        )
-    else:
-        await context.bot.send_message(
-            chat_id=chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup
-        )
+        try:
+            await context.bot.send_photo(
+                chat_id=chat.id,
+                photo=images[0],
+                caption=text[:1024],
+                parse_mode=ParseMode.HTML,
+                reply_markup=markup,
+            )
+            return
+        except BadRequest:
+            pass  # fall through to text
+    await context.bot.send_message(
+        chat_id=chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup
+    )
 
 
 async def cb_product_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -163,26 +311,31 @@ async def cb_product_view(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await view_product_by_id(update, context, pid)
 
 
+async def cb_noop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Swallow taps on indicator buttons like '1 / 3' silently."""
+    await update.callback_query.answer()
+
+
 # ---------- helpers ----------
 
-async def _send_or_edit(
-    update: Update,
-    text: str,
-    *,
-    markup=None,
-) -> None:
+async def _send_or_edit(update: Update, text: str, *, markup=None) -> None:
     if update.callback_query:
-        await update.callback_query.edit_message_text(
-            text, parse_mode=ParseMode.HTML, reply_markup=markup
-        )
-    else:
-        await update.effective_message.reply_text(
-            text, parse_mode=ParseMode.HTML, reply_markup=markup
-        )
+        try:
+            await update.callback_query.edit_message_text(
+                text, parse_mode=ParseMode.HTML, reply_markup=markup
+            )
+            return
+        except BadRequest:
+            pass  # original was a photo message etc. — send new
+    await update.effective_chat.send_message(
+        text=text, parse_mode=ParseMode.HTML, reply_markup=markup
+    )
 
 
 def register(app: Application) -> None:
     app.add_handler(CommandHandler("catalog", cmd_catalog))
     app.add_handler(CallbackQueryHandler(cb_catalog, pattern=f"^{CB_CATALOG_BROWSE}$"))
     app.add_handler(CallbackQueryHandler(cb_category_open, pattern=f"^{CB_CATEGORY_OPEN}:"))
+    app.add_handler(CallbackQueryHandler(cb_category_page, pattern=f"^{CB_CATEGORY_PAGE}:"))
     app.add_handler(CallbackQueryHandler(cb_product_view, pattern=f"^{CB_PRODUCT_VIEW}:"))
+    app.add_handler(CallbackQueryHandler(cb_noop, pattern=f"^{CB_NOOP}$"))

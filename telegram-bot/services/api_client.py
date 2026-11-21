@@ -120,3 +120,24 @@ class ApiClient:
             return True
         except ApiError:
             return False
+
+    async def pending_now(self, limit: int = 10) -> list[dict]:
+        """Immediate-post queue entries — list of {queue_id, mode, product}."""
+        data = await self._request(
+            "GET", "/internal/telegram/pending/now",
+            params={"limit": limit}, internal=True,
+        )
+        return data or []
+
+    async def pending_digest(self, limit: int = 50) -> list[dict]:
+        """Daily digest queue entries — list of {queue_id, mode, product}."""
+        data = await self._request(
+            "GET", "/internal/telegram/pending/digest",
+            params={"limit": limit}, internal=True,
+        )
+        return data or []
+
+    async def mark_posted(self, queue_id: str) -> None:
+        await self._request(
+            "POST", f"/internal/telegram/mark-posted/{queue_id}", internal=True,
+        )

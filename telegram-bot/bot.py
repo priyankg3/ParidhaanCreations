@@ -89,6 +89,10 @@ def build_app() -> Application:
     checkout.register(app)
     orders.register(app)
 
+    # Register scheduled jobs (channel immediate-poller + daily digest)
+    from jobs.channel_posting import register_jobs  # noqa: WPS433
+    register_jobs(app)
+
     app.add_error_handler(error_handler)
     return app
 

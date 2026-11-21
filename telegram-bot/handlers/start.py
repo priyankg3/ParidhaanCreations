@@ -50,6 +50,12 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await view_product_by_id(update, context, product_id)
         return
 
+    # Deep link: /start catalog  → open browse view directly
+    if args and args[0] == "catalog":
+        from handlers.catalog import show_categories
+        await show_categories(update, context)
+        return
+
     await update.effective_message.reply_text(
         WELCOME_TEXT,
         parse_mode=ParseMode.HTML,

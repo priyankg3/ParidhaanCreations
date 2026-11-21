@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Header, Cookie
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 import uuid
+import logging
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -147,18 +148,52 @@ async def create_product(
     authorization: Optional[str] = Header(None),
     session_token: Optional[str] = Cookie(None)
 ):
-    """Create new product"""
+    """Create new product.
+
+    Also enqueues the product for Telegram channel posting. Mode comes from
+    the optional `channel_post_mode` field on the product payload:
+      "now"    → bot posts immediately (within ~30s)
+      "digest" → bot batches into the 19:00 IST daily digest  (DEFAULT)
+      "skip"   → no channel post
+    """
     await require_admin(authorization, session_token)
-    
+
     product_data = {
         "product_id": f"prod_{uuid.uuid4().hex[:12]}",
         **product,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
-    
+
+    # Pop the channel_post_mode off so it doesn't bloat the product doc.
+    channel_mode = product_data.pop("channel_post_mode", "digest")
+    if channel_mode not in ("now", "digest", "skip"):
+        channel_mode = "digest"
+
     await db.products.insert_one(product_data)
-    return {"message": "Product created", "product_id": product_data["product_id"]}
+
+    # Enqueue for Telegram channel. Never let this fail the product create.
+    if channel_mode != "skip":
+        try:
+            import uuid as _uuid
+            await db.telegram_post_queue.insert_one({
+                "queue_id": str(_uuid.uuid4()),
+                "product_id": product_data["product_id"],
+                "mode": channel_mode,
+                "status": "pending",
+                "created_at": datetime.now(timezone.utc),
+            })
+        except Exception as e:
+            logging.getLogger(__name__).warning(
+                "Failed to enqueue product %s for Telegram: %s",
+                product_data["product_id"], e,
+            )
+
+    return {
+        "message": "Product created",
+        "product_id": product_data["product_id"],
+        "channel_post_mode": channel_mode,
+    }
 
 @router.put("/products/{product_id}")
 async def update_product(
