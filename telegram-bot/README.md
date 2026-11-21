@@ -88,19 +88,65 @@ For the channel:
 - Create public channel, username `ParidhaanCreations`
 - Add `@ParidhaanCreationsBot` as admin with "Post Messages" permission
 
-## What's shipped in this scaffold
+## What's shipped
 
 | Feature          | State         |
 | ---------------- | ------------- |
 | `/start` + menu  | ✅ working     |
-| `/catalog`       | ✅ working (reads real products) |
-| Browse category  | ✅ working     |
+| `/catalog`       | ✅ working (photo cards, 5-per-page pagination) |
+| Browse category  | ✅ working with real images, price, size, color |
 | Product detail   | ✅ working     |
-| Deep-link `/start buy_<id>` | ✅ working |
+| Deep-link `/start buy_<id>` | ✅ working (from channel posts) |
+| Deep-link `/start catalog`  | ✅ working (from digest "Browse" button) |
+| Channel: daily digest (19:00 IST)   | ✅ working |
+| Channel: immediate-post (`mode="now"`)   | ✅ working (30s poll) |
 | `/cart`          | 🚧 stub (needs user login) |
 | `/orders`        | 🚧 stub (needs user login) |
 | Checkout         | 🚧 stub (needs user login + Razorpay link flow) |
-| Channel notify   | ✅ library ready; wiring in next PR |
+
+## Channel posting — how it works
+
+Every product created via admin API is auto-enqueued with one of
+three modes (defaults to `digest`):
+
+| Mode     | When it posts |
+| -------- | ------------- |
+| `now`    | Within ~30s (bot polls `/api/internal/telegram/pending/now`) |
+| `digest` | Batched into the 19:00 IST daily album post |
+| `skip`   | Never posted |
+
+### Daily digest shape
+
+Bot drains `/api/internal/telegram/pending/digest` at 19:00 IST:
+
+- **0 products** → no post (silent).
+- **1 product** → single rich photo card with "Buy in Bot" button.
+- **2–10 products** → one Telegram album (swipeable gallery, single
+  notification) with a short summary caption listing each product
+  by name + price, followed by a "Browse new arrivals in Bot" button
+  message. Album carousels can't carry inline keyboards directly,
+  hence the follow-up message.
+- **>10 products** → top 10 as album with "and N more — browse all
+  in the bot" tail. The rest roll into the next day's digest
+  naturally (they stay pending).
+
+### Setting mode when creating a product
+
+The admin product-create endpoint (`POST /api/admin/products`) accepts
+an optional `channel_post_mode` field on the payload:
+
+```json
+{
+  "name": "New Laddu Gopal Dress",
+  "price": 199,
+  ...
+  "channel_post_mode": "now"   // "now" | "digest" | "skip"
+}
+```
+
+Admin UI dropdown for this field ships in Phase 4 Part C
+(follow-up PR). Until then, every new product defaults to
+`digest` — safe, batched, 7 PM IST.
 
 ## Next PR: login + cart + checkout
 

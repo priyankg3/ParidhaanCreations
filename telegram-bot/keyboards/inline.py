@@ -1,8 +1,8 @@
 """
 Reusable inline keyboards and callback data helpers.
 
-Callback data convention: "<domain>:<action>:<arg>"
-  e.g. "cat:open:pooja-articles", "prod:view:abc123", "cart:add:abc123"
+Callback data convention: "<domain>:<action>:<arg>[:<arg2>]"
+  e.g. "cat:open:pooja:0", "prod:view:prod_abc123", "cart:add:prod_abc123"
 
 Keep callback data under 64 bytes (Telegram limit).
 """
@@ -10,11 +10,12 @@ from __future__ import annotations
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-# ---------- callback data ----------
+# ---------- callback data prefixes ----------
 
-CB_CATEGORY_OPEN = "cat:open"
-CB_PRODUCT_VIEW = "prod:view"
-CB_CART_ADD = "cart:add"
+CB_CATEGORY_OPEN = "cat:open"        # cat:open:<slug>:<page>
+CB_CATEGORY_PAGE = "cat:page"        # cat:page:<slug>:<page>  (alias for navigation)
+CB_PRODUCT_VIEW = "prod:view"        # prod:view:<product_id>
+CB_CART_ADD = "cart:add"             # cart:add:<product_id>
 CB_CART_VIEW = "cart:view"
 CB_CART_REMOVE = "cart:remove"
 CB_CHECKOUT_START = "chk:start"
@@ -22,13 +23,16 @@ CB_ORDERS_LIST = "ord:list"
 CB_ORDER_VIEW = "ord:view"
 CB_MAIN_MENU = "nav:home"
 CB_CATALOG_BROWSE = "nav:catalog"
+CB_NOOP = "nav:noop"                 # for disabled buttons (e.g. page indicator)
+
+# Pagination: products per page in catalog listing
+PAGE_SIZE = 5
 
 
-def make_cb(prefix: str, arg: str = "") -> str:
-    data = f"{prefix}:{arg}" if arg else prefix
+def make_cb(prefix: str, *args: str) -> str:
+    parts = [prefix] + [str(a) for a in args if a != ""]
+    data = ":".join(parts)
     if len(data.encode("utf-8")) > 64:
-        # Fall back to a hash-based ref if the arg is too long.
-        # (Rare — product IDs are UUIDs or short slugs.)
         raise ValueError(f"callback data too long: {data!r}")
     return data
 
@@ -50,40 +54,66 @@ def main_menu() -> InlineKeyboardMarkup:
 
 def categories_keyboard(categories: list[dict]) -> InlineKeyboardMarkup:
     rows = []
-    for cat in categories[:20]:  # cap to avoid oversized keyboard
+    for cat in categories[:20]:
         label = cat.get("name") or cat.get("slug", "?")
-        slug = cat.get("slug") or cat.get("id") or ""
+        slug = cat.get("slug") or cat.get("category_id") or ""
         if not slug:
             continue
-        rows.append([InlineKeyboardButton(f"📂 {label}", callback_data=make_cb(CB_CATEGORY_OPEN, slug))])
+        rows.append([
+            InlineKeyboardButton(f"📂 {label}", callback_data=make_cb(CB_CATEGORY_OPEN, slug, "0"))
+        ])
     rows.append([InlineKeyboardButton("⬅️  Back", callback_data=CB_MAIN_MENU)])
     return InlineKeyboardMarkup(rows)
 
 
-def products_keyboard(products: list[dict], category_slug: str | None = None) -> InlineKeyboardMarkup:
-    rows = []
-    for p in products[:10]:
-        # Backend products use `product_id` field; fall back for safety.
-        pid = str(p.get("product_id") or p.get("id") or p.get("_id") or "")
-        name = p.get("name", "Product")[:40]
-        price = p.get("price")
-        price_str = f" — ₹{price:,.0f}" if price else ""
-        if pid:
-            rows.append(
-                [InlineKeyboardButton(f"{name}{price_str}", callback_data=make_cb(CB_PRODUCT_VIEW, pid))]
-            )
-    back_target = make_cb(CB_CATALOG_BROWSE) if not category_slug else CB_CATALOG_BROWSE
-    rows.append([InlineKeyboardButton("⬅️  Back to Categories", callback_data=back_target)])
-    return InlineKeyboardMarkup(rows)
-
-
-def product_detail_keyboard(product_id: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("🛒  Add to Cart", callback_data=make_cb(CB_CART_ADD, product_id))],
-            [
-                InlineKeyboardButton("⬅️  Back", callback_data=CB_CATALOG_BROWSE),
-                InlineKeyboardButton("🏠  Home", callback_data=CB_MAIN_MENU),
-            ],
+def product_card_keyboard(product_id: str, in_stock: bool) -> InlineKeyboardMarkup:
+    """Inline keyboard shown under each product card (photo message)."""
+    if in_stock:
+        row = [
+            InlineKeyboardButton("🛒  Add to Cart", callback_data=make_cb(CB_CART_ADD, product_id)),
+            InlineKeyboardButton("👁️  Details", callback_data=make_cb(CB_PRODUCT_VIEW, product_id)),
         ]
-    )
+    else:
+        row = [
+            InlineKeyboardButton("❌  Out of stock", callback_data=CB_NOOP),
+            InlineKeyboardButton("👁️  Details", callback_data=make_cb(CB_PRODUCT_VIEW, product_id)),
+        ]
+    return InlineKeyboardMarkup([row])
+
+
+def pagination_keyboard(
+    slug: str,
+    page: int,
+    total: int,
+    page_size: int = PAGE_SIZE,
+) -> InlineKeyboardMarkup:
+    """Navigation message shown AFTER a page of product cards."""
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    prev_page = page - 1
+    next_page = page + 1
+
+    nav_row = []
+    if prev_page >= 0:
+        nav_row.append(InlineKeyboardButton("⬅️  Prev", callback_data=make_cb(CB_CATEGORY_PAGE, slug, str(prev_page))))
+    nav_row.append(InlineKeyboardButton(f"{page + 1} / {total_pages}", callback_data=CB_NOOP))
+    if next_page < total_pages:
+        nav_row.append(InlineKeyboardButton("Next  ➡️", callback_data=make_cb(CB_CATEGORY_PAGE, slug, str(next_page))))
+
+    return InlineKeyboardMarkup([
+        nav_row,
+        [
+            InlineKeyboardButton("📚  All Categories", callback_data=CB_CATALOG_BROWSE),
+            InlineKeyboardButton("🏠  Home", callback_data=CB_MAIN_MENU),
+        ],
+    ])
+
+
+def product_detail_keyboard(product_id: str, in_stock: bool = True) -> InlineKeyboardMarkup:
+    rows = []
+    if in_stock:
+        rows.append([InlineKeyboardButton("🛒  Add to Cart", callback_data=make_cb(CB_CART_ADD, product_id))])
+    rows.append([
+        InlineKeyboardButton("⬅️  Back", callback_data=CB_CATALOG_BROWSE),
+        InlineKeyboardButton("🏠  Home", callback_data=CB_MAIN_MENU),
+    ])
+    return InlineKeyboardMarkup(rows)
