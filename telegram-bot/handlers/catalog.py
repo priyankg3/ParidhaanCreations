@@ -133,7 +133,7 @@ async def view_product_by_id(
         f"{desc[:600]}{'…' if len(desc) > 600 else ''}"
     )
 
-    pid = str(product.get("id") or product.get("_id") or product_id)
+    pid = str(product.get("product_id") or product.get("id") or product_id)
     images = product.get("images") or []
     markup = product_detail_keyboard(pid)
 

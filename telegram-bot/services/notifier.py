@@ -63,7 +63,7 @@ async def post_product_to_channel(
     text message instead.
     """
     caption = build_product_caption(product, web_base_url)
-    product_id = str(product.get("id") or product.get("_id") or "")
+    product_id = str(product.get("product_id") or product.get("id") or "")
     keyboard = build_buy_keyboard(bot_username, product_id)
 
     images = product.get("images") or []
