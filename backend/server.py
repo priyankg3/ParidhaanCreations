@@ -25,7 +25,7 @@ from routers import (
     orders_router, support_router, payments_router, media_router,
     admin_router, settings_router, banners_router, coupons_router,
     wishlist_router, reviews_router, collections_router, shipping_router,
-    uploads_router, invoices_router, backup_router
+    uploads_router, invoices_router, backup_router, telegram_router
 )
 
 # Import router init functions
@@ -33,6 +33,7 @@ from routers import auth, products, categories, cart, orders, support
 from routers import payments, media, admin, settings, coupons
 from routers import wishlist, reviews, collections, shipping, uploads
 from routers import invoices, backup, ticker, astro, ai_tools, seo
+from routers import telegram as telegram_module
 from routers import banners_v2 as banners  # New banner system
 
 # ==================== SETUP ====================
@@ -184,6 +185,9 @@ def initialize_routers():
     # SEO router
     seo.init_router(db)
 
+    # Telegram internal router (service-to-service with the Telegram bot worker)
+    telegram_module.init_router(db)
+
 # ==================== CREATE APP ====================
 
 app = FastAPI(
@@ -219,6 +223,7 @@ app.include_router(ticker.router, prefix="/api")
 app.include_router(astro.router, prefix="/api")
 app.include_router(ai_tools.router, prefix="/api")
 app.include_router(seo.router, prefix="/api")
+app.include_router(telegram_router, prefix="/api")
 
 # CORS middleware
 # CORS lockdown — the backend REFUSES to boot when CORS_ORIGINS is unset,
