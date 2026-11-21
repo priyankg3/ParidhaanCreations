@@ -115,7 +115,12 @@ async def _render_category_page(
 ) -> None:
     """Fetch and render one page of product photo cards for a category."""
     api = _api(context)
+    settings = context.application.bot_data["settings"]
     skip = page * PAGE_SIZE
+
+    # Deep-link to the website's product listing filtered by this category,
+    # so users can cross-check the full category on paridhaancreations.xyz.
+    category_url = f"{settings.web_base_url}/products?category={slug}"
 
     # Fetch page_size + 1 to detect if there's a next page without a count query.
     # Backend has no count endpoint, so we approximate: if we got fewer items
@@ -134,7 +139,7 @@ async def _render_category_page(
             chat_id=chat_id,
             text=f"No products in <b>{slug}</b> yet. Check back soon!",
             parse_mode=ParseMode.HTML,
-            reply_markup=pagination_keyboard(slug, 0, 0),
+            reply_markup=pagination_keyboard(slug, 0, 0, website_url=category_url),
         )
         return
 
@@ -165,7 +170,7 @@ async def _render_category_page(
         chat_id=chat_id,
         text=f"Showing {skip + 1}–{skip + len(products)} · <b>{slug}</b>",
         parse_mode=ParseMode.HTML,
-        reply_markup=pagination_keyboard(slug, page, approx_total),
+        reply_markup=pagination_keyboard(slug, page, approx_total, website_url=category_url),
     )
 
 
@@ -248,6 +253,8 @@ async def view_product_by_id(
     product_id: str,
 ) -> None:
     api = _api(context)
+    settings = context.application.bot_data["settings"]
+
     try:
         product = await api.get_product(product_id)
     except Exception as e:
@@ -273,16 +280,32 @@ async def view_product_by_id(
 
     stock_line = "✅  In stock" if in_stock else "❌  Out of stock"
 
-    text = (
-        f"🕉️  <b>{name}</b>\n\n"
-        f"{price_line}\n"
-        f"{stock_line}\n\n"
-        f"{desc[:600]}{'…' if len(desc) > 600 else ''}"
-    )
-
     pid = str(product.get("product_id") or product.get("id") or product_id)
+    # Website URL for cross-checking on paridhaancreations.xyz
+    website_url = f"{settings.web_base_url}/products/{pid}" if pid else None
+
+    # Build the caption. Keep description short enough to leave room for the
+    # URL line and stay under Telegram's 1024-char photo caption cap.
+    desc_cap = 450
+    desc_short = desc[:desc_cap] + ("…" if len(desc) > desc_cap else "")
+
+    lines = [
+        f"🕉️  <b>{name}</b>",
+        "",
+        price_line,
+        stock_line,
+    ]
+    if desc_short:
+        lines += ["", desc_short]
+    if website_url:
+        # Shown as plain text so the user can read/copy the URL,
+        # and also as a tappable button below for one-tap opening.
+        lines += ["", f"🌐 <a href=\"{website_url}\">View on website</a>"]
+
+    text = "\n".join(lines)
+
     images = product.get("images") or []
-    markup = product_detail_keyboard(pid, in_stock)
+    markup = product_detail_keyboard(pid, in_stock, website_url=website_url)
 
     chat = update.effective_chat
     if images:
@@ -298,7 +321,11 @@ async def view_product_by_id(
         except BadRequest:
             pass  # fall through to text
     await context.bot.send_message(
-        chat_id=chat.id, text=text, parse_mode=ParseMode.HTML, reply_markup=markup
+        chat_id=chat.id,
+        text=text,
+        parse_mode=ParseMode.HTML,
+        reply_markup=markup,
+        disable_web_page_preview=True,
     )
 
 
