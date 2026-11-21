@@ -26,16 +26,21 @@ module.exports = {
           paper: "#F5F2EB"
         },
         foreground: "hsl(var(--foreground))",
+        /* Part 4 preview — premium palette swap.
+           Previous (navy + dark red) felt generic-corporate; the new
+           maroon + terracotta pairs better with the warm ivory background,
+           the existing gold secondary, and the spiritual/handicrafts
+           brand language (Vrindavan, Barsana, Laddu Gopal). */
         primary: {
-          DEFAULT: "#0F4C75",
+          DEFAULT: "#6E0F2C", /* was #0F4C75 — deep maroon anchors the brand */
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#D4AF37",
-          foreground: "#0F4C75",
+          DEFAULT: "#D4AF37", /* gold — kept, pairs beautifully with maroon */
+          foreground: "#6E0F2C",
         },
         accent: {
-          DEFAULT: "#800000",
+          DEFAULT: "#A64A2A", /* was #800000 — terracotta for warmth on highlights */
           foreground: "#FFFFFF",
         },
         destructive: {
