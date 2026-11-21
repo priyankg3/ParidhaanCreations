@@ -272,7 +272,10 @@ export default function ProductListingPage() {
       
       {/* Header Banner from DB or fallback to category banner */}
       {headerBanner ? (
-        <div className="relative h-64 md:h-80 overflow-hidden" data-testid={`header-banner-${selectedCategory}`}>
+        /* 4:1 aspect matches admin-recommended 1600x400 category_header upload.
+           Mobile uses a slightly taller 2:1 so the banner reads well on phones
+           without demanding a separate mobile image. */
+        <div className="relative w-full aspect-[2/1] md:aspect-[4/1] overflow-hidden" data-testid={`header-banner-${selectedCategory}`}>
           {headerBanner.link ? (
             <a href={headerBanner.link} onClick={() => handleBannerClick(headerBanner)} className="block w-full h-full">
               <img src={getImageUrl(headerBanner)} alt={headerBanner.title || 'Category banner'} className="w-full h-full object-cover" loading="lazy" />
@@ -290,7 +293,8 @@ export default function ProductListingPage() {
           </div>
         </div>
       ) : categoryBanner && (
-        <div className="relative h-64 md:h-80 overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
+        /* Same 4:1 aspect as header banner for consistency with hard-coded fallbacks. */
+        <div className="relative w-full aspect-[2/1] md:aspect-[4/1] overflow-hidden" data-testid={`category-banner-${selectedCategory}`}>
           <img src={categoryBanner.image} alt={categoryBanner.title} className="w-full h-full object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-b from-primary/60 to-primary/90 flex items-center justify-center">
             <div className="text-center text-white">
@@ -1058,12 +1062,15 @@ export default function ProductListingPage() {
                 className="block overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
                 data-testid="footer-banner"
               >
-                <img 
-                  src={getImageUrl(footerBanner)} 
-                  alt={footerBanner.title || 'Footer banner'} 
-                  className="w-full h-48 md:h-64 object-cover"
-                  loading="lazy"
-                />
+                {/* 6:1 aspect matches admin-recommended 1200x200 category_footer upload */}
+                <div className="w-full aspect-[3/1] md:aspect-[6/1] overflow-hidden">
+                  <img
+                    src={getImageUrl(footerBanner)}
+                    alt={footerBanner.title || 'Footer banner'}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
                 {footerBanner.title && (
                   <div className="p-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-center">
                     <h3 className="font-heading font-bold text-xl">{footerBanner.title}</h3>

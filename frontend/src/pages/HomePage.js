@@ -198,8 +198,12 @@ export default function HomePage() {
         breadcrumbs={[{ name: 'Home', url: '/' }]}
       />
       
-      {/* Hero Section with Dynamic Banners */}
-      <section className="relative h-[400px] md:h-[600px] overflow-hidden" data-testid="hero-section" role="region" aria-label="Featured promotions">
+      {/* Hero Section with Dynamic Banners
+          Aspect-ratio based container matches admin's recommended upload
+          sizes: mobile 800x1000 (4:5) → aspect-[4/5]; desktop 1920x750 →
+          aspect-[1920/750]. Scales fluidly across all viewport widths,
+          no fixed pixel heights that letterbox on 4K or crop on small laptops. */}
+      <section className="relative w-full aspect-[4/5] md:aspect-[1920/750] overflow-hidden" data-testid="hero-section" role="region" aria-label="Featured promotions">
         {heroImages.map((item, index) => {
           const banner = heroBanners[index];
           const imageUrl = getHeroImageUrl(index);
@@ -320,13 +324,14 @@ export default function HomePage() {
                   key={banner.banner_id}
                   to={banner.link || '/products'}
                   onClick={() => handleBannerClick(banner)}
-                  className="relative overflow-hidden group rounded-lg shadow-md hover:shadow-xl transition-shadow"
+                  className="relative overflow-hidden group rounded-lg shadow-md hover:shadow-xl transition-shadow aspect-[3/1]"
                   data-testid={`below-hero-banner-${banner.banner_id}`}
                 >
-                  <img 
-                    src={getImageUrl(banner)} 
-                    alt={banner.title || 'Promotional banner'} 
-                    className="w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  {/* 3:1 aspect matches admin-recommended 1200x400 upload */}
+                  <img
+                    src={getImageUrl(banner)}
+                    alt={banner.title || 'Promotional banner'}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
                   {banner.title && (

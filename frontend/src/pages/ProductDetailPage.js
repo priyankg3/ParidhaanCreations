@@ -258,26 +258,29 @@ export default function ProductDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Product Page Banner */}
         {productBanner && (
+          {/* Product page banner — 4:1 aspect matches 800x200 recommended.
+              Narrow by design so it doesn't push product info below the fold.
+              Mobile 3:1 fallback for readability. */}
           <div className="mb-8" data-testid="product-page-banner">
             {productBanner.link ? (
-              <a 
+              <a
                 href={productBanner.link}
                 onClick={() => axios.post(`${API}/banners/${productBanner.banner_id}/click`).catch(() => {})}
-                className="block overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                className="block overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow aspect-[3/1] md:aspect-[4/1]"
               >
-                <img 
-                  src={getImageUrl(productBanner)} 
+                <img
+                  src={getImageUrl(productBanner)}
                   alt={productBanner.title || 'Special offer'}
-                  className="w-full h-32 md:h-40 object-cover"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
               </a>
             ) : (
-              <div className="overflow-hidden rounded-lg shadow-sm">
-                <img 
-                  src={getImageUrl(productBanner)} 
+              <div className="overflow-hidden rounded-lg shadow-sm aspect-[3/1] md:aspect-[4/1]">
+                <img
+                  src={getImageUrl(productBanner)}
                   alt={productBanner.title || 'Special offer'}
-                  className="w-full h-32 md:h-40 object-cover"
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
               </div>

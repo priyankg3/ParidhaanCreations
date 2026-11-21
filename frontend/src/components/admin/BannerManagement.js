@@ -9,18 +9,23 @@ import {
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Banner placement zones
+// Banner placement zones.
+// Each entry declares the recommended *desktop* and *mobile* image sizes.
+// The frontend renders each slot with a fixed aspect ratio (matching the
+// recommended size), so uploading at the right size gives a pixel-perfect
+// fit. Uploading a wrong ratio → the image gets cropped (object-cover)
+// instead of stretched, so nothing ever looks distorted.
 const PLACEMENTS = [
-  { value: "hero", label: "🏠 Homepage Hero Slider", size: "1920 x 600", description: "Main homepage banner slider" },
-  { value: "below_hero", label: "📦 Homepage Below Hero", size: "1200 x 400", description: "Section below main slider" },
-  { value: "popup", label: "🎯 Homepage Popup (on entry)", size: "600 x 400", description: "Modal popup shown on page load" },
-  { value: "exit_popup", label: "🚪 Exit-Intent Popup", size: "600 x 500", description: "Modal popup shown when user tries to leave the site" },
-  { value: "category_header", label: "📑 Category Page Header", size: "1200 x 250", description: "Top of category pages" },
-  { value: "category_sidebar", label: "📐 Category Sidebar", size: "300 x 600", description: "Side banner on category pages" },
-  { value: "category_footer", label: "📋 Category Footer", size: "1200 x 100", description: "Bottom of category pages" },
-  { value: "product_page", label: "🛍️ Product Page", size: "800 x 200", description: "Banner on product detail page" },
-  { value: "cart_page", label: "🛒 Cart Page", size: "1200 x 300", description: "Promotional banner in cart" },
-  { value: "checkout_page", label: "💳 Checkout Page", size: "1200 x 200", description: "Offer banner during checkout" }
+  { value: "hero",              label: "🏠 Homepage Hero Slider",        size: "Desktop 1920 × 750  ·  Mobile 800 × 1000", description: "Main homepage carousel. Mobile image displays as tall 4:5 crop; upload both for best results." },
+  { value: "below_hero",        label: "📦 Homepage Below Hero",         size: "Desktop 1200 × 400  ·  Mobile 800 × 400",  description: "2-column promotional strip below the hero" },
+  { value: "popup",             label: "🎯 Homepage Popup (on entry)",   size: "Desktop 800 × 600  ·  Mobile 600 × 800",   description: "Modal shown on page load. Keep image at 4:3 (desktop) / 3:4 (mobile)" },
+  { value: "exit_popup",        label: "🚪 Exit-Intent Popup",           size: "Desktop 800 × 600  ·  Mobile 600 × 800",   description: "Modal shown when user tries to leave the site" },
+  { value: "category_header",   label: "📑 Category Page Header",        size: "Desktop 1600 × 400  ·  Mobile 800 × 400",  description: "Top of category pages. 4:1 ratio works best" },
+  { value: "category_sidebar",  label: "📐 Category Sidebar",            size: "Desktop 300 × 600  ·  (desktop only)",     description: "Tall skyscraper banner on category pages. Hidden on mobile." },
+  { value: "category_footer",   label: "📋 Category Footer",             size: "Desktop 1200 × 200  ·  Mobile 600 × 200",  description: "Narrow strip at the bottom of category pages" },
+  { value: "product_page",      label: "🛍️ Product Page",                 size: "Desktop 800 × 200  ·  Mobile 600 × 200",   description: "Narrow banner on product detail page" },
+  { value: "cart_page",         label: "🛒 Cart Page",                   size: "Desktop 1200 × 300  ·  Mobile 600 × 300",  description: "Promotional banner inside the cart" },
+  { value: "checkout_page",     label: "💳 Checkout Page",               size: "Desktop 1200 × 200  ·  Mobile 600 × 200",  description: "Narrow offer banner during checkout — keep subtle to not distract from payment" }
 ];
 
 const STATUS_OPTIONS = [

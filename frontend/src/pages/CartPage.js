@@ -163,21 +163,21 @@ export default function CartPage() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 py-12">
         <SEO title="Shopping Cart" noindex={true} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Cart Banner */}
+          {/* Cart Banner — 4:1 aspect matches admin-recommended 1200x300 upload */}
           {cartBanner && (
-            <div className="mb-8 rounded-2xl overflow-hidden shadow-lg" data-testid="cart-banner-empty">
+            <div className="mb-8 rounded-2xl overflow-hidden shadow-lg aspect-[2/1] md:aspect-[4/1]" data-testid="cart-banner-empty">
               {cartBanner.link ? (
-                <Link to={cartBanner.link} onClick={() => handleBannerClick(cartBanner)}>
-                  <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'} 
-                    className="w-full h-48 md:h-64 object-cover" loading="lazy" />
+                <Link to={cartBanner.link} onClick={() => handleBannerClick(cartBanner)} className="block w-full h-full">
+                  <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'}
+                    className="w-full h-full object-cover" loading="lazy" />
                 </Link>
               ) : (
-                <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'} 
-                  className="w-full h-48 md:h-64 object-cover" loading="lazy" />
+                <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'}
+                  className="w-full h-full object-cover" loading="lazy" />
               )}
             </div>
           )}
-          
+
           <div className="flex items-center justify-center py-16">
             <div className="text-center max-w-md">
               <div className="relative mb-8">
@@ -250,17 +250,17 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             
-            {/* Cart Page Banner - At top of cart items section */}
+            {/* Cart Page Banner — 4:1 aspect (1200x300). Mobile falls back to 2:1 */}
             {cartBanner && (
-              <div className="rounded-2xl overflow-hidden shadow-lg mb-2" data-testid="cart-banner">
+              <div className="rounded-2xl overflow-hidden shadow-lg mb-2 aspect-[2/1] md:aspect-[4/1]" data-testid="cart-banner">
                 {cartBanner.link ? (
-                  <Link to={cartBanner.link} onClick={() => handleBannerClick(cartBanner)}>
-                    <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'} 
-                      className="w-full h-32 md:h-44 object-cover hover:scale-[1.02] transition-transform duration-300" loading="lazy" />
+                  <Link to={cartBanner.link} onClick={() => handleBannerClick(cartBanner)} className="block w-full h-full">
+                    <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'}
+                      className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300" loading="lazy" />
                   </Link>
                 ) : (
-                  <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'} 
-                    className="w-full h-32 md:h-44 object-cover" loading="lazy" />
+                  <img src={getImageUrl(cartBanner)} alt={cartBanner.title || 'Special offer'}
+                    className="w-full h-full object-cover" loading="lazy" />
                 )}
               </div>
             )}
