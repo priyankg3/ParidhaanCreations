@@ -33,6 +33,12 @@ from keyboards.inline import (
     product_card_keyboard,
     product_detail_keyboard,
 )
+from services.product_format import (
+    compute_price_range,
+    format_color_line,
+    format_size_line,
+    has_any_variant_stock,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -183,33 +189,38 @@ async def _send_product_card(
     settings = context.application.bot_data["settings"]
 
     name = product.get("name", "Product")
-    price = float(product.get("price") or 0)
     compare_at = product.get("compare_at_price")
-    stock = int(product.get("stock") or 0)
-    in_stock = stock > 0
 
-    # Price line with optional discount
-    price_line = f"💰 <b>₹{price:,.0f}</b>"
-    if compare_at and compare_at > price:
-        discount = round(100 * (compare_at - price) / compare_at)
-        price_line += f"   <s>₹{compare_at:,.0f}</s>  ({discount}% off)"
+    # Variant-aware price: show a range if sizes across variants have
+    # different prices (e.g. "₹225 – ₹285"), otherwise a single figure.
+    min_p, max_p = compute_price_range(product)
+    if max_p > min_p > 0:
+        price_line = f"💰 <b>₹{min_p:,.0f} – ₹{max_p:,.0f}</b>"
+    else:
+        base_price = max_p or min_p or float(product.get("price") or 0)
+        price_line = f"💰 <b>₹{base_price:,.0f}</b>"
+        if compare_at and compare_at > base_price:
+            discount = round(100 * (compare_at - base_price) / compare_at)
+            price_line += f"   <s>₹{compare_at:,.0f}</s>  ({discount}% off)"
 
-    # Size: prefer explicit laddu_gopal_size for that product family,
-    # otherwise join the sizes array.
-    sizes = product.get("sizes") or []
-    lg_size = product.get("laddu_gopal_size")
-    size_display = lg_size or (", ".join(sizes) if sizes else "")
+    # Variant-aware stock: any variant size in stock → "In stock".
+    # No variant stock info → fall back to top-level product.stock.
+    variant_in_stock = has_any_variant_stock(product)
+    if variant_in_stock is None:
+        in_stock = int(product.get("stock") or 0) > 0
+    else:
+        in_stock = variant_in_stock
 
-    # Colors
-    colors = product.get("colors") or []
-    color_display = ", ".join(colors) if colors else ""
+    # Variant-aware size and color display (compact for card).
+    size_display = format_size_line(product)
+    color_display = format_color_line(product, max_inline=4)
 
     # Build caption (Telegram photo caption cap: 1024 chars)
     lines = [f"🕉️  <b>{name}</b>", "", price_line]
     if size_display:
-        lines.append(f"📏 Size: {size_display}")
+        lines.append(f"📏 Sizes: {size_display}")
     if color_display:
-        lines.append(f"🎨 Color: {color_display}")
+        lines.append(f"🎨 Colors: {color_display}")
     lines.append("✅ In stock" if in_stock else "❌ Out of stock")
 
     caption = "\n".join(lines)
@@ -272,34 +283,37 @@ async def view_product_by_id(
 
     name = product.get("name", "Product")
     desc = (product.get("description") or "").strip()
-    price = float(product.get("price") or 0)
     compare_at = product.get("compare_at_price")
-    stock = int(product.get("stock") or 0)
-    in_stock = stock > 0
 
-    # Price line — prominent, matches the catalog card style (💰 + bold).
-    price_line = f"💰 <b>₹{price:,.0f}</b>"
-    if compare_at and compare_at > price:
-        discount = round(100 * (compare_at - price) / compare_at)
-        price_line += f"   <s>₹{compare_at:,.0f}</s>   <b>({discount}% off)</b>"
+    # Variant-aware price (range when sizes have different prices)
+    min_p, max_p = compute_price_range(product)
+    if max_p > min_p > 0:
+        price_line = f"💰 <b>₹{min_p:,.0f} – ₹{max_p:,.0f}</b>"
+    else:
+        base_price = max_p or min_p or float(product.get("price") or 0)
+        price_line = f"💰 <b>₹{base_price:,.0f}</b>"
+        if compare_at and compare_at > base_price:
+            discount = round(100 * (compare_at - base_price) / compare_at)
+            price_line += f"   <s>₹{compare_at:,.0f}</s>   <b>({discount}% off)</b>"
 
-    # Size variants — prefer `laddu_gopal_size`, otherwise join sizes[]
-    sizes = product.get("sizes") or []
-    lg_size = product.get("laddu_gopal_size")
-    size_display = lg_size or (", ".join(sizes) if sizes else "")
-
-    # Color variants
-    colors = product.get("colors") or []
-    color_display = ", ".join(colors) if colors else ""
-
+    # Variant-aware stock
+    variant_in_stock = has_any_variant_stock(product)
+    if variant_in_stock is None:
+        in_stock = int(product.get("stock") or 0) > 0
+    else:
+        in_stock = variant_in_stock
     stock_line = "✅ In stock" if in_stock else "❌ Out of stock"
+
+    # Detail-view has more real estate — show per-size prices if they vary,
+    # and all colors (up to 12 before truncating).
+    size_display = format_size_line(product, show_prices=None)
+    color_display = format_color_line(product, max_inline=12)
 
     pid = str(product.get("product_id") or product.get("id") or product_id)
     # Website URL for cross-checking this particular product on the site
     website_url = f"{settings.web_base_url}/products/{pid}" if pid else None
 
-    # Keep the description tight so the full card is scannable at a glance.
-    # Users can tap "View on Website" if they want the whole write-up.
+    # Keep description tight so the full card is scannable at a glance.
     desc_cap = 220
     desc_short = desc[:desc_cap] + ("…" if len(desc) > desc_cap else "")
 
@@ -310,9 +324,9 @@ async def view_product_by_id(
         stock_line,
     ]
     if size_display:
-        lines.append(f"📏 <b>Size:</b> {size_display}")
+        lines.append(f"📏 <b>Sizes:</b> {size_display}")
     if color_display:
-        lines.append(f"🎨 <b>Color:</b> {color_display}")
+        lines.append(f"🎨 <b>Colors:</b> {color_display}")
     if desc_short:
         lines += ["", desc_short]
 
