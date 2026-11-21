@@ -246,7 +246,9 @@ export default function HomePage() {
                   decoding={index === 0 ? "sync" : "async"}
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/80"></div>
+              {/* Subtle dark gradient (not primary) so the image stays vivid
+                  and only the bottom gets enough dimming for text readability. */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/55"></div>
             </div>
           );
         })}
@@ -386,7 +388,8 @@ export default function HomePage() {
                     }}
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex items-end">
+                {/* Same treatment as hero — neutral darkening, not a primary-color wash */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end">
                   <h3 className="text-lg md:text-2xl font-heading font-semibold text-white p-4 md:p-6">{category.name}</h3>
                 </div>
               </Link>
